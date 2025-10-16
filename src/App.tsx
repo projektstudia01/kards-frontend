@@ -1,9 +1,19 @@
-import { Alert } from 'flowbite-react'
+// src/App.tsx
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Registration from './components/Registration';
+import Login from './components/Login'; // Załóżmy, że tworzysz ten komponent
 
 function App() {
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Alert color="info">Hello World</Alert>
+    <div className="bg-gray-50 dark:bg-gray-900 w-full">
+      <Routes>
+        {/* Ścieżka Logowania */}
+        <Route path="/login" element={<Login />} />
+        {/* Ścieżka Rejestracji */}
+        <Route path="/register" element={<Registration />} />
+        {/* Przekierowanie głównej ścieżki / na /register */}
+        <Route path="/" element={<Navigate to="/register" replace />} />
+      </Routes>
     </div>
   )
 }
