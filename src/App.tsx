@@ -2,10 +2,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Registration from './components/Registration';
 import Login from './components/Login'; // Załóżmy, że tworzysz ten komponent
+import ThemeToggle from './components/ThemeToggle';
 
 function App() {
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 w-full">
+    <div className="bg-background text-foreground w-full min-h-screen">
+      <ThemeToggle />
       <Routes>
         {/* Ścieżka Logowania */}
         <Route path="/login" element={<Login />} />

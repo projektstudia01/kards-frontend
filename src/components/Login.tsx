@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 // import { useAuthStore } from '../store/authStore'; // Będziemy tego potrzebować do logowania
 
 // Interfejs dla danych logowania
@@ -9,7 +9,6 @@ interface LoginData {
 }
 
 const Login: React.FC = () => {
-  const navigate = useNavigate(); // Do przekierowania po zalogowaniu
   // const setAuthState = useAuthStore(state => state.setAuthState); // Do integracji z Zustand
 
   // 1. Stan przechowujący dane logowania
@@ -46,18 +45,19 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md p-6 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-8">
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="w-full max-w-md p-6 bg-card rounded-lg shadow sm:p-8 border border-border">
                 {/* Tytuł */}
-  <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-2">Zaloguj się</h2>
+  <h2 className="text-3xl font-bold text-center text-card-foreground mb-4">Zaloguj się</h2>
     {/* Podtytuł */}
-    <p className="text-base text-gray-700 dark:text-gray-300 mb-6 text-center">Witaj ponownie! Zaloguj się aby kontynuować</p>
+    <p className="text-base text-muted-foreground mb-6 text-center">Witaj ponownie! Zaloguj się aby kontynuować</p>
       <form className="space-y-6 w-full" onSubmit={handleSubmit}>
 
           {/* POLE: ADRES EMAIL (Zmienione, aby akceptować tylko email) */}
           <div className="w-full">
-            <label 
+            <label
               htmlFor="email"
-              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-center"
+              className="block mb-2 text-sm font-medium text-card-foreground text-center"
             >
               Adres Email
             </label>
@@ -69,15 +69,15 @@ const Login: React.FC = () => {
               onChange={handleChange}
               placeholder="imie@firma.pl"
               required
-              className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="bg-input border border-border text-card-foreground sm:text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 ring-ring"
             />
           </div>
 
           {/* POLE: HASŁO */}
           <div className="w-full">
-            <label 
-              htmlFor="password" 
-              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white text-center"
+            <label
+              htmlFor="password"
+              className="block mb-2 text-sm font-medium text-card-foreground text-center"
             >
               Hasło
             </label>
@@ -89,29 +89,36 @@ const Login: React.FC = () => {
               onChange={handleChange}
               placeholder="••••••••"
               required
-              className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="bg-input border border-border text-card-foreground sm:text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 ring-ring"
             />
           </div>
 
           {/* PRZYCISK: ZALOGUJ */}
           <button
             type="submit"
-            className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            className="w-full mt-2 mb-2 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center"
           >
             Zaloguj się
-          </button>
+           </button>
+
+          <div className="flex items-center justify-center mb-4">
+            <hr className="flex-1 border-t border-muted-foreground" />
+            <span className="mx-2 text-muted-foreground">lub</span>
+            <hr className="flex-1 border-t border-muted-foreground" />
+          </div>
 
           {/* ODNOŚNIK DO REJESTRACJI */}
-          <p className="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
+          <p className="text-sm font-light text-muted-foreground text-center">
             Nie masz jeszcze konta? {' '}
-            <Link 
-              to="/register" 
-              className="font-medium text-blue-600 hover:underline dark:text-blue-500"
+            <Link
+              to="/register"
+              className="font-medium text-primary hover:underline"
             >
               Zarejestruj się
             </Link>
           </p>
         </form>
+    </div>
     </div>
   );
 };
