@@ -1,0 +1,7 @@
+{
+  "errors": {
+    "register": {
+      "validation_error": "Błąd formularza"
+    }
+  }
+}

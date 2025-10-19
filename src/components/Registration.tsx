@@ -4,9 +4,9 @@ import { useAuthStore } from "../store/authStore"; // <--- TERAZ ODKOMENTOWANE I
 
 // 1. Interfejs dla danych formularza
 interface RegistrationData {
-  username: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 const Registration: React.FC = () => {
@@ -15,10 +15,13 @@ const Registration: React.FC = () => {
   const setAuthState = useAuthStore((state) => state.setAuthState); // 2. Stan przechowujący dane formularza
 
   const [formData, setFormData] = useState<RegistrationData>({
-    username: "",
     email: "",
     password: "",
-  }); // 3. Funkcja obsługująca zmianę wartości pól
+    confirmPassword: "",
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  // 3. Funkcja obsługująca zmianę wartości pól
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -33,9 +36,14 @@ const Registration: React.FC = () => {
 
     // Prawdziwa aplikacja wysłałaby dane do API, utworzyła konto i zalogowała
 
+    // Walidacja: czy hasła się zgadzają
+    if (formData.password !== formData.confirmPassword) {
+      setError('Hasła nie są takie same');
+      return;
+    }
+
     // Symulacja udanej rejestracji (i automatycznego logowania po niej):
     const mockUserPayload = {
-      username: formData.username,
       email: formData.email,
     };
 
@@ -58,26 +66,10 @@ const Registration: React.FC = () => {
         Dołącz do społeczności CardOSR!
       </p>
       <form className="space-y-6 w-full" onSubmit={handleSubmit}>
-                  {/* POLE: NAZWA UŻYTKOWNIKA */}
-        <div className="w-full mb-4">
-          <label
-            htmlFor="username"
-            className="block mb-2 text-sm font-medium text-card-foreground"
-          >
-            Nazwa użytkownika
-          </label>
-          <input
-            type="text"
-            name="username"
-            id="username"
-            value={formData.username}
-            onChange={handleChange}
-            placeholder="JanKowalski"
-            required
-            className="bg-input border border-border text-card-foreground sm:text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 ring-ring"
-          />
-        </div>
-                  {/* POLE: ADRES EMAIL */}
+        {error && (
+          <div className="text-sm text-red-600 mb-2" role="alert">{error}</div>
+        )}
+        {/* POLE: ADRES EMAIL */}
         <div className="w-full mb-4">
           <label
             htmlFor="email"
@@ -109,6 +101,25 @@ const Registration: React.FC = () => {
             name="password"
             id="password"
             value={formData.password}
+            onChange={handleChange}
+            placeholder="••••••••"
+            required
+            className="bg-input border border-border text-card-foreground sm:text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 ring-ring"
+          />
+        </div>
+        {/* POLE: POWTÓRZ HASŁO */}
+        <div className="w-full mb-4">
+          <label
+            htmlFor="confirmPassword"
+            className="block mb-2 text-sm font-medium text-card-foreground"
+          >
+            Powtórz hasło
+          </label>
+          <input
+            type="password"
+            name="confirmPassword"
+            id="confirmPassword"
+            value={formData.confirmPassword}
             onChange={handleChange}
             placeholder="••••••••"
             required

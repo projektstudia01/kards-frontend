@@ -57,7 +57,7 @@ const Login: React.FC = () => {
           <div className="w-full">
             <label
               htmlFor="email"
-              className="block mb-2 text-sm font-medium text-card-foreground text-center"
+              className="block mb-2 text-sm font-medium text-card-foreground"
             >
               Adres Email
             </label>
@@ -77,7 +77,7 @@ const Login: React.FC = () => {
           <div className="w-full">
             <label
               htmlFor="password"
-              className="block mb-2 text-sm font-medium text-card-foreground text-center"
+              className="block mb-2 text-sm font-medium text-card-foreground"
             >
               Hasło
             </label>

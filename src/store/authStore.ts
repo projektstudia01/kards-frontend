@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface UserData {
-  username: string;
+  username?: string;
   email: string;
   // W realnej apce: token JWT lub inne dane uwierzytelniające
 }
@@ -11,7 +11,7 @@ interface UserData {
 interface AuthState {
   isLoggedIn: boolean;
   user: UserData | null;
-  setAuthState: (user: UserData) => void;
+  setAuthState: (user: UserData | null) => void;
   logout: () => void;
 }
 export const useAuthStore = create<AuthState>()(
@@ -20,11 +20,11 @@ export const useAuthStore = create<AuthState>()(
       isLoggedIn: false,
       user: null,
 
-      // Przyjmuje obiekt użytkownika (username, email) i zapisuje stan
+      // Przyjmuje obiekt użytkownika (opcjonalne username, email) i zapisuje stan
       setAuthState: (user) =>
         set({
           isLoggedIn: !!user,
-          user: user, // Zapisujemy pełne dane
+          user: user || null, // Zapisujemy pełne dane lub null
         }),
       // Obsługa wylogowania
       logout: () =>
