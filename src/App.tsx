@@ -10,13 +10,15 @@ function App() {
     <div className="bg-background text-foreground w-full min-h-screen">
       <ErrorBanner />
       <ThemeToggle />
+      
       <Routes>
         {/* Ścieżka Logowania */}
         <Route path="/login" element={<Login />} />
         {/* Ścieżka Rejestracji */}
         <Route path="/register" element={<Registration />} />
-        {/* Przekierowanie głównej ścieżki / na /register */}
-        <Route path="/" element={<Navigate to="/register" replace />} />
+  {/* Przekierowanie głównej ścieżki / na /register */}
+  <Route path="/" element={<Navigate to="/register" replace />} />
+  {/* Weryfikacja e-mail (modal w Registration) - trasa usunięta */}
       </Routes>
     </div>
   )

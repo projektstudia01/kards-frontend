@@ -1,25 +1,31 @@
 // src/pages/VerifyEmail.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Modal, Button } from "flowbite-react";
+// using simple buttons instead of flowbite's Button here
 import { useAuthStore } from "../store/authStore";
+import { useErrorStore } from "../store/errorStore";
 import { customAxios } from "../api/customAxios";
 
-const VerifyEmail: React.FC = () => {
+type Props = {
+  onClose?: () => void;
+};
+
+const VerifyEmail: React.FC<Props> = ({ onClose }) => {
   const navigate = useNavigate();
-  const { emailForVerification, sessionId, setAuthState, setVerificationData } = useAuthStore();
+  const { emailForVerification, sessionId, setAuthState, setVerificationData, clearVerificationData } = useAuthStore();
+  const setError = useErrorStore((s) => s.setError);
+  const clearError = useErrorStore((s) => s.clearError);
 
   const [codeInput, setCodeInput] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleVerify = async () => {
-    setError(null);
+    clearError();
     setSuccess(null);
 
     if (!emailForVerification || !sessionId) {
-      setError("Brak danych sesji – wróć do rejestracji.");
+      setError("errors.verify.missing_session");
       return;
     }
 
@@ -33,19 +39,18 @@ const VerifyEmail: React.FC = () => {
 
       if (res.status === 200) {
         setSuccess("E-mail został zweryfikowany!");
-        setAuthState({ email: emailForVerification }); // logowanie po weryfikacji
+        setAuthState({ email: emailForVerification });
+        // clear verification data and close modal
+        clearVerificationData();
+        onClose?.();
         navigate("/");
       }
     } catch (err: any) {
       if (err.response) {
-        const { message, key } = err.response.data;
-        if (key === "invalid_verification_code") {
-          setError("Nieprawidłowy kod lub sesja wygasła.");
-        } else {
-          setError(message || "Wystąpił błąd podczas weryfikacji.");
-        }
+        const { key } = err.response.data;
+        setError(`errors.verify.${key || "unknown_error"}`);
       } else {
-        setError("Błąd sieci – spróbuj ponownie.");
+        setError("errors.network_error");
       }
     } finally {
       setLoading(false);
@@ -53,7 +58,7 @@ const VerifyEmail: React.FC = () => {
   };
 
   const handleResendCode = async () => {
-    setError(null);
+    clearError();
     setSuccess(null);
 
     try {
@@ -67,61 +72,69 @@ const VerifyEmail: React.FC = () => {
         sessionId: newSessionId,
         code: newCode,
       });
-
       setSuccess("Nowy kod został wysłany na adres e-mail.");
-      console.log("DEBUG: nowy kod roboczy:", newCode);
     } catch (err: any) {
       if (err.response) {
-        const { message, key } = err.response.data;
-        if (key === "user_not_found") {
-          setError("Nie znaleziono użytkownika.");
-        } else if (key === "user_already_verified") {
-          setError("Ten adres e-mail jest już zweryfikowany.");
-        } else {
-          setError(message || "Błąd przy wysyłaniu kodu.");
-        }
+        const { key } = err.response.data;
+        setError(`errors.verify.${key || "unknown_error"}`);
       } else {
-        setError("Błąd sieci – spróbuj ponownie.");
+        setError("errors.network_error");
       }
     }
   };
 
+  useEffect(() => {
+    // pomocnicze logi do debugowania — czy w store są dane weryfikacyjne
+    // eslint-disable-next-line no-console
+    console.log("VerifyEmail mounted. emailForVerification:", emailForVerification, "sessionId:", sessionId, "code:", useAuthStore.getState().code);
+  }, [emailForVerification, sessionId]);
+
+  // Overlay + white rounded card for modal content
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <Modal show={true} size="md" popup={true}>
-        <div className="p-6 text-center">
-          <h3 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-            Potwierdź swój adres e-mail
-          </h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Wpisz kod wysłany na <strong>{emailForVerification}</strong>
-          </p>
+      <div className="relative w-full max-w-md mx-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="mb-1 text-xl font-semibold text-gray-900 dark:text-white">Potwierdź swój adres e-mail</h3>
+              <p className="text-sm text-gray-500">Wpisz kod wysłany na <strong>{emailForVerification}</strong></p>
+            </div>
+            <button
+              aria-label="Zamknij"
+              onClick={() => {
+                onClose?.();
+              }}
+              className="text-gray-500 hover:text-gray-700 ml-4"
+            >
+              ×
+            </button>
+          </div>
 
-          {error && <p className="text-red-600 mb-2 text-sm">{error}</p>}
           {success && <p className="text-green-600 mb-2 text-sm">{success}</p>}
 
           <input
             type="text"
-            name="code"
             value={codeInput}
             onChange={(e) => setCodeInput(e.target.value)}
             placeholder="Wpisz kod weryfikacyjny"
-            className="w-full mb-4 p-2 border rounded-lg text-center focus:ring-primary focus:border-primary"
+            className="w-full my-4 p-2 border rounded-lg text-center focus:ring-primary focus:border-primary"
           />
 
-          <Button
-            onClick={handleVerify}
-            disabled={loading}
-            className="w-full bg-primary hover:bg-primary/90 text-white font-medium rounded-lg py-2.5 mb-3"
-          >
-            {loading ? "Sprawdzanie..." : "Potwierdź e-mail"}
-          </Button>
+          <div className="space-y-3">
+            <button
+              onClick={handleVerify}
+              disabled={loading}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-medium rounded-lg py-2.5"
+            >
+              {loading ? "Sprawdzanie..." : "Potwierdź e-mail"}
+            </button>
 
-          <Button onClick={handleResendCode} color="gray" className="w-full text-sm">
-            Wyślij kod ponownie
-          </Button>
+            <button onClick={handleResendCode} className="w-full text-sm border rounded-lg py-2 text-muted-foreground">
+              Wyślij kod ponownie
+            </button>
+          </div>
         </div>
-      </Modal>
+      </div>
     </div>
   );
 };

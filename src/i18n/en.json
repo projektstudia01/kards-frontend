@@ -16,7 +16,8 @@
       "invalid_verification_code": "Invalid code or session has expired.",
       "user_not_found": "User not found.",
       "user_already_verified": "This email address is already verified.",
-      "validation_error": "Validation error."
+      "validation_error": "Validation error.",
+      "missing_session": "Verification session is missing or expired."
     },
     "login": {
       "WRONG_CREDENTIALS": "Incorrect email or password.",

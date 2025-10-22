@@ -1,6 +1,7 @@
 // src/pages/Registration.tsx
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import VerifyEmail from "./VerifyEmail";
 import { useAuthStore } from "../store/authStore";
 import { useErrorStore } from "../store/errorStore";
 import { customAxios } from "../api/customAxios";
@@ -12,8 +13,9 @@ interface RegistrationData {
 }
 
 const Registration: React.FC = () => {
-  const navigate = useNavigate();
   const setVerificationData = useAuthStore((s) => s.setVerificationData);
+  const emailForVerification = useAuthStore((s) => s.emailForVerification);
+  const clearVerificationData = useAuthStore((s) => s.clearVerificationData);
   const setError = useErrorStore((s) => s.setError);
   const clearError = useErrorStore((s) => s.clearError);
 
@@ -55,8 +57,8 @@ const Registration: React.FC = () => {
         code,
       });
 
-      // przekierowanie do weryfikacji maila
-      navigate("/verify-email");
+  // Nie przekierowujemy — pokazujemy popup w Registration dzięki store
+  // VerifyEmail będzie widoczny gdy setVerificationData ustawi emailForVerification/sessionId
     } catch (err: any) {
       if (err.response) {
         const { key } = err.response.data;
@@ -163,6 +165,14 @@ const Registration: React.FC = () => {
           </p>
         </form>
       </div>
+      {/* Jeśli mamy dane w store — pokaż popup VerifyEmail nad stroną rejestracji */}
+      {emailForVerification && (
+        <VerifyEmail
+          onClose={() => {
+            clearVerificationData();
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -16,7 +16,9 @@
       "invalid_verification_code": "Nieprawidłowy kod lub sesja wygasła.",
       "user_not_found": "Nie znaleziono użytkownika.",
       "user_already_verified": "Ten adres e-mail jest już zweryfikowany.",
-      "validation_error": "Błąd walidacji danych."
+      "validation_error": "Błąd walidacji danych.",
+      "missing_session": "Brak aktywnej sesji weryfikacyjnej lub wygasła."
+
     },
     "login": {
       "WRONG_CREDENTIALS": "Nieprawidłowy e-mail lub hasło.",

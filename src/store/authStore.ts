@@ -10,18 +10,20 @@ interface UserData {
 interface AuthState {
   isLoggedIn: boolean;
   user: UserData | null;
-  // Tymczasowe dane do weryfikacji e-maila
+
+  // dane tymczasowe do weryfikacji e-maila
   emailForVerification: string | null;
   sessionId: string | null;
   code: string | null;
 
-  // Akcje
+  // akcje
   setAuthState: (user: UserData | null) => void;
   setVerificationData: (data: {
     email: string;
     sessionId: string;
     code: string;
   }) => void;
+  clearVerificationData: () => void;
   logout: () => void;
 }
 
@@ -45,6 +47,13 @@ export const useAuthStore = create<AuthState>()(
           emailForVerification: email,
           sessionId,
           code,
+        }),
+
+      clearVerificationData: () =>
+        set({
+          emailForVerification: null,
+          sessionId: null,
+          code: null,
         }),
 
       logout: () =>

@@ -1,108 +1,103 @@
+//Kod do weryfikacji:84720254
 // src/api/customAxios.ts
-import axios from "axios";
-import { useErrorStore } from "../store/errorStore";
-import { useAuthStore } from "../store/authStore";
+export interface RegisterResponse {
+  data: {
+    message: string;
+    userId: string;
+    sessionId: string;
+    code: string;
+  };
+}
 
-// 📌 Konfiguracja bazowa
-export const customAxios = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://api.cardosr.pl",
-  withCredentials: true, // cookies z backendu
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+export interface VerifyResponse {
+  data: {
+    message: string;
+    userId: string;
+  };
+}
 
-// 🧩 REQUEST Interceptor — można dodać token jeśli backend tego wymaga
-customAxios.interceptors.request.use((config) => {
-  const { user } = useAuthStore.getState();
+export interface ResendResponse {
+  data: {
+    message: string;
+    sessionId: string;
+    code: string;
+  };
+}
 
-  if (user && (user as any).token) {
-    config.headers.Authorization = `Bearer ${(user as any).token}`;
-  }
+// 🧪 Mock API z logami do outputu
+export const customAxios = {
+  post: async <T = any>(url: string, body: any): Promise<{ status: number; data: T }> => {
+    console.log(`[mockAxios] POST ${url}`, body);
 
-  return config;
-});
+    await new Promise((r) => setTimeout(r, 500)); // symulacja opóźnienia sieci
 
-// ⚠️ RESPONSE Interceptor — globalna obsługa błędów
-customAxios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const setError = useErrorStore.getState().setError;
-    const logout = useAuthStore.getState().logout;
+    switch (url) {
+      case "/auth/register": {
+        const mockData: RegisterResponse = {
+          data: {
+            message: "Registration successful",
+            userId: "mock-user-id-123",
+            sessionId: "mock-session-id-abc",
+            code: "84720254",
+          },
+        };
 
-    if (error.response) {
-      const { key, message, statusCode } = error.response.data || {};
-      const url = error.config?.url || "";
+        console.log("[Output] Rejestracja powiodła się:");
+        console.log(`UserID: ${mockData.data.userId}`);
+        console.log(`SessionID: ${mockData.data.sessionId}`);
+        console.log(`Verification code: ${mockData.data.code}`);
 
-      // Automatyczne rozpoznanie grupy błędów na podstawie endpointu
-      const group =
-        url.includes("/register") ? "register" :
-        url.includes("/verify-email") ? "verify" :
-        url.includes("/resend-verification-code") ? "verify" :
-        url.includes("/login") ? "login" :
-        url.includes("/auth") ? "auth" :
-        "general";
-
-      // Wylogowanie przy 401 (poza verify-email)
-      if (error.response.status === 401 && !url.includes("/verify-email")) {
-        logout();
-        setError("errors.auth.unauthorized");
-      } else if (key) {
-        setError(`errors.${group}.${key}`);
-      } else if (statusCode >= 500) {
-        setError("errors.server_error");
-      } else {
-        setError("errors.unknown_error");
+        return { status: 200, data: mockData as T };
       }
-    } else {
-      // Brak odpowiedzi (błąd sieciowy)
-      useErrorStore.getState().setError("errors.network_error");
+
+      case "/auth/verify-email": {
+        if (body.code === "84720254" || body.code === "99999999") {
+          const mockData: VerifyResponse = {
+            data: {
+              message: "Code verified successfully",
+              userId: "verified-user-id-xyz",
+            },
+          };
+
+          console.log("[Output] Weryfikacja e-mail powiodła się:");
+          console.log(`UserID: ${mockData.data.userId}`);
+
+          return { status: 200, data: mockData as T };
+        } else {
+          console.log("[Output] Weryfikacja e-mail NIE powiodła się - zły kod");
+          throw {
+            response: {
+              status: 401,
+              data: { message: "Invalid code", key: "invalid_verification_code" },
+            },
+          };
+        }
+      }
+
+      case "/auth/resend-verification-code": {
+        const mockData: ResendResponse = {
+          data: {
+            message: "Verification code resent successfully",
+            sessionId: "mock-session-new",
+            code: "99999999",
+          },
+        };
+
+        console.log("[Output] Wysłano nowy kod weryfikacyjny:");
+        console.log(`New SessionID: ${mockData.data.sessionId}`);
+        console.log(`New Code: ${mockData.data.code}`);
+
+        return { status: 200, data: mockData as T };
+      }
+
+      default:
+        console.log("[Output] Endpoint nie znaleziony:", url);
+        throw {
+          response: {
+            status: 404,
+            data: { message: "Endpoint not found", key: "not_found" },
+          },
+        };
     }
-
-    return Promise.reject(error);
-  }
-);
-
-//
-// ======================
-// 🔑 AUTH ENDPOINTY
-// ======================
-//
-
-export const authApi = {
-  // Rejestracja użytkownika
-  register: async (email: string, password: string) => {
-    const res = await customAxios.post("/auth/register", { email, password });
-    return res.data.data;
-  },
-
-  // Weryfikacja kodu e-mail
-  verifyEmail: async (email: string, sessionId: string, code: string) => {
-    const res = await customAxios.post("/auth/verify-email", {
-      email,
-      sessionId,
-      code,
-    });
-    return res.data.data;
-  },
-
-  // Ponowne wysłanie kodu
-  resendVerificationCode: async (email: string) => {
-    const res = await customAxios.post("/auth/resend-verification-code", {
-      email,
-    });
-    return res.data.data;
-  },
-
-  // Logowanie
-  login: async (email: string, password: string) => {
-    const res = await customAxios.post("/auth/login", { email, password });
-    return res.data.data;
-  },
-
-  // Test sesji
-  testAuth: async () => {
-    const res = await customAxios.post("/auth/test-auth");
-    return res.data;
   },
 };
