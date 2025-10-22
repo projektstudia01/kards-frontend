@@ -1,7 +1,26 @@
 {
   "errors": {
+    "network_error": "Błąd sieci – sprawdź połączenie.",
+    "server_error": "Wewnętrzny błąd serwera.",
+    "unknown_error": "Nieznany błąd. Spróbuj ponownie.",
+    "auth": {
+      "unauthorized": "Twoja sesja wygasła. Zaloguj się ponownie."
+    },
     "register": {
-      "validation_error": "Błąd formularza"
+      "validation_error": "Niepoprawne dane rejestracji.",
+      "RECORD_ALREADY_EXISTS": "Konto o tym adresie e-mail już istnieje.",
+      "internal_server_error": "Błąd serwera podczas rejestracji.",
+      "password_mismatch": "Hasła nie są takie same." 
+    },
+    "verify": {
+      "invalid_verification_code": "Nieprawidłowy kod lub sesja wygasła.",
+      "user_not_found": "Nie znaleziono użytkownika.",
+      "user_already_verified": "Ten adres e-mail jest już zweryfikowany.",
+      "validation_error": "Błąd walidacji danych."
+    },
+    "login": {
+      "WRONG_CREDENTIALS": "Nieprawidłowy e-mail lub hasło.",
+      "email_not_verified": "Adres e-mail nie został jeszcze zweryfikowany."
     }
   }
 }
