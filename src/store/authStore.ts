@@ -5,6 +5,9 @@ import { persist } from "zustand/middleware";
 interface UserData {
   username?: string;
   email: string;
+  emailConfirmed?: boolean;
+  needsUsernameSetup?: boolean;
+  // W realnej apce: token JWT lub inne dane uwierzytelniające
 }
 
 interface AuthState {
@@ -24,6 +27,9 @@ interface AuthState {
     code: string;
   }) => void;
   clearVerificationData: () => void;
+  showUsernamePopup: boolean;
+  setUsername: (username: string) => void;
+  confirmEmail: () => void;
   logout: () => void;
 }
 
@@ -35,6 +41,7 @@ export const useAuthStore = create<AuthState>()(
       emailForVerification: null,
       sessionId: null,
       code: null,
+      showUsernamePopup: false,
 
       setAuthState: (user) =>
         set({
@@ -56,6 +63,25 @@ export const useAuthStore = create<AuthState>()(
           code: null,
         }),
 
+          user: user || null, // Zapisujemy pełne dane lub null
+          showUsernamePopup: user?.needsUsernameSetup || false,
+        }),
+
+      // Ustawia username i kończy setup
+      setUsername: (username) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, username, needsUsernameSetup: false } : null,
+          showUsernamePopup: false,
+        })),
+
+      // Potwierdza email i pokazuje popup wyboru nazwy
+      confirmEmail: () =>
+        set((state) => ({
+          user: state.user ? { ...state.user, emailConfirmed: true, needsUsernameSetup: true } : null,
+          showUsernamePopup: true,
+        })),
+
+      // Obsługa wylogowania
       logout: () =>
         set({
           isLoggedIn: false,
@@ -63,6 +89,7 @@ export const useAuthStore = create<AuthState>()(
           emailForVerification: null,
           sessionId: null,
           code: null,
+          showUsernamePopup: false,
         }),
     }),
     {
