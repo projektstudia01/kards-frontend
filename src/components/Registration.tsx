@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Dodano useNavigate
-import { useAuthStore } from "../store/authStore"; // <--- TERAZ ODKOMENTOWANE I UŻYTE
 
 // 1. Interfejs dla danych formularza
 interface RegistrationData {
@@ -10,9 +9,7 @@ interface RegistrationData {
 }
 
 const Registration: React.FC = () => {
-  const navigate = useNavigate(); // Do przekierowania po rejestracji
-  // Pobieranie akcji 'login' z magazynu Zustanda
-  const setAuthState = useAuthStore((state) => state.setAuthState); // 2. Stan przechowujący dane formularza
+  const navigate = useNavigate(); // Do przekierowania po rejestracji // 2. Stan przechowujący dane formularza
 
   const [formData, setFormData] = useState<RegistrationData>({
     email: "",
@@ -42,16 +39,11 @@ const Registration: React.FC = () => {
       return;
     }
 
-    // Symulacja udanej rejestracji (i automatycznego logowania po niej):
-    const mockUserPayload = {
-      email: formData.email,
-    };
+    // Symulacja udanej rejestracji - konto utworzone, przekierowanie do logowania:
+    console.log("Konto utworzone dla:", formData.email);
 
-    // Zapis stanu do Zustanda (logowanie)
-    setAuthState(mockUserPayload);
-
-    // Przekierowanie na stronę główną
-    navigate("/");
+    // Przekierowanie na stronę logowania
+    navigate("/login");
     // ---------------------------------
   };
   return (

@@ -39,11 +39,17 @@ QUICK SETUP:
   --primary-foreground: 255 255 255; /* button text - white */
   --secondary: 238 240 242;  /* darker subtle secondary surface */
   --secondary-foreground: 94 101 111; /* darker secondary text */
-  --accent: 238 240 242;     /* darker accent background */
+  --accent: 220 225 230;     /* between primary and secondary - medium gray */
   --accent-foreground: 34 41 47; /* accent text */
   --destructive: 239 68 68;  /* destructive red */
   --destructive-foreground: 255 255 255;
   --ring: 10 183 195;       /* focus/ring matches primary */
+  --success: 34 197 94;     /* green for success states */
+  --success-foreground: 255 255 255;
+  --warning: 251 146 60;    /* orange for warning states */
+  --warning-foreground: 255 255 255;
+  --info: 59 130 246;       /* blue for info states */
+  --info-foreground: 255 255 255;
 }
 
 .dark {
@@ -61,11 +67,17 @@ QUICK SETUP:
   --primary-foreground: 255 255 255; /* white */
   --secondary: 31 41 55; /* gray-800 */
   --secondary-foreground: 249 250 251; /* gray-50 */
-  --accent: 31 41 55; /* gray-800 */
+  --accent: 45 55 75; /* gray-700 - between secondary (gray-800) and primary (blue-500) */
   --accent-foreground: 249 250 251; /* gray-50 */
   --destructive: 239 68 68; /* red-500 */
   --destructive-foreground: 255 255 255; /* white */
   --ring: 59 130 246; /* blue-500 */
+  --success: 34 197 94; /* green-500 */
+  --success-foreground: 255 255 255;
+  --warning: 251 146 60; /* orange-400 */
+  --warning-foreground: 255 255 255;
+  --info: 59 130 246; /* blue-500 */
+  --info-foreground: 255 255 255;
 }
 
 @layer utilities {
@@ -88,4 +100,10 @@ QUICK SETUP:
   .bg-destructive { background-color: rgb(var(--destructive)); }
   .text-destructive-foreground { color: rgb(var(--destructive-foreground)); }
   .ring-ring { --tw-ring-color: rgb(var(--ring)); }
+  .bg-success { background-color: rgb(var(--success)); }
+  .text-success-foreground { color: rgb(var(--success-foreground)); }
+  .bg-warning { background-color: rgb(var(--warning)); }
+  .text-warning-foreground { color: rgb(var(--warning-foreground)); }
+  .bg-info { background-color: rgb(var(--info)); }
+  .text-info-foreground { color: rgb(var(--info-foreground)); }
 }
