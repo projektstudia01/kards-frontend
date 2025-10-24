@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-// import { useAuthStore } from '../store/authStore'; // Będziemy tego potrzebować do logowania
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 
 // Interfejs dla danych logowania
 interface LoginData {
@@ -9,7 +9,8 @@ interface LoginData {
 }
 
 const Login: React.FC = () => {
-  // const setAuthState = useAuthStore(state => state.setAuthState); // Do integracji z Zustand
+  const navigate = useNavigate();
+  const { setAuthState, confirmEmail } = useAuthStore();
 
   // 1. Stan przechowujący dane logowania
   const [formData, setFormData] = useState<LoginData>({
@@ -30,18 +31,38 @@ const Login: React.FC = () => {
     e.preventDefault();
     console.log('Dane do logowania:', formData);
 
-    // --- KROK INTEGRACJI ZUSTANDA ---
-    // W przyszłości: 
-    // 1. Wyślij dane do API.
-    // 2. Jeśli sukces:
-    //    const userPayload = { username: 'testuser', email: formData.email }; // Dane zwrócone przez API
-    //    setAuthState(userPayload);
-    //    navigate('/'); // Przekieruj na stronę główną
-    // ---------------------------------
+    // Symulacja udanego logowania
+    // W prawdziwej aplikacji sprawdzałbyś dane z API
     
-    // Na razie tylko logowanie do konsoli
-    // Możesz na sztywno dodać przekierowanie, aby sprawdzić routing:
-    // navigate('/'); 
+    // Symulacja: sprawdź czy użytkownik już ma username
+    const isFirstLogin = true; // Symulacja - w API sprawdzasz czy user.username jest null
+    
+    if (isFirstLogin) {
+      // Pierwszy login - ustaw dane użytkownika i pokaż popup wyboru nazwy
+      const userPayload = {
+        email: formData.email,
+        emailConfirmed: true,
+        needsUsernameSetup: true,
+      };
+      setAuthState(userPayload);
+      
+      // Pokaż popup wyboru nazwy użytkownika
+      setTimeout(() => {
+        confirmEmail(); // To pokaże popup
+      }, 500);
+    } else {
+      // Zwykły login - użytkownik już ma wszystkie dane
+      const userPayload = {
+        email: formData.email,
+        username: 'ExistingUser', // Z API
+        emailConfirmed: true,
+        needsUsernameSetup: false,
+      };
+      setAuthState(userPayload);
+    }
+
+    // Przekieruj do lobby
+    navigate('/lobby'); 
   };
 
   return (
