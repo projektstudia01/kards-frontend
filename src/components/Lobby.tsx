@@ -1,9 +1,10 @@
 import React from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import UsernamePopup from './UsernamePopup';
 
 const Lobby: React.FC = () => {
-  const { logout, user } = useAuthStore();
+  const { logout, user, showUsernamePopup, confirmEmail } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -11,8 +12,13 @@ const Lobby: React.FC = () => {
     navigate('/login');
   };
 
+  const handleChangeUsername = () => {
+    confirmEmail();
+  };
+
   return (
     <div className="min-h-screen bg-background p-6 pt-12 relative">
+      {showUsernamePopup && <UsernamePopup />}
       {/* Main Content */}
       <div className="max-w-4xl mx-auto">
         {/* Header */}
@@ -119,14 +125,20 @@ const Lobby: React.FC = () => {
             <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold">👤</span>
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-card-foreground font-medium">
-                Witaj, {user?.username || 'Użytkowniku'}
+                Witaj, {user?.username ? user.username : 'Gościu'}
               </p>
               <p className="text-muted-foreground text-sm">
                 ID: {user?.email ? user.email.substring(0, 3) + '***' + user.email.slice(-3) : 'brak'}
               </p>
             </div>
+            <button
+              onClick={handleChangeUsername}
+              className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            >
+              Zmień nazwę
+            </button>
           </div>
         </div>
       </div>

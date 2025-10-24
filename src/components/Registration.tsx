@@ -34,9 +34,14 @@ const Registration: React.FC = () => {
     e.preventDefault();
     clearError();
 
-    // walidacja lokalna: hasła muszą być takie same
+    // walidacja lokalna: hasła muszą być takie same i mieć co najmniej 8 znaków
     if (formData.password !== formData.confirmPassword) {
       setError("errors.register.password_mismatch");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("errors.register.password_too_short");
       return;
     }
 
@@ -57,8 +62,7 @@ const Registration: React.FC = () => {
         code,
       });
 
-  // Nie przekierowujemy — pokazujemy popup w Registration dzięki store
-  // VerifyEmail będzie widoczny gdy setVerificationData ustawi emailForVerification/sessionId
+      // Do not log in the user yet; wait for email verification
     } catch (err: any) {
       if (err.response) {
         const { key } = err.response.data;

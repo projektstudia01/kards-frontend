@@ -10,7 +10,8 @@
       "validation_error": "Niepoprawne dane rejestracji.",
       "RECORD_ALREADY_EXISTS": "Konto o tym adresie e-mail już istnieje.",
       "internal_server_error": "Błąd serwera podczas rejestracji.",
-      "password_mismatch": "Hasła nie są takie same." 
+      "password_mismatch": "Hasła nie są takie same.",
+      "password_too_short": "Hasło musi mieć co najmniej 8 znaków."
     },
     "verify": {
       "invalid_verification_code": "Nieprawidłowy kod lub sesja wygasła.",

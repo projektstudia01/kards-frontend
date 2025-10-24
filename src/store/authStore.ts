@@ -7,19 +7,16 @@ interface UserData {
   email: string;
   emailConfirmed?: boolean;
   needsUsernameSetup?: boolean;
-  // W realnej apce: token JWT lub inne dane uwierzytelniające
 }
 
 interface AuthState {
   isLoggedIn: boolean;
   user: UserData | null;
 
-  // dane tymczasowe do weryfikacji e-maila
   emailForVerification: string | null;
   sessionId: string | null;
   code: string | null;
 
-  // akcje
   setAuthState: (user: UserData | null) => void;
   setVerificationData: (data: {
     email: string;
@@ -47,6 +44,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           isLoggedIn: !!user,
           user: user || null,
+          showUsernamePopup: user?.needsUsernameSetup || false, // Ensure popup is shown if needed
         }),
 
       setVerificationData: ({ email, sessionId, code }) =>
@@ -63,26 +61,25 @@ export const useAuthStore = create<AuthState>()(
           code: null,
         }),
 
-          user: user || null, // Zapisujemy pełne dane lub null
-          showUsernamePopup: user?.needsUsernameSetup || false,
-        }),
-
-      // Ustawia username i kończy setup
       setUsername: (username) =>
         set((state) => ({
-          user: state.user ? { ...state.user, username, needsUsernameSetup: false } : null,
+          user: state.user
+            ? { ...state.user, username, needsUsernameSetup: false }
+            : null,
           showUsernamePopup: false,
         })),
 
-      // Potwierdza email i pokazuje popup wyboru nazwy
       confirmEmail: () =>
-        set((state) => ({
-          user: state.user ? { ...state.user, emailConfirmed: true, needsUsernameSetup: true } : null,
-          showUsernamePopup: true,
-        })),
+        set((state) => {
+          return {
+            user: state.user
+              ? { ...state.user, emailConfirmed: true, needsUsernameSetup: true, username: undefined }
+              : null,
+            showUsernamePopup: true, // Ensure popup is triggered
+          };
+        }),
 
-      // Obsługa wylogowania
-      logout: () =>
+      logout: () => {
         set({
           isLoggedIn: false,
           user: null,
@@ -90,7 +87,9 @@ export const useAuthStore = create<AuthState>()(
           sessionId: null,
           code: null,
           showUsernamePopup: false,
-        }),
+        });
+        localStorage.removeItem('auth-storage'); // Clear persisted auth state
+      },
     }),
     {
       name: "auth-storage",

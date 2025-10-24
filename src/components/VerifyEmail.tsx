@@ -12,7 +12,7 @@ type Props = {
 
 const VerifyEmail: React.FC<Props> = ({ onClose }) => {
   const navigate = useNavigate();
-  const { emailForVerification, sessionId, setAuthState, setVerificationData, clearVerificationData } = useAuthStore();
+  const { emailForVerification, sessionId, setAuthState, setVerificationData } = useAuthStore();
   const setError = useErrorStore((s) => s.setError);
   const clearError = useErrorStore((s) => s.clearError);
 
@@ -39,11 +39,14 @@ const VerifyEmail: React.FC<Props> = ({ onClose }) => {
 
       if (res.status === 200) {
         setSuccess("E-mail został zweryfikowany!");
-        setAuthState({ email: emailForVerification });
-        // clear verification data and close modal
-        clearVerificationData();
-        onClose?.();
-        navigate("/");
+        // Simulate login flow after email verification
+        setAuthState({
+          email: emailForVerification,
+          username: undefined, // Ensure username is undefined
+          emailConfirmed: true,
+          needsUsernameSetup: true,
+        });
+        navigate('/lobby');
       }
     } catch (err: any) {
       if (err.response) {
@@ -91,45 +94,45 @@ const VerifyEmail: React.FC<Props> = ({ onClose }) => {
 
   // Overlay + white rounded card for modal content
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
       <div className="relative w-full max-w-md mx-4">
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
+        <div className="bg-card rounded-lg shadow-lg p-6 border border-border">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="mb-1 text-xl font-semibold text-gray-900 dark:text-white">Potwierdź swój adres e-mail</h3>
-              <p className="text-sm text-gray-500">Wpisz kod wysłany na <strong>{emailForVerification}</strong></p>
+              <h3 className="mb-1 text-xl font-semibold text-card-foreground">Potwierdź swój adres e-mail</h3>
+              <p className="text-sm text-muted-foreground">Wpisz kod wysłany na <strong>{emailForVerification}</strong></p>
             </div>
             <button
               aria-label="Zamknij"
               onClick={() => {
                 onClose?.();
               }}
-              className="text-gray-500 hover:text-gray-700 ml-4"
+              className="text-muted-foreground hover:text-card-foreground ml-4"
             >
               ×
             </button>
           </div>
 
-          {success && <p className="text-green-600 mb-2 text-sm">{success}</p>}
+          {success && <p className="text-green-600 dark:text-green-400 mb-2 text-sm">{success}</p>}
 
           <input
             type="text"
             value={codeInput}
             onChange={(e) => setCodeInput(e.target.value)}
             placeholder="Wpisz kod weryfikacyjny"
-            className="w-full my-4 p-2 border rounded-lg text-center focus:ring-primary focus:border-primary"
+            className="w-full my-4 p-2 rounded-lg text-center bg-input text-card-foreground border border-gray-700 focus:ring-0 focus:border-gray-700"
           />
 
           <div className="space-y-3">
             <button
               onClick={handleVerify}
               disabled={loading}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium rounded-lg py-2.5"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg py-2.5"
             >
               {loading ? "Sprawdzanie..." : "Potwierdź e-mail"}
             </button>
 
-            <button onClick={handleResendCode} className="w-full text-sm border rounded-lg py-2 text-muted-foreground">
+            <button onClick={handleResendCode} className="w-full text-sm rounded-lg py-2 text-muted-foreground">
               Wyślij kod ponownie
             </button>
           </div>

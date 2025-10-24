@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useTranslation } from 'react-i18next';
+import { customAxios } from '../api/customAxios';
+import { useErrorStore } from '../store/errorStore';
+
+// import { useAuthStore } from '../store/authStore'; // Będziemy tego potrzebować do logowania
 
 // Interfejs dla danych logowania
 interface LoginData {
@@ -9,8 +13,9 @@ interface LoginData {
 }
 
 const Login: React.FC = () => {
+  // const setAuthState = useAuthStore(state => state.setAuthState); // Do integracji z Zustand
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setAuthState, confirmEmail } = useAuthStore();
 
   // 1. Stan przechowujący dane logowania
   const [formData, setFormData] = useState<LoginData>({
@@ -26,61 +31,37 @@ const Login: React.FC = () => {
     });
   };
 
+  const errorStoreSetError = useErrorStore((s) => s.setError);
+
   // 3. Szkielet funkcji obsługującej logowanie
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Dane do logowania:', formData);
 
-    // Symulacja udanego logowania
-    // W prawdziwej aplikacji sprawdzałbyś dane z API
-    
-    // Symulacja: sprawdź czy użytkownik już ma username
-    const isFirstLogin = true; // Symulacja - w API sprawdzasz czy user.username jest null
-    
-    if (isFirstLogin) {
-      // Pierwszy login - ustaw dane użytkownika i pokaż popup wyboru nazwy
-      const userPayload = {
-        email: formData.email,
-        emailConfirmed: true,
-        needsUsernameSetup: true,
-      };
-      setAuthState(userPayload);
-      
-      // Pokaż popup wyboru nazwy użytkownika
-      setTimeout(() => {
-        confirmEmail(); // To pokaże popup
-      }, 500);
-    } else {
-      // Zwykły login - użytkownik już ma wszystkie dane
-      const userPayload = {
-        email: formData.email,
-        username: 'ExistingUser', // Z API
-        emailConfirmed: true,
-        needsUsernameSetup: false,
-      };
-      setAuthState(userPayload);
+    try {
+      const response = await customAxios.post('/auth/login', formData);
+      console.log('Login successful:', response.data);
+      errorStoreSetError(null); // Clear error on success
+      navigate('/lobby'); // Navigate to the lobby on success
+    } catch (err: any) {
+      if (err.response && err.response.data.key) {
+        errorStoreSetError(`errors.login.${err.response.data.key}`);
+      } else {
+        errorStoreSetError('errors.unknown_error');
+      }
     }
-
-    // Przekieruj do lobby
-    navigate('/lobby'); 
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="w-full max-w-md p-6 bg-card rounded-lg shadow sm:p-8 border border-border">
-                {/* Tytuł */}
-  <h2 className="text-3xl font-bold text-center text-card-foreground mb-4">Zaloguj się</h2>
-    {/* Podtytuł */}
-    <p className="text-base text-muted-foreground mb-6 text-center">Witaj ponownie! Zaloguj się aby kontynuować</p>
-      <form className="space-y-6 w-full" onSubmit={handleSubmit}>
+        <h2 className="text-3xl font-bold text-center text-card-foreground mb-4">{t('login.title', 'Zaloguj się')}</h2>
+        <p className="text-base text-muted-foreground mb-6 text-center">{t('login.subtitle', 'Witaj ponownie! Zaloguj się aby kontynuować')}</p>
 
-          {/* POLE: ADRES EMAIL (Zmienione, aby akceptować tylko email) */}
+        <form className="space-y-6 w-full" onSubmit={handleSubmit} noValidate>
           <div className="w-full">
-            <label
-              htmlFor="email"
-              className="block mb-2 text-sm font-medium text-card-foreground"
-            >
-              Adres Email
+            <label htmlFor="email" className="block mb-2 text-sm font-medium text-card-foreground">
+              {t('login.email', 'Adres Email')}
             </label>
             <input
               type="email"
@@ -94,13 +75,9 @@ const Login: React.FC = () => {
             />
           </div>
 
-          {/* POLE: HASŁO */}
           <div className="w-full">
-            <label
-              htmlFor="password"
-              className="block mb-2 text-sm font-medium text-card-foreground"
-            >
-              Hasło
+            <label htmlFor="password" className="block mb-2 text-sm font-medium text-card-foreground">
+              {t('login.password', 'Hasło')}
             </label>
             <input
               type="password"
@@ -114,32 +91,27 @@ const Login: React.FC = () => {
             />
           </div>
 
-          {/* PRZYCISK: ZALOGUJ */}
           <button
             type="submit"
             className="w-full mt-2 mb-2 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center"
           >
-            Zaloguj się
-           </button>
+            {t('login.submit', 'Zaloguj się')}
+          </button>
 
           <div className="flex items-center justify-center mb-4">
             <hr className="flex-1 border-t border-muted-foreground" />
-            <span className="mx-2 text-muted-foreground">lub</span>
+            <span className="mx-2 text-muted-foreground">{t('login.or', 'lub')}</span>
             <hr className="flex-1 border-t border-muted-foreground" />
           </div>
 
-          {/* ODNOŚNIK DO REJESTRACJI */}
           <p className="text-sm font-light text-muted-foreground text-center">
-            Nie masz jeszcze konta? {' '}
-            <Link
-              to="/register"
-              className="font-medium text-primary hover:underline"
-            >
-              Zarejestruj się
+            {t('login.no_account', 'Nie masz jeszcze konta?')}{' '}
+            <Link to="/register" className="font-medium text-primary hover:underline">
+              {t('login.register', 'Zarejestruj się')}
             </Link>
           </p>
         </form>
-    </div>
+      </div>
     </div>
   );
 };

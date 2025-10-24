@@ -22,15 +22,23 @@ const UsernamePopup: React.FC = () => {
   if (!showUsernamePopup) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-lg p-8 max-w-md w-full border border-border shadow-xl">
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-lg p-8 max-w-md w-full border border-border shadow-xl relative">
+        <button
+          aria-label="Zamknij"
+          onClick={() => {
+            const randomSuffix = Math.random().toString(36).substring(2, 7);
+            setUsername(`Guest${randomSuffix}`);
+          }}
+          className="absolute top-4 right-4 text-muted-foreground hover:text-card-foreground"
+        >
+          ×
+        </button>
+
         <h2 className="text-2xl font-bold text-card-foreground text-center mb-6">
           Wybierz swoją nazwę użytkownika
         </h2>
         
-        <p className="text-muted-foreground text-center mb-6">
-          Email został potwierdzony! Teraz wybierz unikalną nazwę użytkownika.
-        </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

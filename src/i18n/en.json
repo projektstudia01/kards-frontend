@@ -10,7 +10,8 @@
       "validation_error": "Invalid registration data.",
       "RECORD_ALREADY_EXISTS": "An account with this email already exists.",
       "internal_server_error": "Server error during registration.",
-      "password_mismatch": "Passwords do not match."
+      "password_mismatch": "Passwords do not match.",
+      "password_too_short": "Password must be at least 8 characters long."
     },
     "verify": {
       "invalid_verification_code": "Invalid code or session has expired.",
