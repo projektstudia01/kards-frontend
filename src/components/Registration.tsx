@@ -4,7 +4,9 @@ import { Link } from "react-router-dom";
 import VerifyEmail from "./VerifyEmail";
 import { useAuthStore } from "../store/authStore";
 import { useErrorStore } from "../store/errorStore";
-import { customAxios } from "../api/customAxios";
+import { register } from "../api";
+import { toast } from "sonner";
+import { t } from "i18next";
 
 interface RegistrationData {
   email: string;
@@ -16,8 +18,7 @@ const Registration: React.FC = () => {
   const setVerificationData = useAuthStore((s) => s.setVerificationData);
   const emailForVerification = useAuthStore((s) => s.emailForVerification);
   const clearVerificationData = useAuthStore((s) => s.clearVerificationData);
-  const setError = useErrorStore((s) => s.setError);
-  const clearError = useErrorStore((s) => s.clearError);
+  const [sessionId, setSessionId] = useState<string>("");
 
   const [formData, setFormData] = useState<RegistrationData>({
     email: "",
@@ -32,48 +33,35 @@ const Registration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
-
     // walidacja lokalna: hasła muszą być takie same i mieć co najmniej 8 znaków
     if (formData.password !== formData.confirmPassword) {
-      setError("errors.register.password_mismatch");
+      toast.error(t("errors.register.password_mismatch"));
+
       return;
     }
 
     if (formData.password.length < 8) {
-      setError("errors.register.password_too_short");
+      toast.error(t("errors.register.password_too_short"));
       return;
     }
 
     setLoading(true);
-    try {
-      // POST do /auth/register
-      const res = await customAxios.post("/auth/register", {
-        email: formData.email,
-        password: formData.password,
-      });
-
-      const { sessionId, code } = res.data.data;
-
-      // zapis do Zustand, aby VerifyEmail mógł użyć tych danych
-      setVerificationData({
-        email: formData.email,
-        sessionId,
-        code,
-      });
-
-      // Do not log in the user yet; wait for email verification
-    } catch (err: any) {
-      if (err.response) {
-        const { key } = err.response.data;
-        // klucz z API → i18n, fallback "unknown_error"
-        setError(key ? `errors.register.${key}` : "errors.unknown_error");
-      } else {
-        setError("errors.network_error");
-      }
-    } finally {
+    const res = await register(formData.email, formData.password);
+    if (res.isError) {
+      toast.error(t(res.key));
       setLoading(false);
+      return;
     }
+
+    const { sessionId, code } = res.data;
+    setSessionId(sessionId);
+    setVerificationData({
+      email: formData.email,
+      sessionId,
+      code,
+    });
+
+    setLoading(false);
   };
 
   return (
@@ -172,6 +160,7 @@ const Registration: React.FC = () => {
       {/* Jeśli mamy dane w store — pokaż popup VerifyEmail nad stroną rejestracji */}
       {emailForVerification && (
         <VerifyEmail
+          sessionId={sessionId}
           onClose={() => {
             clearVerificationData();
           }}

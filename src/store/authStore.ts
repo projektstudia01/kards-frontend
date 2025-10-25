@@ -3,9 +3,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface UserData {
+  id: string;
   username?: string;
   email: string;
-  emailConfirmed?: boolean;
   needsUsernameSetup?: boolean;
 }
 
@@ -73,7 +73,12 @@ export const useAuthStore = create<AuthState>()(
         set((state) => {
           return {
             user: state.user
-              ? { ...state.user, emailConfirmed: true, needsUsernameSetup: true, username: undefined }
+              ? {
+                  ...state.user,
+                  emailConfirmed: true,
+                  needsUsernameSetup: true,
+                  username: undefined,
+                }
               : null,
             showUsernamePopup: true, // Ensure popup is triggered
           };
@@ -88,7 +93,7 @@ export const useAuthStore = create<AuthState>()(
           code: null,
           showUsernamePopup: false,
         });
-        localStorage.removeItem('auth-storage'); // Clear persisted auth state
+        localStorage.removeItem("auth-storage"); // Clear persisted auth state
       },
     }),
     {

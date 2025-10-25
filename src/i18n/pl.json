@@ -1,6 +1,7 @@
 {
   "errors": {
     "network_error": "Błąd sieci – sprawdź połączenie.",
+    "internal_server_error": "Błąd wewnętrzny serwera – spróbuj ponownie później.",
     "server_error": "Wewnętrzny błąd serwera.",
     "unknown_error": "Nieznany błąd. Spróbuj ponownie.",
     "auth": {
@@ -19,7 +20,6 @@
       "user_already_verified": "Ten adres e-mail jest już zweryfikowany.",
       "validation_error": "Błąd walidacji danych.",
       "missing_session": "Brak aktywnej sesji weryfikacyjnej lub wygasła."
-
     },
     "login": {
       "WRONG_CREDENTIALS": "Nieprawidłowy e-mail lub hasło.",

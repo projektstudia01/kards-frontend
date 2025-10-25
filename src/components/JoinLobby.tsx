@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useErrorStore } from '../store/errorStore';
-import { useLobbyAPI } from '../hooks/useLobbyAPI';
-import type { LobbySettings } from '../types/lobby';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useErrorStore } from "../store/errorStore";
+import { useLobbyAPI } from "../hooks/useLobbyAPI";
+import type { LobbySettings } from "../types/lobby";
 
 const JoinLobby: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { getPublicLobbies, joinLobby } = useLobbyAPI();
   const setError = useErrorStore((state) => state.setError);
-  
-  const [activeTab, setActiveTab] = useState<'public' | 'invite'>('public');
-  const [inviteCode, setInviteCode] = useState('');
+
+  const [activeTab, setActiveTab] = useState<"public" | "invite">("public");
+  const [inviteCode, setInviteCode] = useState("");
   const [qrScannerActive, setQrScannerActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [publicLobbies, setPublicLobbies] = useState<LobbySettings[]>([]);
 
   // Sprawdź czy jest kod zaproszenia w URL
   useEffect(() => {
-    const inviteToken = searchParams.get('invite');
+    const inviteToken = searchParams.get("invite");
     if (inviteToken) {
-      setActiveTab('invite');
+      setActiveTab("invite");
       setInviteCode(inviteToken);
     }
   }, [searchParams]);
@@ -32,12 +32,12 @@ const JoinLobby: React.FC = () => {
         const lobbies = await getPublicLobbies();
         setPublicLobbies(lobbies);
       } catch (error) {
-        console.error('Error fetching public lobbies:', error);
-        setError('lobby.errors.fetch_failed');
+        console.error("Error fetching public lobbies:", error);
+        setError("lobby.errors.fetch_failed");
       }
     };
 
-    if (activeTab === 'public') {
+    if (activeTab === "public") {
       fetchPublicLobbies();
     }
   }, [activeTab, getPublicLobbies, setError]);
@@ -46,11 +46,11 @@ const JoinLobby: React.FC = () => {
     setIsLoading(true);
     try {
       const result = await joinLobby({ lobbyId });
-      console.log('Joined lobby:', result);
+      console.log("Joined lobby:", result);
       navigate(`/lobby/${lobbyId}`);
     } catch (error) {
-      console.error('Error joining lobby:', error);
-      setError('lobby.errors.join_failed');
+      console.error("Error joining lobby:", error);
+      setError("lobby.errors.join_failed");
     } finally {
       setIsLoading(false);
     }
@@ -58,18 +58,18 @@ const JoinLobby: React.FC = () => {
 
   const handleJoinWithInvite = async () => {
     if (!inviteCode.trim()) {
-      setError('lobby.errors.invite_required');
+      setError("lobby.errors.invite_required");
       return;
     }
 
     setIsLoading(true);
     try {
       const result = await joinLobby({ invitationToken: inviteCode });
-      console.log('Joined with invite:', result);
+      console.log("Joined with invite:", result);
       navigate(`/lobby/${result.lobby.id}`);
     } catch (error) {
-      console.error('Error joining with invite:', error);
-      setError('lobby.errors.invalid_invite');
+      console.error("Error joining with invite:", error);
+      setError("lobby.errors.invalid_invite");
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +80,7 @@ const JoinLobby: React.FC = () => {
     // TODO: Implementacja skanera QR
     // Na razie symulacja
     setTimeout(() => {
-      const mockQrCode = 'invite123456';
+      const mockQrCode = "invite123456";
       setInviteCode(mockQrCode);
       setQrScannerActive(false);
       setError(null);
@@ -92,28 +92,32 @@ const JoinLobby: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-4">Dołącz do gry</h1>
-          <p className="text-muted-foreground">Wybierz sposób dołączenia do rozgrywki</p>
+          <h1 className="text-4xl font-bold text-primary mb-4">
+            Dołącz do gry
+          </h1>
+          <p className="text-muted-foreground">
+            Wybierz sposób dołączenia do rozgrywki
+          </p>
         </div>
 
         {/* Tabs */}
         <div className="flex mb-8">
           <button
-            onClick={() => setActiveTab('public')}
+            onClick={() => setActiveTab("public")}
             className={`flex-1 py-3 px-6 font-medium rounded-t-lg border-b-2 transition-colors ${
-              activeTab === 'public'
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-card text-card-foreground border-border hover:bg-accent'
+              activeTab === "public"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card text-card-foreground border-border hover:bg-accent"
             }`}
           >
             🌍 Publiczne lobby
           </button>
           <button
-            onClick={() => setActiveTab('invite')}
+            onClick={() => setActiveTab("invite")}
             className={`flex-1 py-3 px-6 font-medium rounded-t-lg border-b-2 transition-colors ${
-              activeTab === 'invite'
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-card text-card-foreground border-border hover:bg-accent'
+              activeTab === "invite"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card text-card-foreground border-border hover:bg-accent"
             }`}
           >
             🎫 Kod zaproszenia
@@ -121,16 +125,20 @@ const JoinLobby: React.FC = () => {
         </div>
 
         {/* Public Lobbies Tab */}
-        {activeTab === 'public' && (
+        {activeTab === "public" && (
           <div className="bg-card rounded-lg p-6 border border-border">
-            <h2 className="text-xl font-bold text-card-foreground mb-6">Dostępne lobby publiczne</h2>
-            
+            <h2 className="text-xl font-bold text-card-foreground mb-6">
+              Dostępne lobby publiczne
+            </h2>
+
             {publicLobbies.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-4xl mb-4">🎮</div>
-                <p className="text-muted-foreground mb-4">Brak dostępnych lobby publicznych</p>
+                <p className="text-muted-foreground mb-4">
+                  Brak dostępnych lobby publicznych
+                </p>
                 <button
-                  onClick={() => navigate('/create-lobby')}
+                  onClick={() => navigate("/create-lobby")}
                   className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
                 >
                   Stwórz nowe lobby
@@ -138,7 +146,7 @@ const JoinLobby: React.FC = () => {
               </div>
             ) : (
               <div className="grid gap-4">
-                {publicLobbies.map(lobby => (
+                {publicLobbies.map((lobby) => (
                   <div
                     key={lobby.id}
                     className="border border-border rounded-lg p-6 hover:bg-accent transition-colors"
@@ -149,7 +157,9 @@ const JoinLobby: React.FC = () => {
                           {lobby.name}
                         </h3>
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span>👥 {lobby.currentPlayers}/{lobby.maxPlayers} graczy</span>
+                          <span>
+                            👥 {lobby.currentPlayers}/{lobby.maxPlayers} graczy
+                          </span>
                           <span>🎴 {lobby.selectedDecks.length} talii</span>
                           <span className="flex items-center">
                             <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
@@ -159,10 +169,14 @@ const JoinLobby: React.FC = () => {
                       </div>
                       <button
                         onClick={() => handleJoinPublicLobby(lobby.id)}
-                        disabled={isLoading || lobby.currentPlayers >= lobby.maxPlayers}
+                        disabled={
+                          isLoading || lobby.currentPlayers >= lobby.maxPlayers
+                        }
                         className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {lobby.currentPlayers >= lobby.maxPlayers ? 'Pełne' : 'Dołącz'}
+                        {lobby.currentPlayers >= lobby.maxPlayers
+                          ? "Pełne"
+                          : "Dołącz"}
                       </button>
                     </div>
                   </div>
@@ -173,10 +187,12 @@ const JoinLobby: React.FC = () => {
         )}
 
         {/* Invite Tab */}
-        {activeTab === 'invite' && (
+        {activeTab === "invite" && (
           <div className="bg-card rounded-lg p-6 border border-border">
-            <h2 className="text-xl font-bold text-card-foreground mb-6">Dołącz z kodem zaproszenia</h2>
-            
+            <h2 className="text-xl font-bold text-card-foreground mb-6">
+              Dołącz z kodem zaproszenia
+            </h2>
+
             <div className="space-y-6">
               {/* Manual Code Input */}
               <div>
@@ -196,7 +212,7 @@ const JoinLobby: React.FC = () => {
                     disabled={isLoading || !inviteCode.trim()}
                     className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? 'Łączenie...' : 'Dołącz'}
+                    {isLoading ? "Łączenie..." : "Dołącz"}
                   </button>
                 </div>
               </div>
@@ -211,11 +227,13 @@ const JoinLobby: React.FC = () => {
                   <p className="text-muted-foreground mb-4">
                     Użyj kamery telefonu aby zeskanować kod QR z zaproszeniem
                   </p>
-                  
+
                   {qrScannerActive ? (
                     <div className="bg-accent rounded-lg p-8 mb-4">
                       <div className="text-4xl mb-2">📷</div>
-                      <p className="text-muted-foreground">Skanowanie kodu QR...</p>
+                      <p className="text-muted-foreground">
+                        Skanowanie kodu QR...
+                      </p>
                     </div>
                   ) : (
                     <button
@@ -235,7 +253,7 @@ const JoinLobby: React.FC = () => {
         {/* Back Button */}
         <div className="mt-8 text-center">
           <button
-            onClick={() => navigate('/welcome')}
+            onClick={() => navigate("/welcome")}
             className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/90 transition-colors"
           >
             ← Powrót do menu głównego

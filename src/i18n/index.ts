@@ -14,10 +14,13 @@ i18n
       en: { translation: enJSON },
       pl: { translation: plJSON },
     },
+    fallbackLng: "en",
+    defaultNS: "translation",
 
-    fallbackLng: 'en',
-    defaultNS: 'translation',
     interpolation: { escapeValue: false },
+    // parseMissingKeyHandler: () => {
+    //   return i18n.t("errors.internal_server_error");
+    // },
   });
 
 export default i18n;
