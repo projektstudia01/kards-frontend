@@ -46,7 +46,7 @@ const VerifyEmail: React.FC<Props> = ({ onClose }) => {
           emailConfirmed: true,
           needsUsernameSetup: true,
         });
-        navigate('/lobby');
+        navigate('/welcome');
       }
     } catch (err: any) {
       if (err.response) {

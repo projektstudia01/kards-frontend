@@ -42,7 +42,7 @@ const Login: React.FC = () => {
       const response = await customAxios.post('/auth/login', formData);
       console.log('Login successful:', response.data);
       errorStoreSetError(null); // Clear error on success
-      navigate('/lobby'); // Navigate to the lobby on success
+      navigate('/welcome'); // Navigate to the welcome page on success
     } catch (err: any) {
       if (err.response && err.response.data.key) {
         errorStoreSetError(`errors.login.${err.response.data.key}`);
