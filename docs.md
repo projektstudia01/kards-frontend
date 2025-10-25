@@ -168,10 +168,10 @@ Dodatkowo dostajemy cookiesa
     "key": "email_not_verified"
 }`
 
-## auth/logout
+## POST auth/logout
 Usuwa cookiesa i czyści sesje, trzeba być zalogowanym
 
-## auth/set-nickname
+## PUT auth/set-nickname
 
 ### body: 
 `
