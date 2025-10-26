@@ -23,7 +23,8 @@
     },
     "login": {
       "WRONG_CREDENTIALS": "Nieprawidłowy e-mail lub hasło.",
-      "email_not_verified": "Adres e-mail nie został jeszcze zweryfikowany."
+      "email_not_verified": "Adres e-mail nie został jeszcze zweryfikowany.",
+      "validation_error": "Błąd walidacji. Sprawdź wprowadzone dane."
     }
   }
 }

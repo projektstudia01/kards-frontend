@@ -1,6 +1,7 @@
 {
   "errors": {
     "network_error": "Network error – please check your connection.",
+    "internal_server_error": "Internal server error – please try again later.",
     "server_error": "Internal server error.",
     "unknown_error": "Unknown error. Please try again.",
     "auth": {
@@ -22,7 +23,8 @@
     },
     "login": {
       "WRONG_CREDENTIALS": "Incorrect email or password.",
-      "email_not_verified": "Email address has not been verified yet."
+      "email_not_verified": "Email address has not been verified yet.",
+      "validation_error": "Validation error. Please check your input."
     }
   }
 }

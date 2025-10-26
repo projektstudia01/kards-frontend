@@ -31,33 +31,37 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
     }
 
     setLoading(true);
-    const res = await verifyEmail(codeInput, emailForVerification, sessionId);
-
-    setSuccess("E-mail został zweryfikowany!");
-    // Simulate login flow after email verification
-    if (res.isError) {
-      toast.error(t(res.key));
+    try {
+      const res = await verifyEmail(codeInput, emailForVerification, sessionId);
+      if (res.isError) {
+        toast.error(t(`errors.verify.${res.key}`) || t("errors.unknown_error"));
+        return;
+      }
+      setSuccess(t("success.verify.email_verified"));
+    } catch (error) {
+      toast.error(t("errors.server_error"));
+    } finally {
       setLoading(false);
-      return;
     }
-    setLoading(false);
   };
 
   const handleResendCode = async () => {
     setSuccess(null);
-
-    const res = await resendVerificationCode(emailForVerification!);
-
-    const { sessionId: newSessionId, code: newCode } = res.data;
-    setVerificationData({
-      email: emailForVerification!,
-      sessionId: newSessionId,
-      code: newCode,
-    });
-    setSuccess("Nowy kod został wysłany na adres e-mail.");
-    if (res.isError) {
-      toast.error(t(res.key));
-      return;
+    try {
+      const res = await resendVerificationCode(emailForVerification!);
+      if (res.isError) {
+        toast.error(t(`errors.verify.${res.key}`) || t("errors.unknown_error"));
+        return;
+      }
+      const { sessionId: newSessionId, code: newCode } = res.data;
+      setVerificationData({
+        email: emailForVerification!,
+        sessionId: newSessionId,
+        code: newCode,
+      });
+      setSuccess(t("success.verify.code_resent"));
+    } catch (error) {
+      toast.error(t("errors.network_error"));
     }
   };
 
@@ -73,6 +77,8 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
       useAuthStore.getState().code
     );
   }, [emailForVerification, sessionId]);
+
+  const isCodeValid = codeInput.trim().length >= 6;
 
   // Overlay + white rounded card for modal content
   return (
@@ -116,8 +122,8 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
           <div className="space-y-3">
             <button
               onClick={handleVerify}
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg py-2.5"
+              disabled={!isCodeValid || loading}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Sprawdzanie..." : "Potwierdź e-mail"}
             </button>
