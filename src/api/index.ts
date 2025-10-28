@@ -85,8 +85,14 @@ export const resendVerificationCode = async (email: string) => {
     const data = await customAxios.post("/auth/resend-verification-code", {
       email,
     });
-    return data.data.data;
+    return {
+      isError: false,
+      data: data.data.data,
+    };
   } catch (error) {
-    return axiosErrorHandler(error);
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
   }
 };

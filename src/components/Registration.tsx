@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import VerifyEmail from "./VerifyEmail";
 import { useAuthStore } from "../store/authStore";
-import { useErrorStore } from "../store/errorStore";
 import { register } from "../api";
 import { toast } from "sonner";
 import { t } from "i18next";
@@ -33,36 +32,44 @@ const Registration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // walidacja lokalna: hasła muszą być takie same i mieć co najmniej 8 znaków
+    // Validate passwords
     if (formData.password !== formData.confirmPassword) {
-      toast.error(t("errors.register.password_mismatch"));
-
+      toast.error(t('errors.register.password_mismatch'));
       return;
     }
 
     if (formData.password.length < 8) {
-      toast.error(t("errors.register.password_too_short"));
+      toast.error(t('errors.register.password_too_short'));
       return;
     }
 
     setLoading(true);
-    const res = await register(formData.email, formData.password);
-    if (res.isError) {
-      toast.error(t(res.key));
+    try {
+      const res = await register(formData.email, formData.password);
+      if (res.isError) {
+        toast.error(t(`errors.register.${res.key}`) || t('errors.unknown_error'));
+        setLoading(false);
+        return;
+      }
+
+      const { sessionId, code } = res.data;
+      setSessionId(sessionId);
+      setVerificationData({
+        email: formData.email,
+        sessionId,
+        code,
+      });
+    } catch (error) {
+      toast.error(t('errors.server_error'));
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { sessionId, code } = res.data;
-    setSessionId(sessionId);
-    setVerificationData({
-      email: formData.email,
-      sessionId,
-      code,
-    });
-
-    setLoading(false);
   };
+
+  const isFormValid =
+    formData.email.includes("@") &&
+    formData.password.length >= 8 &&
+    formData.confirmPassword.length >= 8;
 
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -134,8 +141,8 @@ const Registration: React.FC = () => {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full my-6 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            disabled={!isFormValid || loading}
+            className="w-full my-6 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Tworzenie konta..." : "Utwórz Konto"}
           </button>

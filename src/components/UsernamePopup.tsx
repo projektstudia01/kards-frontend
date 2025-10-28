@@ -20,6 +20,8 @@ const UsernamePopup: React.FC = () => {
     setIsSubmitting(false);
   };
 
+  const isUsernameValid = username.trim().length >= 3;
+
   if (!showUsernamePopup) return null;
 
   return (
@@ -67,7 +69,7 @@ const UsernamePopup: React.FC = () => {
 
           <button
             type="submit"
-            disabled={isSubmitting || !username.trim()}
+            disabled={!isUsernameValid || isSubmitting}
             className="w-full text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Zapisuję..." : "Potwierdź nazwę"}
