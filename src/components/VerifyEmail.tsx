@@ -34,7 +34,12 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
     try {
       const res = await verifyEmail(codeInput, emailForVerification, sessionId);
       if (res.isError) {
-        toast.error(t(`errors.verify.${res.key}`) || t("errors.unknown_error"));
+        console.log("Debug - Verification error key:", res.key); // Log the error key
+        if (res.key === "invalid_verification_code") {
+          toast.error(t("errors.verify.invalid_verification_code"));
+        } else {
+          toast.error(t(`errors.verify.${res.key}`) || t("errors.unknown_error"));
+        }
         return;
       }
       setSuccess(t("success.verify.email_verified"));
@@ -50,7 +55,8 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
     try {
       const res = await resendVerificationCode(emailForVerification!);
       if (res.isError) {
-        toast.error(t(`errors.verify.${res.key}`) || t("errors.unknown_error"));
+        const errorKey = res.error?.key;
+        toast.error(t(`errors.verify.${errorKey}`) || t("errors.unknown_error"));
         return;
       }
       const { sessionId: newSessionId, code: newCode } = res.data;
@@ -59,7 +65,7 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
         sessionId: newSessionId,
         code: newCode,
       });
-      setSuccess(t("success.verify.code_resent"));
+      toast.success(t("success.verify.code_resent")); // Display success message in toast
     } catch (error) {
       toast.error(t("errors.network_error"));
     }

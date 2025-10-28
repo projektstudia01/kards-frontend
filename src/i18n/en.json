@@ -26,5 +26,10 @@
       "email_not_verified": "Email address has not been verified yet.",
       "validation_error": "Validation error. Please check your input."
     }
+  },
+  "success": {
+    "verify": {
+      "code_resent": "Verification code has been resent successfully."
+    }
   }
 }

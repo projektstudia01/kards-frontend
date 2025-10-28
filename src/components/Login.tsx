@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { customAxios } from '../api/customAxios';
 import { useErrorStore } from '../store/errorStore';
 import { toast } from 'sonner';
-
-// import { useAuthStore } from '../store/authStore'; // Będziemy tego potrzebować do logowania
+import { useAuthStore } from '../store/authStore'; // Import authStore
+import VerifyEmail from './VerifyEmail'; // Import VerifyEmail component
 
 // Interfejs dla danych logowania
 interface LoginData {
@@ -14,9 +14,13 @@ interface LoginData {
 }
 
 const Login: React.FC = () => {
-  // const setAuthState = useAuthStore(state => state.setAuthState); // Do integracji z Zustand
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const setAuthState = useAuthStore((state) => state.setAuthState); // Access authStore
+  const setVerificationData = useAuthStore((state) => state.setVerificationData); // Access authStore for verification data
+  const emailForVerification = useAuthStore((state) => state.emailForVerification);
+  const clearVerificationData = useAuthStore((state) => state.clearVerificationData);
+  const sessionId = useAuthStore((state) => state.sessionId); // Access sessionId from authStore
 
   // 1. Stan przechowujący dane logowania
   const [formData, setFormData] = useState<LoginData>({
@@ -40,11 +44,37 @@ const Login: React.FC = () => {
     try {
       const response = await customAxios.post('/auth/login', formData);
       console.log('Login successful:', response.data);
+
+      // Map backend response to authStore's expected structure
+      setAuthState({
+        id: response.data.userId, // Map userId to id
+        email: formData.email,
+      });
+
+      // Navigate to the Welcome page on successful login
+      navigate('/Welcome');
+
       errorStoreSetError(null); // Clear error on success
-      navigate('/lobby'); // Navigate to the lobby on success
     } catch (err: any) {
-      if (err.response && err.response.data.key) {
-        toast.error(t(`errors.login.${err.response.data.key}`) || t('errors.unknown_error'));
+      if (err.response) {
+        console.log('Debug - Full error response:', err.response.data); // Log full backend response
+        const errorKey = err.response.data.key;
+        if (errorKey === 'email_not_verified') {
+          // Set verification data with placeholder sessionId
+          setVerificationData({
+            email: formData.email,
+            sessionId: 'placeholder-session-id', // Use a placeholder value
+            code: '', // Use an empty string for code
+          });
+
+          // Debugging logs
+          console.log('Debug - emailForVerification:', emailForVerification);
+          console.log('Debug - sessionId:', sessionId);
+        } else if (errorKey) {
+          toast.error(t(`errors.login.${errorKey}`) || t('errors.unknown_error'));
+        } else {
+          toast.error(t('errors.network_error'));
+        }
       } else {
         toast.error(t('errors.network_error'));
       }
@@ -115,6 +145,14 @@ const Login: React.FC = () => {
           </p>
         </form>
       </div>
+      {emailForVerification && sessionId && (
+        <VerifyEmail
+          sessionId={sessionId} // Use sessionId from authStore
+          onClose={() => {
+            clearVerificationData();
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -26,5 +26,10 @@
       "email_not_verified": "Adres e-mail nie został jeszcze zweryfikowany.",
       "validation_error": "Błąd walidacji. Sprawdź wprowadzone dane."
     }
+  },
+  "success": {
+    "verify": {
+      "code_resent": "Kod weryfikacyjny został wysłany ponownie."
+    }
   }
 }
