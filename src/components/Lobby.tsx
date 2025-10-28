@@ -10,6 +10,7 @@ const Lobby: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  //Podmianka na toaster
   const setError = useErrorStore((state) => state.setError);
   const { getLobby, generateInvitation, leaveLobby, startGame } = useLobbyAPI();
 

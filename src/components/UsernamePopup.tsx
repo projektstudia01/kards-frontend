@@ -16,7 +16,7 @@ const UsernamePopup: React.FC = () => {
     // Symulacja API call
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    setUsername(username);
+    setUsername(userName);
     setIsSubmitting(false);
   };
 
