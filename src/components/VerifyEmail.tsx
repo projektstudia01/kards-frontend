@@ -15,7 +15,7 @@ type Props = {
 const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { emailForVerification, setAuthState, setVerificationData } =
+  const { emailForVerification, setAuthState, setVerificationData, confirmEmail } =
     useAuthStore();
 
   const [codeInput, setCodeInput] = useState("");
@@ -43,6 +43,12 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
         return;
       }
       setSuccess(t("success.verify.email_verified"));
+      
+      // Trigger username popup after successful verification
+      confirmEmail();
+      
+      // Close the verification modal
+      onClose?.();
     } catch (error) {
       toast.error(t("errors.server_error"));
     } finally {

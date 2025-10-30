@@ -12,7 +12,10 @@
       "RECORD_ALREADY_EXISTS": "An account with this email already exists.",
       "internal_server_error": "Server error during registration.",
       "password_mismatch": "Passwords do not match.",
-      "password_too_short": "Password must be at least 8 characters long."
+      "password_too_short": "Password must be at least 8 characters long.",
+      "errors": {
+        "record_already_exists": "An account with this email already exists."
+      }
     },
     "verify": {
       "invalid_verification_code": "Invalid code or session has expired.",
