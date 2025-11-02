@@ -21,6 +21,8 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
   const [codeInput, setCodeInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const [cooldownSeconds, setCooldownSeconds] = useState(60);
+  const [canResend, setCanResend] = useState(false);
 
   const handleVerify = async () => {
     setSuccess(null);
@@ -57,7 +59,12 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
   };
 
   const handleResendCode = async () => {
+    if (!canResend) return;
+    
     setSuccess(null);
+    setCanResend(false);
+    setCooldownSeconds(60);
+    
     try {
       const res = await resendVerificationCode(emailForVerification!);
       if (res.isError) {
@@ -89,6 +96,18 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
       useAuthStore.getState().code
     );
   }, [emailForVerification, sessionId]);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldownSeconds > 0) {
+      const timer = setTimeout(() => {
+        setCooldownSeconds(cooldownSeconds - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [cooldownSeconds]);
 
   const isCodeValid = codeInput.trim().length >= 6;
 
@@ -142,9 +161,12 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
 
             <button
               onClick={handleResendCode}
-              className="w-full text-sm rounded-lg py-2 text-muted-foreground"
+              disabled={!canResend}
+              className="w-full text-sm rounded-lg py-2 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Wyślij kod ponownie
+              {canResend 
+                ? "Wyślij kod ponownie" 
+                : `Wyślij kod ponownie (${cooldownSeconds}s)`}
             </button>
           </div>
         </div>
