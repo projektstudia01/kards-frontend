@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import VerifyEmail from "./VerifyEmail";
-import { useAuthStore } from "../store/authStore";
 import { register } from "../api";
 import { toast } from "sonner";
 import { t } from "i18next";
@@ -14,9 +13,6 @@ interface RegistrationData {
 }
 
 const Registration: React.FC = () => {
-  const setVerificationData = useAuthStore((s) => s.setVerificationData);
-  const emailForVerification = useAuthStore((s) => s.emailForVerification);
-  const clearVerificationData = useAuthStore((s) => s.clearVerificationData);
   const [sessionId, setSessionId] = useState<string>("");
 
   const [formData, setFormData] = useState<RegistrationData>({
@@ -24,6 +20,7 @@ const Registration: React.FC = () => {
     password: "",
     confirmPassword: "",
   });
+  const [emailForVerification, setEmailForVerification] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,12 +31,12 @@ const Registration: React.FC = () => {
     e.preventDefault();
     // Validate passwords
     if (formData.password !== formData.confirmPassword) {
-      toast.error(t('errors.register.password_mismatch'));
+      toast.error(t("errors.register.password_mismatch"));
       return;
     }
 
     if (formData.password.length < 8) {
-      toast.error(t('errors.register.password_too_short'));
+      toast.error(t("errors.register.password_too_short"));
       return;
     }
 
@@ -47,20 +44,18 @@ const Registration: React.FC = () => {
     try {
       const res = await register(formData.email, formData.password);
       if (res.isError) {
-        toast.error(t(`errors.register.${res.key}`) || t('errors.unknown_error'));
+        toast.error(
+          t(`errors.register.${res.key}`) || t("errors.unknown_error")
+        );
         setLoading(false);
         return;
       }
 
-      const { sessionId, code } = res.data;
+      const { sessionId } = res.data;
       setSessionId(sessionId);
-      setVerificationData({
-        email: formData.email,
-        sessionId,
-        code,
-      });
+      setEmailForVerification(formData.email);
     } catch (error) {
-      toast.error(t('errors.server_error'));
+      toast.error(t("errors.server_error"));
     } finally {
       setLoading(false);
     }
@@ -95,7 +90,7 @@ const Registration: React.FC = () => {
               id="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="imie@firma.pl"
+              placeholder="example@domain.pl"
               required
               className="bg-input border border-border text-card-foreground sm:text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 ring-ring"
             />
@@ -168,8 +163,10 @@ const Registration: React.FC = () => {
       {emailForVerification && (
         <VerifyEmail
           sessionId={sessionId}
+          emailForVerification={emailForVerification}
           onClose={() => {
-            clearVerificationData();
+            setEmailForVerification("");
+            setSessionId("");
           }}
         />
       )}

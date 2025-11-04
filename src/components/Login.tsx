@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { customAxios } from '../api/customAxios';
-import { useErrorStore } from '../store/errorStore';
-import { toast } from 'sonner';
-import { useAuthStore } from '../store/authStore'; // Import authStore
-import VerifyEmail from './VerifyEmail'; // Import VerifyEmail component
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { customAxios } from "../api/customAxios";
+import { toast } from "sonner";
+import { useAuthStore } from "../store/authStore"; // Import authStore
+import VerifyEmail from "./VerifyEmail"; // Import VerifyEmail component
 import { resendVerificationCode } from "../api";
 
 // Interfejs dla danych logowania
@@ -16,18 +15,9 @@ interface LoginData {
 
 const Login: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const setAuthState = useAuthStore((state) => state.setAuthState); // Access authStore
-  const setVerificationData = useAuthStore(
-    (state) => state.setVerificationData
-  ); // Access authStore for verification data
-  const emailForVerification = useAuthStore(
-    (state) => state.emailForVerification
-  );
-  const clearVerificationData = useAuthStore(
-    (state) => state.clearVerificationData
-  );
-  const sessionId = useAuthStore((state) => state.sessionId); // Access sessionId from authStore
+  const [emailForVerification, setEmailForVerification] = useState<string>("");
+  const [sessionId, setSessionId] = useState<string>("");
 
   // 1. Stan przechowujący dane logowania
   const [formData, setFormData] = useState<LoginData>({
@@ -43,8 +33,6 @@ const Login: React.FC = () => {
     });
   };
 
-  const errorStoreSetError = useErrorStore((s) => s.setError);
-
   // 3. Szkielet funkcji obsługującej logowanie
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,36 +45,19 @@ const Login: React.FC = () => {
         id: response.data.userId, // Map userId to id
         email: formData.email,
       });
-
-      // Navigate to the Welcome page on successful login
-      navigate("/Welcome");
-
-      errorStoreSetError(null); // Clear error on success
     } catch (err: any) {
-      if (err.response) {
-        console.log("Debug - Full error response:", err.response.data); // Log full backend response
-        const errorKey = err.response.data.key;
-        if (errorKey === "email_not_verified") {
-          // Set verification data with placeholder sessionId
-          const resendData = await resendVerificationCode(formData.email);
-          setVerificationData({
-            email: formData.email,
-            sessionId: resendData.data.sessionId, // Use the actual sessionId from the response
-            code: "", // Use an empty string for code
-          });
+      console.log("Debug - Full error response:", err.response.data); // Log full backend response
+      const errorKey = err.error?.key;
+      if (errorKey === "email_not_verified") {
+        // Set verification data with placeholder sessionId
+        const resendData = await resendVerificationCode(formData.email);
+        setEmailForVerification(formData.email);
+        setSessionId(resendData.data?.sessionId);
 
-          // Debugging logs
-          console.log("Debug - emailForVerification:", emailForVerification);
-          console.log("Debug - sessionId:", sessionId);
-        } else if (errorKey) {
-          toast.error(
-            t(`errors.login.${errorKey}`) || t("errors.unknown_error")
-          );
-        } else {
-          toast.error(t("errors.network_error"));
-        }
+        //TODO: dorobić klucz
+        toast.error(t("errors.login.email_not_verified"));
       } else {
-        toast.error(t("errors.network_error"));
+        toast.error(t(`errors.login.${errorKey}`) || t("errors.unknown_error"));
       }
     }
   };
@@ -172,9 +143,11 @@ const Login: React.FC = () => {
       </div>
       {emailForVerification && sessionId && (
         <VerifyEmail
-          sessionId={sessionId} // Use sessionId from authStore
+          sessionId={sessionId}
+          emailForVerification={emailForVerification}
           onClose={() => {
-            clearVerificationData();
+            setEmailForVerification("");
+            setSessionId("");
           }}
         />
       )}

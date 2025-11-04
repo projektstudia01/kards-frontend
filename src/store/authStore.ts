@@ -14,16 +14,9 @@ interface AuthState {
   user: UserData | null;
 
   emailForVerification: string | null;
-  sessionId: string | null;
   code: string | null;
 
   setAuthState: (user: UserData | null) => void;
-  setVerificationData: (data: {
-    email: string;
-    sessionId: string;
-    code: string;
-  }) => void;
-  clearVerificationData: () => void;
   showUsernamePopup: boolean;
   setUsername: (username: string) => void;
   confirmEmail: () => void;
@@ -45,20 +38,6 @@ export const useAuthStore = create<AuthState>()(
           isLoggedIn: !!user,
           user: user || null,
           showUsernamePopup: user?.needsUsernameSetup || false, // Ensure popup is shown if needed
-        }),
-
-      setVerificationData: ({ email, sessionId, code }) =>
-        set({
-          emailForVerification: email,
-          sessionId,
-          code,
-        }),
-
-      clearVerificationData: () =>
-        set({
-          emailForVerification: null,
-          sessionId: null,
-          code: null,
         }),
 
       setUsername: (username) =>
@@ -89,7 +68,6 @@ export const useAuthStore = create<AuthState>()(
           isLoggedIn: false,
           user: null,
           emailForVerification: null,
-          sessionId: null,
           code: null,
           showUsernamePopup: false,
         });

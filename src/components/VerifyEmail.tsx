@@ -9,48 +9,55 @@ import { resendVerificationCode, verifyEmail } from "../api";
 
 type Props = {
   sessionId: string;
-  onClose?: () => void;
+  emailForVerification: string;
+  onClose: () => void;
 };
 
-const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
+const VerifyEmail: React.FC<Props> = ({
+  sessionId,
+  emailForVerification,
+  onClose,
+}) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { emailForVerification, setAuthState, setVerificationData, confirmEmail } =
-    useAuthStore();
+  const { confirmEmail } = useAuthStore();
 
   const [codeInput, setCodeInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [cooldownSeconds, setCooldownSeconds] = useState(60);
+  const [newSessionId, setSessionId] = useState(sessionId);
   const [canResend, setCanResend] = useState(false);
 
   const handleVerify = async () => {
     setSuccess(null);
 
-    if (!emailForVerification || !sessionId) {
+    if (!emailForVerification || !newSessionId) {
       toast.error(t("errors.verify.missing_session"));
       return;
     }
 
     setLoading(true);
     try {
-      const res = await verifyEmail(codeInput, emailForVerification, sessionId);
+      const res = await verifyEmail(
+        codeInput,
+        emailForVerification,
+        newSessionId
+      );
+
       if (res.isError) {
-        console.log("Debug - Verification error key:", res.key); // Log the error key
-        if (res.key === "invalid_verification_code") {
-          toast.error(t("errors.verify.invalid_verification_code"));
-        } else {
-          toast.error(t(`errors.verify.${res.key}`) || t("errors.unknown_error"));
-        }
+        console.log("Debug - Verification error key:", res.error?.key); // Log the error key
+
+        toast.error(
+          t(`errors.verify.${res.error?.key}`) || t("errors.unknown_error")
+        );
         return;
       }
       setSuccess(t("success.verify.email_verified"));
-      
+
       // Trigger username popup after successful verification
       confirmEmail();
-      
+      onClose();
       // Close the verification modal
-      onClose?.();
     } catch (error) {
       toast.error(t("errors.server_error"));
     } finally {
@@ -60,25 +67,23 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
 
   const handleResendCode = async () => {
     if (!canResend) return;
-    
+
     setSuccess(null);
     setCanResend(false);
     setCooldownSeconds(60);
-    
+
     try {
       const res = await resendVerificationCode(emailForVerification!);
       if (res.isError) {
         const errorKey = res.error?.key;
-        toast.error(t(`errors.verify.${errorKey}`) || t("errors.unknown_error"));
+        toast.error(
+          t(`errors.verify.${errorKey}`) || t("errors.unknown_error")
+        );
         return;
       }
-      const { sessionId: newSessionId, code: newCode } = res.data;
-      setVerificationData({
-        email: emailForVerification!,
-        sessionId: newSessionId,
-        code: newCode,
-      });
-      toast.success(t("success.verify.code_resent")); // Display success message in toast
+      const { sessionId: newSessionId } = res.data;
+      setSessionId(newSessionId);
+      toast.success(t("success.verify.code_resent"));
     } catch (error) {
       toast.error(t("errors.network_error"));
     }
@@ -126,10 +131,8 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
               </p>
             </div>
             <button
+              onClick={onClose}
               aria-label="Zamknij"
-              onClick={() => {
-                onClose?.();
-              }}
               className="text-muted-foreground hover:text-card-foreground ml-4"
             >
               ×
@@ -164,8 +167,8 @@ const VerifyEmail: React.FC<Props> = ({ sessionId, onClose }) => {
               disabled={!canResend}
               className="w-full text-sm rounded-lg py-2 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {canResend 
-                ? "Wyślij kod ponownie" 
+              {canResend
+                ? "Wyślij kod ponownie"
                 : `Wyślij kod ponownie (${cooldownSeconds}s)`}
             </button>
           </div>
