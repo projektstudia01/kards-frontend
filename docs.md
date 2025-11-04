@@ -237,7 +237,6 @@ Dodatkowo dostajemy cookiesa
     "title": "edisted",
     "description": "test12321",
     "createdAt": "2025-11-04T15:02:40.124Z",
-    "updatedAt": "2025-11-04T15:02:40.124Z",
-    "cards": []
+    "updatedAt": "2025-11-04T15:02:40.124Z"
 }
 `
