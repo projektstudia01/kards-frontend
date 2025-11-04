@@ -165,3 +165,49 @@ Dodatkowo dostajemy cookiesa
 ### res 200: Jeżeli mamy cookiesa poprawnego
 
 ### res 401: Jeżeli nie
+
+# deck endpointy
+
+## POST deck/create
+
+### body:
+`
+{
+    "title":"edisted",
+    "description": "test"
+}
+`
+
+## res 200:
+`
+{
+    "title": "edisted",
+    "description": "test",
+    "owner": {
+        "id": "c1e04fe0-a8c8-4c1b-a705-6bb73a08271f"
+    },
+    "id": "b42396a9-92fd-4358-9075-8e2e11b7192e",
+    "createdAt": "2025-11-04T15:30:37.732Z",
+    "updatedAt": "2025-11-04T15:30:37.732Z"
+}
+`
+
+## PUT deck/:id
+
+### body - Takie samo jak create ale pola opcjonalne.
+
+## res 200:
+`
+{
+    "id": "b42396a9-92fd-4358-9075-8e2e11b7192e",
+    "title": "edisted",
+    "description": "test",
+    "createdAt": "2025-11-04T15:30:37.732Z",
+    "updatedAt": "2025-11-04T15:30:37.732Z"
+}
+`
+
+## DELETE deck/:id
+
+### body: brak
+### res 200 body: brak
