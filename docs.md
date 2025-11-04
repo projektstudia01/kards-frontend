@@ -211,3 +211,33 @@ Dodatkowo dostajemy cookiesa
 
 ### body: brak
 ### res 200 body: brak
+
+
+## GET /deck
+
+### res 200:
+`
+[
+    {
+        "id": "e02cbb76-581d-4a09-8566-f47b142edcad",
+        "title": "edisted",
+        "description": "test12321",
+        "createdAt": "2025-11-04T15:02:40.124Z",
+        "updatedAt": "2025-11-04T15:02:40.124Z"
+    }
+]
+`
+
+## GET deck/:id
+
+### res 200:
+`
+{
+    "id": "e02cbb76-581d-4a09-8566-f47b142edcad",
+    "title": "edisted",
+    "description": "test12321",
+    "createdAt": "2025-11-04T15:02:40.124Z",
+    "updatedAt": "2025-11-04T15:02:40.124Z",
+    "cards": []
+}
+`
