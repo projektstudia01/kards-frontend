@@ -1,7 +1,7 @@
 //Kod do weryfikacji:84720254
 //Ponowny kod do weryfikacji: 99999999
 //Logowanie: test@g.pl 12345678
-
+import { toast } from "sonner";
 import { code } from "framer-motion/client";
 import { axiosErrorHandler, customAxios } from "./customAxios";
 import { useAuthStore } from "../store/authStore";
@@ -33,6 +33,7 @@ export interface ResendResponse {
 }
 
 export const login = async (email: string, password: string) => {
+  toast.success("Logged in successfully!");
   try {
     const data = await customAxios.post("/auth/login", { email, password });
     const usernameSet = data.data.data.user.customUsername;
@@ -40,6 +41,7 @@ export const login = async (email: string, password: string) => {
       ...data.data.data.user,
       needsUsernameSetup: usernameSet,
     });
+
     return data.data.data;
   } catch (error) {
     return axiosErrorHandler(error);
