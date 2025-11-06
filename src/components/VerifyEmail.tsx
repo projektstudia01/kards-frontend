@@ -3,94 +3,118 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 // using simple buttons instead of flowbite's Button here
 import { useAuthStore } from "../store/authStore";
-import { useErrorStore } from "../store/errorStore";
-import { customAxios } from "../api/customAxios";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { resendVerificationCode, verifyEmail } from "../api";
 
 type Props = {
-  onClose?: () => void;
+  sessionId: string;
+  emailForVerification: string;
+  onClose: () => void;
 };
 
-const VerifyEmail: React.FC<Props> = ({ onClose }) => {
-  const navigate = useNavigate();
-  const { emailForVerification, sessionId, setAuthState, setVerificationData } = useAuthStore();
-  const setError = useErrorStore((s) => s.setError);
-  const clearError = useErrorStore((s) => s.clearError);
+const VerifyEmail: React.FC<Props> = ({
+  sessionId,
+  emailForVerification,
+  onClose,
+}) => {
+  const { t } = useTranslation();
+  const { confirmEmail } = useAuthStore();
 
   const [codeInput, setCodeInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const [cooldownSeconds, setCooldownSeconds] = useState(60);
+  const [newSessionId, setSessionId] = useState(sessionId);
+  const [canResend, setCanResend] = useState(false);
 
   const handleVerify = async () => {
-    clearError();
     setSuccess(null);
 
-    if (!emailForVerification || !sessionId) {
-      setError("errors.verify.missing_session");
+    if (!emailForVerification || !newSessionId) {
+      toast.error(t("errors.verify.missing_session"));
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-      const res = await customAxios.post("/auth/verify-email", {
-        email: emailForVerification,
-        sessionId,
-        code: codeInput,
-      });
+      const res = await verifyEmail(
+        codeInput,
+        emailForVerification,
+        newSessionId
+      );
 
-      if (res.status === 200) {
-        setSuccess("E-mail został zweryfikowany!");
-        // Simulate login flow after email verification
-        setAuthState({
-          email: emailForVerification,
-          username: undefined, // Ensure username is undefined
-          emailConfirmed: true,
-          needsUsernameSetup: true,
-        });
-        navigate('/welcome');
+      if (res.isError) {
+        console.log("Debug - Verification error key:", res.error?.key); // Log the error key
+
+        toast.error(
+          t(`errors.verify.${res.error?.key}`) || t("errors.unknown_error")
+        );
+        return;
       }
-    } catch (err: any) {
-      if (err.response) {
-        const { key } = err.response.data;
-        setError(`errors.verify.${key || "unknown_error"}`);
-      } else {
-        setError("errors.network_error");
-      }
+      setSuccess(t("success.verify.email_verified"));
+
+      // Trigger username popup after successful verification
+      confirmEmail();
+      onClose();
+      // Close the verification modal
+    } catch (error) {
+      toast.error(t("errors.server_error"));
     } finally {
       setLoading(false);
     }
   };
 
   const handleResendCode = async () => {
-    clearError();
+    if (!canResend) return;
+
     setSuccess(null);
+    setCanResend(false);
+    setCooldownSeconds(60);
 
     try {
-      const res = await customAxios.post("/auth/resend-verification-code", {
-        email: emailForVerification,
-      });
-
-      const { sessionId: newSessionId, code: newCode } = res.data.data;
-      setVerificationData({
-        email: emailForVerification!,
-        sessionId: newSessionId,
-        code: newCode,
-      });
-      setSuccess("Nowy kod został wysłany na adres e-mail.");
-    } catch (err: any) {
-      if (err.response) {
-        const { key } = err.response.data;
-        setError(`errors.verify.${key || "unknown_error"}`);
-      } else {
-        setError("errors.network_error");
+      const res = await resendVerificationCode(emailForVerification!);
+      if (res.isError) {
+        const errorKey = res.error?.key;
+        toast.error(
+          t(`errors.verify.${errorKey}`) || t("errors.unknown_error")
+        );
+        return;
       }
+      const { sessionId: newSessionId } = res.data;
+      setSessionId(newSessionId);
+      toast.success(t("success.verify.code_resent"));
+    } catch (error) {
+      toast.error(t("errors.network_error"));
     }
   };
 
   useEffect(() => {
     // pomocnicze logi do debugowania — czy w store są dane weryfikacyjne
     // eslint-disable-next-line no-console
-    console.log("VerifyEmail mounted. emailForVerification:", emailForVerification, "sessionId:", sessionId, "code:", useAuthStore.getState().code);
+    console.log(
+      "VerifyEmail mounted. emailForVerification:",
+      emailForVerification,
+      "sessionId:",
+      sessionId,
+      "code:",
+      useAuthStore.getState().code
+    );
   }, [emailForVerification, sessionId]);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldownSeconds > 0) {
+      const timer = setTimeout(() => {
+        setCooldownSeconds(cooldownSeconds - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [cooldownSeconds]);
+
+  const isCodeValid = codeInput.trim().length >= 6;
 
   // Overlay + white rounded card for modal content
   return (
@@ -99,21 +123,27 @@ const VerifyEmail: React.FC<Props> = ({ onClose }) => {
         <div className="bg-card rounded-lg shadow-lg p-6 border border-border">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="mb-1 text-xl font-semibold text-card-foreground">Potwierdź swój adres e-mail</h3>
-              <p className="text-sm text-muted-foreground">Wpisz kod wysłany na <strong>{emailForVerification}</strong></p>
+              <h3 className="mb-1 text-xl font-semibold text-card-foreground">
+                Potwierdź swój adres e-mail
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Wpisz kod wysłany na <strong>{emailForVerification}</strong>
+              </p>
             </div>
             <button
+              onClick={onClose}
               aria-label="Zamknij"
-              onClick={() => {
-                onClose?.();
-              }}
               className="text-muted-foreground hover:text-card-foreground ml-4"
             >
               ×
             </button>
           </div>
 
-          {success && <p className="text-green-600 dark:text-green-400 mb-2 text-sm">{success}</p>}
+          {success && (
+            <p className="text-green-600 dark:text-green-400 mb-2 text-sm">
+              {success}
+            </p>
+          )}
 
           <input
             type="text"
@@ -126,14 +156,20 @@ const VerifyEmail: React.FC<Props> = ({ onClose }) => {
           <div className="space-y-3">
             <button
               onClick={handleVerify}
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg py-2.5"
+              disabled={!isCodeValid || loading}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Sprawdzanie..." : "Potwierdź e-mail"}
             </button>
 
-            <button onClick={handleResendCode} className="w-full text-sm rounded-lg py-2 text-muted-foreground">
-              Wyślij kod ponownie
+            <button
+              onClick={handleResendCode}
+              disabled={!canResend}
+              className="w-full text-sm rounded-lg py-2 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {canResend
+                ? "Wyślij kod ponownie"
+                : `Wyślij kod ponownie (${cooldownSeconds}s)`}
             </button>
           </div>
         </div>

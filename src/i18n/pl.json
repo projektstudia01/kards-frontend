@@ -1,29 +1,25 @@
 {
-  "errors": {
-    "network_error": "Błąd sieci – sprawdź połączenie.",
-    "server_error": "Wewnętrzny błąd serwera.",
-    "unknown_error": "Nieznany błąd. Spróbuj ponownie.",
-    "auth": {
-      "unauthorized": "Twoja sesja wygasła. Zaloguj się ponownie."
-    },
-    "register": {
-      "validation_error": "Niepoprawne dane rejestracji.",
-      "RECORD_ALREADY_EXISTS": "Konto o tym adresie e-mail już istnieje.",
-      "internal_server_error": "Błąd serwera podczas rejestracji.",
-      "password_mismatch": "Hasła nie są takie same.",
-      "password_too_short": "Hasło musi mieć co najmniej 8 znaków."
-    },
-    "verify": {
-      "invalid_verification_code": "Nieprawidłowy kod lub sesja wygasła.",
-      "user_not_found": "Nie znaleziono użytkownika.",
-      "user_already_verified": "Ten adres e-mail jest już zweryfikowany.",
-      "validation_error": "Błąd walidacji danych.",
-      "missing_session": "Brak aktywnej sesji weryfikacyjnej lub wygasła."
+  "backend_errors": {
+    "invalid_json_body": "Nieprawidłowe dane JSON.",
+    "internal_server_error": "Błąd wewnętrzny serwera – spróbuj ponownie później.",
 
-    },
-    "login": {
-      "WRONG_CREDENTIALS": "Nieprawidłowy e-mail lub hasło.",
-      "email_not_verified": "Adres e-mail nie został jeszcze zweryfikowany."
+    "user_not_found": "Nie znaleziono użytkownika.",
+    "invalid_argument": "Podano nieprawidłowy argument.",
+    "unauthorized": "Twoja sesja wygasła. Zaloguj się ponownie.",
+
+    "validation_error": "Błąd walidacji. Sprawdź wprowadzone dane.",
+    "auth_fail": "Uwierzytelnianie nie powiodło się. Sprawdź swoje dane logowania.",
+
+    "user_already_in_game": "Użytkownik jest już w grze.",
+
+    "deck_amount_exceeded": "Przekroczono liczbę talii.",
+    "deck_not_found": "Nie znaleziono talii.",
+    "email_not_verified": "Email niezweryfikowany.",
+    "WRONG_CREDENTIALS": "Nieprawidłowe dane logowania."
+  },
+  "success": {
+    "verify": {
+      "code_resent": "Kod weryfikacyjny został wysłany ponownie."
     }
   }
 }
