@@ -1,25 +1,27 @@
 {
-  "backend_errors": {
-    "invalid_json_body": "Invalid JSON body.",
-    "internal_server_error": "Internal server error – please try again later.",
-
-    "user_not_found": "User not found.",
-    "invalid_argument": "Invalid argument provided.",
-    "unauthorized": "Your session has expired. Please log in again.",
-
-    "validation_error": "Validation error. Please check your input.",
-    "auth_fail": "Authentication failed. Please check your credentials.",
-
-    "user_already_in_game": "User is already in the game.",
-
-    "deck_amount_exceeded": "Deck amount exceeded.",
-    "deck_not_found": "Deck not found.",
-    "email_not_verified": "Email not verified.",
-    "wrong_credentials": "Wrong credentials."
-  },
-  "success": {
+  "errors": {
+    "network_error": "Network error – please check your connection.",
+    "server_error": "Internal server error.",
+    "unknown_error": "Unknown error. Please try again.",
+    "auth": {
+      "unauthorized": "Your session has expired. Please log in again."
+    },
+    "register": {
+      "validation_error": "Invalid registration data.",
+      "RECORD_ALREADY_EXISTS": "An account with this email already exists.",
+      "internal_server_error": "Server error during registration.",
+      "password_mismatch": "Passwords do not match."
+    },
     "verify": {
-      "code_resent": "Verification code has been resent successfully."
+      "invalid_verification_code": "Invalid code or session has expired.",
+      "user_not_found": "User not found.",
+      "user_already_verified": "This email address is already verified.",
+      "validation_error": "Validation error.",
+      "missing_session": "Verification session is missing or expired."
+    },
+    "login": {
+      "WRONG_CREDENTIALS": "Incorrect email or password.",
+      "email_not_verified": "Email address has not been verified yet."
     }
   }
 }

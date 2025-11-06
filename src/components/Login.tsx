@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { customAxios } from "../api/customAxios";
@@ -36,15 +36,30 @@ const Login: React.FC = () => {
   // 3. Szkielet funkcji obsługującej logowanie
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      const response = await customAxios.post("/auth/login", formData);
+      console.log("Login successful:", response.data);
 
-    const response = await customAxios.post("/auth/login", formData);
-    console.log("Login successful:", response.data);
+      // Map backend response to authStore's expected structure
+      setAuthState({
+        id: response.data.userId, // Map userId to id
+        email: formData.email,
+      });
+    } catch (err: any) {
+      console.log("Debug - Full error response:", err.response.data); // Log full backend response
+      const errorKey = err.error?.key;
+      if (errorKey === "email_not_verified") {
+        // Set verification data with placeholder sessionId
+        const resendData = await resendVerificationCode(formData.email);
+        setEmailForVerification(formData.email);
+        setSessionId(resendData.data?.sessionId);
 
-    // Map backend response to authStore's expected structure
-    setAuthState({
-      id: response.data.userId, // Map userId to id
-      email: formData.email,
-    });
+        //TODO: dorobić klucz
+        toast.error(t("errors.login.email_not_verified"));
+      } else {
+        toast.error(t(`errors.login.${errorKey}`) || t("errors.unknown_error"));
+      }
+    }
   };
 
   const isFormValid =

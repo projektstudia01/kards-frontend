@@ -9,6 +9,8 @@ import JoinLobby from "./components/JoinLobby";
 import QRCodeDemo from "./components/QRCodeDemo";
 import ThemeToggle from "./components/ThemeToggle";
 import UsernamePopup from "./components/UsernamePopup";
+import Decks from "./components/Decks";
+import DeckEditor from "./components/DeckEditor";
 import { Toaster } from "sonner";
 import { useAuthStore } from "./store/authStore";
 
@@ -37,6 +39,18 @@ function App() {
           path="/join-lobby"
           element={
             isLoggedIn ? <JoinLobby /> : <Navigate to="/login" replace />
+          }
+        />
+        {/* Decks */}
+        <Route
+          path="/decks"
+          element={isLoggedIn ? <Decks /> : <Navigate to="/login" replace />}
+        />
+        {/* Deck Editor */}
+        <Route
+          path="/deck/:deckId/edit"
+          element={
+            isLoggedIn ? <DeckEditor /> : <Navigate to="/login" replace />
           }
         />
         {/* Konkretne lobby */}
