@@ -66,6 +66,11 @@ Dostajemy tutaj cookiesa z sesją dodatkowo
     "data": {
         "message": "Code verified successfully",
         "userId": "ee1623be-cad7-4372-a4eb-eeedbb7823ef"
+        "user": {
+            "name": string
+            "customUsername": boolean
+            "email": string
+        }
     }
 }`
 
@@ -140,7 +145,12 @@ Dodatkowo dostajemy cookiesa
 `{
     "data": {
         "message": "Login successful",
-        "userId": "c1e04fe0-a8c8-4c1b-a705-6bb73a08271f"
+        "userId": "c1e04fe0-a8c8-4c1b-a705-6bb73a08271f",
+        "user": {
+            "name": string
+            "customUsername": boolean
+            "email": string
+        }
     }
 }`
 
@@ -157,6 +167,31 @@ Dodatkowo dostajemy cookiesa
     "message": "Email not verified",
     "key": "email_not_verified"
 }`
+
+## POST auth/logout
+Usuwa cookiesa i czyści sesje, trzeba być zalogowanym
+
+## PUT auth/set-nickname
+
+### body: 
+`
+{
+    username: min(3) max(15) alfanumeryczne i podłogi
+}
+`
+
+### res 200
+`
+{
+    "user": {
+    "name": string
+    "customUsername": boolean
+    "email": string
+    }
+}
+`
+
+### Błędy standardowe jak wszędzie
 
 ## robocz auth/test-auth
 
