@@ -118,10 +118,13 @@ const Lobby: React.FC = () => {
             onClick={() => navigate('/join-lobby')}
             className="px-10 py-4 bg-info text-info-foreground rounded-lg font-medium hover:bg-info/90 transition-colors"
           >
-            � Dołącz do gry
+            🎮 Dołącz do gry
           </button>
-          <button className="px-10 py-4 bg-warning text-warning-foreground rounded-lg font-medium hover:bg-warning/90 transition-colors">
-            👤 Profil gracza
+          <button 
+            onClick={() => navigate('/decks')}
+            className="px-10 py-4 bg-warning text-warning-foreground rounded-lg font-medium hover:bg-warning/90 transition-colors"
+          >
+            🃏 Talie
           </button>
         </div>
 
