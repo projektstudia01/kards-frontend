@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeckStore } from '../store/deckStore';
+import { toast } from 'sonner';
 
 interface Deck {
   id: string;
@@ -147,8 +148,11 @@ const Decks: React.FC = () => {
   };
 
   const handleAddDeckClick = () => {
-    if (userDecks.length < 2) {
+    if (userDecks.length < 3) {
       setIsModalOpen(true);
+    }
+    else{
+      toast.error("Tutaj blad maksymalna ilosc deckow")
     }
   };
 

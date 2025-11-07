@@ -1,11 +1,8 @@
 //Kod do weryfikacji:84720254
 //Ponowny kod do weryfikacji: 99999999
 //Logowanie: test@g.pl 12345678
-import { toast } from "sonner";
-import { code } from "framer-motion/client";
 import { axiosErrorHandler, customAxios } from "./customAxios";
 import { useAuthStore } from "../store/authStore";
-import { use } from "react";
 
 //Logowanie: ddd@g.pl 12345678
 export interface RegisterResponse {
@@ -31,7 +28,6 @@ export interface ResendResponse {
     code: string;
   };
 }
-
 export const login = async (email: string, password: string) => {
   try {
     const data = await customAxios.post("/auth/login", { email, password });

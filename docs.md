@@ -202,6 +202,10 @@ Dodatkowo dostajemy cookiesa
 
 ### res 401: Jeżeli nie
 
+
+
+
+
 # deck endpointy
 
 ## POST deck/create
