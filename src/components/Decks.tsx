@@ -98,6 +98,20 @@ const Decks: React.FC = () => {
   // Use regular useState for deck list - will be fetched from backend later
   const [userDecks, setUserDecks] = useState<Deck[]>([]);
   
+  // TODO: Fetch decks from backend on mount
+  // useEffect(() => {
+  //   const fetchDecks = async () => {
+  //     try {
+  //       const response = await api.get('/decks');
+  //       setUserDecks(response.data.decks.filter(d => !d.isDefault));
+  //     } catch (error) {
+  //       toast.error('Nie udało się załadować talii');
+  //       console.error('Failed to fetch decks', error);
+  //     }
+  //   };
+  //   fetchDecks();
+  // }, []);
+  
   // Default deck (cannot be modified)
   const defaultDeck: Deck = {
     id: 'default',
@@ -107,6 +121,16 @@ const Decks: React.FC = () => {
   };
 
   const handleCreateDeck = (name: string, description: string) => {
+    // TODO: Replace with API call
+    // const response = await api.post('/decks', { name, description });
+    // const newDeck: Deck = {
+    //   id: response.data.deckId,
+    //   name,
+    //   description,
+    //   isDefault: false
+    // };
+    
+    // Mock implementation (remove when backend is connected):
     const newDeck: Deck = {
       id: `deck-${Date.now()}`,
       name,

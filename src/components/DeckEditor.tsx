@@ -20,6 +20,27 @@ const DeckEditor: React.FC = () => {
 
   // Load cards from Zustand store on mount only (for page refresh recovery)
   useEffect(() => {
+    // TODO: Load deck from backend when endpoint is ready
+    // const loadDeck = async () => {
+    //   if (deckId && currentDeckId !== deckId) {
+    //     try {
+    //       const response = await api.get(`/decks/${deckId}`);
+    //       setBlackCards(response.data.blackCards);
+    //       setWhiteCards(response.data.whiteCards);
+    //       setCurrentDeck(deckId, response.data.blackCards, response.data.whiteCards);
+    //     } catch (error) {
+    //       toast.error('Nie udało się załadować talii');
+    //       console.error('Failed to load deck', error);
+    //     }
+    //   } else if (deckId && currentDeckId === deckId) {
+    //     // Use Zustand cache (refresh recovery)
+    //     setBlackCards(storedBlackCards);
+    //     setWhiteCards(storedWhiteCards);
+    //   }
+    // };
+    // loadDeck();
+    
+    // Current mock implementation (remove when backend is connected):
     if (deckId && currentDeckId === deckId) {
       setBlackCards(storedBlackCards);
       setWhiteCards(storedWhiteCards);
@@ -38,7 +59,7 @@ const DeckEditor: React.FC = () => {
       updateCards(blackCards, whiteCards);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blackCards, whiteCards]); // Don't include updateCards to avoid infinite loop
+  }, [blackCards, whiteCards]);
 
   const handleAddCard = () => {
     if (!cardText.trim()) return;
@@ -78,7 +99,27 @@ const DeckEditor: React.FC = () => {
   const handleSaveDeck = () => {
     if (!deckId) return;
     
-    // TODO: Send deck to backend with all cards
+    // TODO: Send deck to backend when endpoint is ready
+    // const saveDeck = async () => {
+    //   try {
+    //     await api.put(`/decks/${deckId}`, {
+    //       blackCards,
+    //       whiteCards
+    //     });
+    //     
+    //     // Clear temporary storage after successful save
+    //     clearCurrentDeck();
+    //     
+    //     toast.success('Talia zapisana pomyślnie');
+    //     navigate('/decks');
+    //   } catch (error) {
+    //     toast.error('Nie udało się zapisać talii');
+    //     console.error('Failed to save deck', error);
+    //   }
+    // };
+    // saveDeck();
+    
+    // Current mock implementation (remove when backend is connected):
     console.log('Saving deck to backend:', { 
       deckId, 
       blackCards, 
