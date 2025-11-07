@@ -33,7 +33,6 @@ export interface ResendResponse {
 }
 
 export const login = async (email: string, password: string) => {
-  toast.success("Logged in successfully!");
   try {
     const data = await customAxios.post("/auth/login", { email, password });
     const usernameSet = data.data.data.user.customUsername;
