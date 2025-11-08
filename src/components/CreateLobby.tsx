@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useErrorStore } from '../store/errorStore';
 import { useLobbyAPI } from '../hooks/useLobbyAPI';
 import type { CreateLobbyRequest } from '../types/lobby';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const CreateLobby: React.FC = () => {
   const navigate = useNavigate();
   const { createLobby } = useLobbyAPI();
-  const setError = useErrorStore((state) => state.setError);
+  const { t } = useTranslation();
   
   const [formData, setFormData] = useState<CreateLobbyRequest>({
     name: '',
@@ -29,11 +30,11 @@ const CreateLobby: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      setError('lobby.errors.name_required');
+      toast.error(t('lobby.errors.name_required'));
       return;
     }
     if (formData.selectedDecks.length === 0) {
-      setError('lobby.errors.decks_required');
+      toast.error(t('lobby.errors.decks_required'));
       return;
     }
 
@@ -44,7 +45,7 @@ const CreateLobby: React.FC = () => {
       navigate(`/lobby/${lobby.id}`);
     } catch (error) {
       console.error('Error creating lobby:', error);
-      setError('lobby.errors.create_failed');
+      toast.error(t('lobby.errors.create_failed'));
     } finally {
       setIsLoading(false);
     }

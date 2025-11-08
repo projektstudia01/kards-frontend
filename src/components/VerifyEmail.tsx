@@ -1,6 +1,5 @@
 // src/pages/VerifyEmail.tsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 // using simple buttons instead of flowbite's Button here
 import { useAuthStore } from "../store/authStore";
 import { toast } from "sonner";
@@ -32,37 +31,30 @@ const VerifyEmail: React.FC<Props> = ({
     setSuccess(null);
 
     if (!emailForVerification || !newSessionId) {
-      toast.error(t("errors.verify.missing_session"));
+      toast.error(t("frontendErrors.missing_session"));
       return;
     }
 
     setLoading(true);
-    try {
-      const res = await verifyEmail(
-        codeInput,
-        emailForVerification,
-        newSessionId
-      );
+    
+    const response = await verifyEmail(
+      codeInput,
+      emailForVerification,
+      newSessionId
+    );
 
-      if (res.isError) {
-        console.log("Debug - Verification error key:", res.error?.key); // Log the error key
+    setLoading(false);
 
-        toast.error(
-          t(`errors.verify.${res.error?.key}`) || t("errors.unknown_error")
-        );
-        return;
-      }
-      setSuccess(t("success.verify.email_verified"));
-
-      // Trigger username popup after successful verification
-      confirmEmail();
-      onClose();
-      // Close the verification modal
-    } catch (error) {
-      toast.error(t("errors.server_error"));
-    } finally {
-      setLoading(false);
+    // Jeśli wystąpił błąd, axiosErrorHandler już wyświetlił toast
+    if (response.isError) {
+      return;
     }
+
+    setSuccess(t("success.verify.email_verified"));
+
+    // Trigger username popup after successful verification
+    confirmEmail();
+    onClose();
   };
 
   const handleResendCode = async () => {
@@ -72,21 +64,16 @@ const VerifyEmail: React.FC<Props> = ({
     setCanResend(false);
     setCooldownSeconds(60);
 
-    try {
-      const res = await resendVerificationCode(emailForVerification!);
-      if (res.isError) {
-        const errorKey = res.error?.key;
-        toast.error(
-          t(`errors.verify.${errorKey}`) || t("errors.unknown_error")
-        );
-        return;
-      }
-      const { sessionId: newSessionId } = res.data;
-      setSessionId(newSessionId);
-      toast.success(t("success.verify.code_resent"));
-    } catch (error) {
-      toast.error(t("errors.network_error"));
+    const response = await resendVerificationCode(emailForVerification!);
+    
+    // Jeśli wystąpił błąd, axiosErrorHandler już wyświetlił toast
+    if (response.isError) {
+      return;
     }
+    
+    const { sessionId: newSessionId } = response.data;
+    setSessionId(newSessionId);
+    toast.success(t("success.verify.code_resent"));
   };
 
   useEffect(() => {

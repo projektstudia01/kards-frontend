@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useErrorStore } from "../store/errorStore";
 import { useLobbyAPI } from "../hooks/useLobbyAPI";
 import type { LobbySettings } from "../types/lobby";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const JoinLobby: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { getPublicLobbies, joinLobby } = useLobbyAPI();
-  const setError = useErrorStore((state) => state.setError);
+  const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<"public" | "invite">("public");
   const [inviteCode, setInviteCode] = useState("");
@@ -33,14 +34,14 @@ const JoinLobby: React.FC = () => {
         setPublicLobbies(lobbies);
       } catch (error) {
         console.error("Error fetching public lobbies:", error);
-        setError("lobby.errors.fetch_failed");
+        toast.error(t("lobby.errors.fetch_failed"));
       }
     };
 
     if (activeTab === "public") {
       fetchPublicLobbies();
     }
-  }, [activeTab, getPublicLobbies, setError]);
+  }, [activeTab, getPublicLobbies, t]);
 
   const handleJoinPublicLobby = async (lobbyId: string) => {
     setIsLoading(true);
@@ -50,7 +51,7 @@ const JoinLobby: React.FC = () => {
       navigate(`/lobby/${lobbyId}`);
     } catch (error) {
       console.error("Error joining lobby:", error);
-      setError("lobby.errors.join_failed");
+      toast.error(t("lobby.errors.join_failed"));
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +59,7 @@ const JoinLobby: React.FC = () => {
 
   const handleJoinWithInvite = async () => {
     if (!inviteCode.trim()) {
-      setError("lobby.errors.invite_required");
+      toast.error(t("lobby.errors.invite_required"));
       return;
     }
 
@@ -69,7 +70,7 @@ const JoinLobby: React.FC = () => {
       navigate(`/lobby/${result.lobby.id}`);
     } catch (error) {
       console.error("Error joining with invite:", error);
-      setError("lobby.errors.invalid_invite");
+      toast.error(t("lobby.errors.invalid_invite"));
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +84,6 @@ const JoinLobby: React.FC = () => {
       const mockQrCode = "invite123456";
       setInviteCode(mockQrCode);
       setQrScannerActive(false);
-      setError(null);
     }, 2000);
   };
 

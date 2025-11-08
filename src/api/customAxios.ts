@@ -9,11 +9,11 @@ export const customAxios = axios.create({
 
 export const axiosErrorHandler = (error: any) => {
   console.log(error);
-  let translationKey = "errors.internal_server_error";
+  let translationKey = "backendErrors.internal_server_error";
   if (error.response?.data?.key)
-    translationKey = `errors.${error.response.data.key.toLowerCase()}`;
+    translationKey = `backendErrors.${error.response.data.key.toLowerCase()}`;
 
-  toast.error(i18n.t(translationKey ));
+  toast.error(i18n.t(translationKey));
   return {
     isError: true,
     key: translationKey,
@@ -24,7 +24,7 @@ customAxios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const { isLoggedIn, logout } = useAuthStore.getState();
+      const { logout } = useAuthStore.getState();
       logout();
     }
     return Promise.reject(error);

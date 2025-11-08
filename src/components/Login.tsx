@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { customAxios } from "../api/customAxios";
-import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore"; // Import authStore
 import VerifyEmail from "./VerifyEmail"; // Import VerifyEmail component
 import { login, resendVerificationCode } from "../api";

@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import { useErrorStore } from "../store/errorStore";
 import { useLobbyAPI } from "../hooks/useLobbyAPI";
 import QRCodeGenerator from "./QRCodeGenerator";
 import type { LobbySettings, Player, Invitation } from "../types/lobby";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const Lobby: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  //Podmianka na toaster
-  const setError = useErrorStore((state) => state.setError);
+  const { t } = useTranslation();
   const { getLobby, generateInvitation, leaveLobby, startGame } = useLobbyAPI();
 
   const [lobby, setLobby] = useState<LobbySettings | null>(null);
@@ -37,13 +37,13 @@ const Lobby: React.FC = () => {
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching lobby:", error);
-        setError("lobby.errors.not_found");
+        toast.error(t("lobby.errors.not_found"));
         navigate("/welcome");
       }
     };
 
     fetchLobbyData();
-  }, [lobbyId, getLobby, navigate, setError]);
+  }, [lobbyId, getLobby, navigate, t]);
 
   const generateInvite = async () => {
     if (!lobby) return;
@@ -55,7 +55,7 @@ const Lobby: React.FC = () => {
       setShowInviteModal(true);
     } catch (error) {
       console.error("Error generating invitation:", error);
-      setError("lobby.errors.invite_failed");
+      toast.error(t("lobby.errors.invite_failed"));
     } finally {
       setIsLoading(false);
     }
@@ -66,9 +66,7 @@ const Lobby: React.FC = () => {
 
     const inviteUrl = `${window.location.origin}/join-lobby?invite=${invitation.token}`;
     navigator.clipboard.writeText(inviteUrl).then(() => {
-      setError(null);
-      // TODO: Show success message instead of alert
-      alert("Link skopiowany do schowka!");
+      toast.success(t("success.lobby.invite_copied"));
     });
   };
 
@@ -76,7 +74,7 @@ const Lobby: React.FC = () => {
     if (!lobby || !isHost) return;
 
     if (players.length < 3) {
-      setError("lobby.errors.min_players");
+      toast.error(t("lobby.errors.min_players"));
       return;
     }
 
@@ -87,7 +85,7 @@ const Lobby: React.FC = () => {
       navigate(`/game/${gameData.gameId}`);
     } catch (error) {
       console.error("Error starting game:", error);
-      setError("lobby.errors.start_failed");
+      toast.error(t("lobby.errors.start_failed"));
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +99,7 @@ const Lobby: React.FC = () => {
       navigate("/welcome");
     } catch (error) {
       console.error("Error leaving lobby:", error);
-      setError("lobby.errors.leave_failed");
+      toast.error(t("lobby.errors.leave_failed"));
       navigate("/welcome"); // Navigate anyway
     }
   };
