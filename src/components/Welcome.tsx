@@ -136,7 +136,7 @@ const Lobby: React.FC = () => {
             </div>
             <div className="flex-1">
               <p className="text-card-foreground font-medium">
-                Witaj, {user?.username ? user.username : 'Gościu'}
+                Witaj, {user?.name ?? 'Gościu'}
               </p>
               <p className="text-muted-foreground text-sm">
                 ID: {user?.email ? user.email.substring(0, 3) + '***' + user.email.slice(-3) : 'brak'}

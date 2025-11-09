@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 
 interface UserData {
   id: string;
-  username?: string;
+  name?: string;
   email: string;
   needsUsernameSetup?: boolean;
 }
@@ -40,10 +40,10 @@ export const useAuthStore = create<AuthState>()(
           showUsernamePopup: user?.needsUsernameSetup || false, // Ensure popup is shown if needed
         }),
 
-      setUsername: (username) =>
+      setUsername: (name) =>
         set((state) => ({
           user: state.user
-            ? { ...state.user, username, needsUsernameSetup: false }
+            ? { ...state.user, name, needsUsernameSetup: false }
             : null,
           showUsernamePopup: false,
         })),
