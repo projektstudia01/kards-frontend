@@ -8,7 +8,10 @@ export const customAxios = axios.create({
 });
 
 export const axiosErrorHandler = (error: any) => {
-  console.log(error);
+  console.log('Full error:', error);
+  console.log('Error response:', error.response?.data);
+  console.log('Error status:', error.response?.status);
+  
   let translationKey = "backendErrors.internal_server_error";
   if (error.response?.data?.key)
     translationKey = `backendErrors.${error.response.data.key.toLowerCase()}`;

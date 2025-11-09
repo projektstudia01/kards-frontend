@@ -37,9 +37,15 @@ export const login = async (email: string, password: string) => {
       needsUsernameSetup: usernameSet,
     });
 
-    return data.data.data;
+    return {
+      isError: false,
+      data: data.data.data,
+    };
   } catch (error) {
-    return axiosErrorHandler(error);
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
   }
 };
 
@@ -85,6 +91,153 @@ export const resendVerificationCode = async (email: string) => {
     return {
       isError: false,
       data: data.data.data,
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};
+
+// Deck API functions
+export interface Deck {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getDecks = async () => {
+  try {
+    const response = await customAxios.get("/deck");
+    return {
+      isError: false,
+      data: response.data.data || [],
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};
+
+export const createDeck = async (title: string, description: string) => {
+  try {
+    const response = await customAxios.post("/deck/create", {
+      title,
+      description,
+    });
+    return {
+      isError: false,
+      data: response.data.data,
+    };
+  } catch (error: any) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};
+
+export const deleteDeck = async (deckId: string) => {
+  try {
+    await customAxios.delete(`/deck/${deckId}`);
+    return {
+      isError: false,
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};
+
+export const getDeck = async (deckId: string) => {
+  try {
+    const response = await customAxios.get(`/deck/${deckId}`);
+    return {
+      isError: false,
+      data: response.data.data,
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};
+
+// Card API functions
+export interface Card {
+  id?: string;
+  text: string;
+  type: 'black' | 'white';
+  blankSpaceAmount?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+  deck?: {
+    id: string;
+  };
+}
+
+export const addCards = async (deckId: string, cards: Card[]) => {
+  try {
+    const response = await customAxios.post(`/deck/${deckId}/cards`, {
+      cards,
+    });
+    return {
+      isError: false,
+      data: response.data.data,
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};
+
+export const getCards = async (
+  deckId: string, 
+  page: number = 0, 
+  pageSize: number = 50,
+  cardType?: 'white' | 'black'
+) => {
+  try {
+    const params: any = { page, pageSize };
+    if (cardType) {
+      params.cardType = cardType;
+    }
+    
+    const response = await customAxios.get(`/deck/${deckId}/cards`, {
+      params,
+    });
+    return {
+      isError: false,
+      data: response.data.data,
+      total: response.data.total,
+      page: response.data.page,
+      pageSize: response.data.pageSize,
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};
+
+export const deleteCards = async (deckId: string, cardIds: string[]) => {
+  try {
+    await customAxios.delete(`/deck/${deckId}/cards`, {
+      data: { cardIds },
+    });
+    return {
+      isError: false,
     };
   } catch (error) {
     return {

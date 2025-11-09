@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAuthStore } from "../store/authStore"; // Import authStore
 import VerifyEmail from "./VerifyEmail"; // Import VerifyEmail component
 import { login, resendVerificationCode } from "../api";
 
@@ -13,7 +12,6 @@ interface LoginData {
 
 const Login: React.FC = () => {
   const { t } = useTranslation();
-  const setAuthState = useAuthStore((state) => state.setAuthState); // Access authStore
   const [emailForVerification, setEmailForVerification] = useState<string>("");
   const [sessionId, setSessionId] = useState<string>("");
 
@@ -36,20 +34,17 @@ const Login: React.FC = () => {
     e.preventDefault();
       const response = await login(formData.email, formData.password)
 
-      if(response.isError && response.errorKey === "email_not_verified"){
-        const resendData = await resendVerificationCode(formData.email);
-        setEmailForVerification(formData.email);
-        setSessionId(resendData.data?.sessionId);
+      if(response.isError) {
+        // Check if it's email not verified error
+        if(response.error?.errorKey === "email_not_verified"){
+          const resendData = await resendVerificationCode(formData.email);
+          setEmailForVerification(formData.email);
+          setSessionId(resendData.data?.sessionId);
+        }
         return;
       }
 
       console.log("Login successful:", response.data);
-
-      // Map backend response to authStore's expected structure
-      setAuthState({
-        id: response.data.userId, // Map userId to id
-        email: formData.email,
-      });
    
   };
 
