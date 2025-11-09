@@ -73,7 +73,7 @@ export const verifyEmail = async (
     ).data;
     useAuthStore.getState().setAuthState({
       email: result.data.user.email,
-      username: result.data.user.name,
+      name: result.data.user.name,
       needsUsernameSetup: result.data.user.customUsername,
       id: result.data.user.id,
     });
