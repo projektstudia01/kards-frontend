@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { getDeck, getCards, addCards, type Card } from '../api';
+import { getDeck, getCards, addCards, deleteCards, type Card } from '../api';
 
 const DeckEditor: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +14,7 @@ const DeckEditor: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [deletedCardIds, setDeletedCardIds] = useState<string[]>([]); // Track deleted card IDs
   
   // Pagination state
   const [blackPage, setBlackPage] = useState(0);
@@ -123,7 +124,7 @@ const DeckEditor: React.FC = () => {
     const unsavedBlack = blackCards.filter(card => !card.id);
     const unsavedWhite = whiteCards.filter(card => !card.id);
     
-    if (unsavedBlack.length > 0 || unsavedWhite.length > 0) {
+    if (unsavedBlack.length > 0 || unsavedWhite.length > 0 || deletedCardIds.length > 0) {
       const storageKey = `deck-editor-${deckId}`;
       localStorage.setItem(storageKey, JSON.stringify({
         unsavedBlack,
@@ -132,12 +133,12 @@ const DeckEditor: React.FC = () => {
       }));
       setHasUnsavedChanges(true);
     } else {
-      // Clear localStorage if no unsaved cards
+      // Clear localStorage if no unsaved cards and no deleted cards
       const storageKey = `deck-editor-${deckId}`;
       localStorage.removeItem(storageKey);
       setHasUnsavedChanges(false);
     }
-  }, [blackCards, whiteCards, deckId, isLoading]);
+  }, [blackCards, whiteCards, deletedCardIds, deckId, isLoading]);
 
   // Load more black cards
   const loadMoreBlackCards = async () => {
@@ -217,14 +218,26 @@ const DeckEditor: React.FC = () => {
     setCardText('');
   };
 
-  const handleRemoveCard = (cardId: string | undefined, type: 'black' | 'white') => {
-    if (!cardId) return;
-    
+  const handleRemoveCard = (cardId: string | undefined, cardIndex: number, type: 'black' | 'white') => {
     if (type === 'black') {
-      setBlackCards(blackCards.filter(card => card.id !== cardId));
+      // If card has no ID (unsaved), remove by index, otherwise by ID
+      if (!cardId) {
+        setBlackCards(blackCards.filter((_, index) => index !== cardIndex));
+      } else {
+        // Track deleted card ID for API call
+        setDeletedCardIds([...deletedCardIds, cardId]);
+        setBlackCards(blackCards.filter(card => card.id !== cardId));
+      }
       setBlackTotal(Math.max(0, blackTotal - 1));
     } else {
-      setWhiteCards(whiteCards.filter(card => card.id !== cardId));
+      // If card has no ID (unsaved), remove by index, otherwise by ID
+      if (!cardId) {
+        setWhiteCards(whiteCards.filter((_, index) => index !== cardIndex));
+      } else {
+        // Track deleted card ID for API call
+        setDeletedCardIds([...deletedCardIds, cardId]);
+        setWhiteCards(whiteCards.filter(card => card.id !== cardId));
+      }
       setWhiteTotal(Math.max(0, whiteTotal - 1));
     }
   };
@@ -233,6 +246,20 @@ const DeckEditor: React.FC = () => {
     if (!deckId) return;
     
     setIsSaving(true);
+    
+    // Handle deleted cards first
+    if (deletedCardIds.length > 0) {
+      const deleteResponse = await deleteCards(deckId, deletedCardIds);
+      
+      if (deleteResponse.isError) {
+        toast.error('Nie udało się usunąć kart');
+        setIsSaving(false);
+        return;
+      }
+      
+      // Clear deleted IDs after successful deletion
+      setDeletedCardIds([]);
+    }
     
     // Prepare cards for bulk upload (only new cards without IDs)
     const newCards = [...blackCards, ...whiteCards].filter(card => !card.id);
@@ -245,19 +272,16 @@ const DeckEditor: React.FC = () => {
         setIsSaving(false);
         return;
       }
-      
-      // Clear localStorage after successful save
-      const storageKey = `deck-editor-${deckId}`;
-      localStorage.removeItem(storageKey);
-      setHasUnsavedChanges(false);
     }
     
-    // Also handle deleted cards if we're tracking them
-    // (Currently we're just filtering them from the UI, not tracking deletes)
+    // Clear localStorage after successful save
+    const storageKey = `deck-editor-${deckId}`;
+    localStorage.removeItem(storageKey);
+    setHasUnsavedChanges(false);
     
     toast.success('Talia zapisana pomyślnie');
     setIsSaving(false);
-    navigate('/deck');
+    navigate('/decks');
   };
 
   const handleCancel = () => {
@@ -321,7 +345,7 @@ const DeckEditor: React.FC = () => {
                       >
                         <span className="flex-1 break-words">{card.text}</span>
                         <button
-                          onClick={() => handleRemoveCard(card.id, 'black')}
+                          onClick={() => handleRemoveCard(card.id, index, 'black')}
                           className="ml-2 text-red-400 hover:text-red-300 font-bold"
                         >
                           ✕
@@ -479,7 +503,7 @@ const DeckEditor: React.FC = () => {
                       >
                         <span className="flex-1 break-words">{card.text}</span>
                         <button
-                          onClick={() => handleRemoveCard(card.id, 'white')}
+                          onClick={() => handleRemoveCard(card.id, index, 'white')}
                           className="ml-2 text-red-500 hover:text-red-600 font-bold"
                         >
                           ✕
