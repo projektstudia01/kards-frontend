@@ -28,10 +28,12 @@ const DeckEditor: React.FC = () => {
   const PAGE_SIZE = 20;
   const MAX_BLACK_CARDS = 20;
   const MAX_WHITE_CARDS = 100;
-  const MAX_CARD_TEXT_LENGTH = 150;
+  const MAX_CARD_TEXT_LENGTH = 30;
 
   // Load initial cards from backend
   useEffect(() => {
+    let isCancelled = false;
+    
     const loadInitialCards = async () => {
       if (!deckId) return;
       
@@ -43,6 +45,8 @@ const DeckEditor: React.FC = () => {
       
       // Load deck info
       const deckResponse = await getDeck(deckId);
+      if (isCancelled) return;
+      
       if (deckResponse.isError) {
         toast.error('Nie udało się załadować talii');
         navigate('/deck');
@@ -51,6 +55,8 @@ const DeckEditor: React.FC = () => {
       
       // Load black cards (first page)
       const blackResponse = await getCards(deckId, 0, PAGE_SIZE, 'black');
+      if (isCancelled) return;
+      
       if (!blackResponse.isError) {
         setBlackCards(blackResponse.data);
         setBlackTotal(blackResponse.total);
@@ -59,6 +65,8 @@ const DeckEditor: React.FC = () => {
       
       // Load white cards (first page)
       const whiteResponse = await getCards(deckId, 0, PAGE_SIZE, 'white');
+      if (isCancelled) return;
+      
       if (!whiteResponse.isError) {
         setWhiteCards(whiteResponse.data);
         setWhiteTotal(whiteResponse.total);
@@ -94,10 +102,17 @@ const DeckEditor: React.FC = () => {
         }
       }
       
-      setIsLoading(false);
+      if (!isCancelled) {
+        setIsLoading(false);
+      }
     };
     
     loadInitialCards();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isCancelled = true;
+    };
   }, [deckId, navigate]);
 
   // Save unsaved cards to localStorage
