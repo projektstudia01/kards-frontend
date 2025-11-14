@@ -43,5 +43,11 @@
     "lobby": {
       "invite_copied": "Invitation link copied to clipboard!"
     }
+  },
+  "reconnecting": "Reconnecting to server...",
+  "connected": "Connected to server",
+  "errors": {
+    "UNKNOWN_ERROR": "An unknown error occurred",
+    "WEBSOCKET_DISCONNECT": "Lost connection to server"
   }
 }

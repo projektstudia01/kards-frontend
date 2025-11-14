@@ -43,5 +43,11 @@
     "lobby": {
       "invite_copied": "Link z zaproszeniem skopiowany do schowka!"
     }
+  },
+  "reconnecting": "Ponowne łączenie z serwerem...",
+  "connected": "Połączono z serwerem",
+  "errors": {
+    "UNKNOWN_ERROR": "Wystąpił nieznany błąd",
+    "WEBSOCKET_DISCONNECT": "Utracono połączenie z serwerem"
   }
 }

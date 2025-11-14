@@ -7,7 +7,11 @@ import type { LobbySettings, Player, Invitation } from "../types/lobby";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
-const Lobby: React.FC = () => {
+interface LobbyProps {
+  wsRef: React.MutableRefObject<any>;
+}
+
+const Lobby: React.FC<LobbyProps> = ({ wsRef }) => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
