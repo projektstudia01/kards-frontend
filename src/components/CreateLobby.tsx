@@ -4,6 +4,7 @@ import { useLobbyAPI } from '../hooks/useLobbyAPI';
 import type { CreateLobbyRequest } from '../types/lobby';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { createGame } from '../api/index';
 
 const CreateLobby: React.FC = () => {
   const navigate = useNavigate();
@@ -40,6 +41,8 @@ const CreateLobby: React.FC = () => {
 
     setIsLoading(true);
     try {
+      
+      await createGame(formData.name, formData.type, formData.maxPlayers);
       const lobby = await createLobby(formData);
       console.log('Created lobby:', lobby);
       navigate(`/lobby/${lobby.id}`);

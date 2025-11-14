@@ -13,7 +13,7 @@ const LobbyPage: React.FC = () => {
   const reconnectTimeout = useRef<any>(null);
 
   // Token to user.id (session id) z authStore
-  const token = user?.id;
+  const token = "3e6f26dc-25d4-4df7-a496-b90fb5a9f920";
 
   useEffect(() => {
     if (!token || !lobbyId) return;

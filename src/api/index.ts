@@ -246,3 +246,17 @@ export const deleteCards = async (deckId: string, cardIds: string[]) => {
     };
   }
 };
+
+export const createGame = async (name: string, lobbyType: string, maxPlayers: number) => {
+  try {
+    const response = await customAxios.post("/game/create", {
+      name, lobbyType, maxPlayers
+    });
+    return {
+      isError: false,
+      data: response.data.data,
+    };
+  } catch (error) {
+    return axiosErrorHandler(error);
+  }
+};

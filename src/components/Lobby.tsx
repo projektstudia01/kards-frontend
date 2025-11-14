@@ -6,6 +6,7 @@ import QRCodeGenerator from "./QRCodeGenerator";
 import type { LobbySettings, Player, Invitation } from "../types/lobby";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { createGame } from "../api/index";
 
 interface LobbyProps {
   wsRef: React.MutableRefObject<any>;
@@ -76,6 +77,7 @@ const Lobby: React.FC<LobbyProps> = ({ wsRef }) => {
 
   const handleStartGame = async () => {
     if (!lobby || !isHost) return;
+
 
     if (players.length < 3) {
       toast.error(t("lobby.errors.min_players"));
