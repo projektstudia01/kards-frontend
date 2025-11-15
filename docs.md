@@ -202,15 +202,12 @@ Dodatkowo dostajemy cookiesa
 
 ### res 401: Jeżeli nie
 
-
-
-
-
 # deck endpointy
 
 ## POST deck/create
 
 ### body:
+
 ```
 {
     "title":"edisted",
@@ -219,6 +216,7 @@ Dodatkowo dostajemy cookiesa
 ```
 
 ## res 200:
+
 ```
 data: {
     "title": "edisted",
@@ -237,6 +235,7 @@ data: {
 ### body - Takie samo jak create ale pola opcjonalne.
 
 ## res 200:
+
 ```
 data: {
     "id": "b42396a9-92fd-4358-9075-8e2e11b7192e",
@@ -250,12 +249,13 @@ data: {
 ## DELETE deck/:id
 
 ### body: brak
-### res 200 body: brak
 
+### res 200 body: brak
 
 ## GET /deck
 
 ### res 200:
+
 ```
 data: [
     {
@@ -271,6 +271,7 @@ data: [
 ## GET deck/:id
 
 ### res 200:
+
 ```
 data: {
     "id": "e02cbb76-581d-4a09-8566-f47b142edcad",
@@ -284,6 +285,7 @@ data: {
 ## POST /deck/:id/cards
 
 ### body
+
 ```
 {
   "cards": [
@@ -306,6 +308,7 @@ data: {
 ```
 
 ### res 200:
+
 ```
 data: [
     {
@@ -347,6 +350,7 @@ data: [
 ## DELETE /deck/:id/cards
 
 ### body
+
 ```
 {
   "cardIds": ["17d38989-494a-4910-bae2-0fd76d8dbec5"]
@@ -358,11 +362,13 @@ data: [
 ## GET /deck/:id/cards
 
 ### query params:
+
 - page
 - pageSize
 - cardType -> white/black
 
 ### res 200
+
 ```
 {
     "data": [
@@ -388,3 +394,18 @@ data: [
     "pageSize": 10
 }
 ```
+
+# WebSockets - Po lobby
+
+## Received events:
+
+- WS-CONNECTED
+- INVALID_OR_EXPIRED_SESSION
+- USER_NOT_IN_GAME
+- KICKED_FROM_GAME
+- NEW_PLAYER_JOINED: data: {}
+- PLAYER_LEFT: data: {}
+
+## Send events:
+
+- LEAVE_GAME: data: {}
