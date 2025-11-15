@@ -11,6 +11,7 @@ const LobbyPage: React.FC = () => {
   const { t } = useTranslation();
   const ws = useRef<any>(null);
   const reconnectTimeout = useRef<any>(null);
+  const shouldReconnect = useRef<boolean>(true);
 
   // Token to user.id (session id) z authStore
   const token = "3e6f26dc-25d4-4df7-a496-b90fb5a9f920";
@@ -20,9 +21,11 @@ const LobbyPage: React.FC = () => {
 
     const BASE_WS_URL =
       import.meta.env.MODE === "development"
-        ? import.meta.env.VITE_API_WS_GATEWAY_DEV || "ws://localhost:8080"
-        : import.meta.env.VITE_API_WS_GATEWAY || "wss://main-server-dev.1050100.xyz";
-    const endpoint = `${BASE_WS_URL}/connect`;
+        ? import.meta.env.VITE_API_WS_GATEWAY_DEV ||
+          "wss://main-server-dev.1050100.xyz"
+        : import.meta.env.VITE_API_WS_GATEWAY ||
+          "wss://main-server-dev.1050100.xyz";
+    const endpoint = `${BASE_WS_URL}/game/connect`;
 
     const connect = () => {
       if (
@@ -35,7 +38,7 @@ const LobbyPage: React.FC = () => {
         );
         return;
       }
-      
+
       console.log("Connecting to WebSocket:", endpoint);
       toast.info(t("reconnecting"));
       ws.current = new WebSocket(endpoint, token);
@@ -57,6 +60,11 @@ const LobbyPage: React.FC = () => {
         switch (data.event) {
           case "WS_CONNECTED":
             console.log("WebSocket connection confirmed");
+            return;
+          case "USER_NOT_IN_GAME":
+            toast.error(t("errors.USER_NOT_IN_GAME"));
+            console.log("User not in game, stopping reconnection attempts");
+            shouldReconnect.current = false;
             return;
           case "GAME_FINISHED":
             // funkcjaZaToOdpowiadająca(data.data);
@@ -80,16 +88,17 @@ const LobbyPage: React.FC = () => {
       ws.current.addEventListener("close", () => {
         console.log("WebSocket connection closed");
         toast.error(t("errors.WEBSOCKET_DISCONNECT"));
-        
-        // Clear existing timeout if any
-        if (reconnectTimeout.current) {
-          clearTimeout(reconnectTimeout.current);
+
+        if (shouldReconnect.current) {
+          if (reconnectTimeout.current) {
+            clearTimeout(reconnectTimeout.current);
+          }
+
+          reconnectTimeout.current = setTimeout(() => {
+            console.log("Attempting to reconnect...");
+            connect();
+          }, 2000); // 2 second delay
         }
-        
-        reconnectTimeout.current = setTimeout(() => {
-          console.log("Attempting to reconnect...");
-          connect();
-        }, 2000); // 2 second delay
       });
     };
 
@@ -97,13 +106,13 @@ const LobbyPage: React.FC = () => {
 
     return () => {
       console.log("LobbyPage unmounting - closing WebSocket connection");
-      
+
       // Clear reconnect timeout
       if (reconnectTimeout.current) {
         clearTimeout(reconnectTimeout.current);
         reconnectTimeout.current = null;
       }
-      
+
       // Close WebSocket
       if (ws.current) {
         ws.current.close(1000, "Component unmounting");
