@@ -399,12 +399,12 @@ data: [
 
 ## Received events:
 
-- WS-CONNECTED
-- INVALID_OR_EXPIRED_SESSION
-- USER_NOT_IN_GAME
-- KICKED_FROM_GAME
-- NEW_PLAYER_JOINED: data: {}
-- PLAYER_LEFT: data: {}
+- WS-CONNECTED: code: 200
+- INVALID_OR_EXPIRED_SESSION: code: 401
+- USER_NOT_IN_GAME: code: 403
+- KICKED_FROM_GAME: code: 403
+- NEW_PLAYER_JOINED: data: {} code: 200
+- PLAYER_LEFT: data: {} code: 200
 
 ## Send events:
 
