@@ -42,7 +42,7 @@ const LobbyPage: React.FC = () => {
       console.log("Connecting to WebSocket:", endpoint);
       toast.info(t("reconnecting"));
       ws.current = new WebSocket(endpoint, token);
-
+      // `BASE_URL?sessionToken=$token&gameId=${lobbyId}`;
       ws.current.addEventListener("error", (error: any) => {
         console.log("WebSocket error:", error);
         toast.error(t("errors.UNKNOWN_ERROR"));
