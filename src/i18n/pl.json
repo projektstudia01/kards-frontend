@@ -48,6 +48,9 @@
   "connected": "Połączono z serwerem",
   "errors": {
     "UNKNOWN_ERROR": "Wystąpił nieznany błąd",
-    "WEBSOCKET_DISCONNECT": "Utracono połączenie z serwerem"
+    "WEBSOCKET_DISCONNECT": "Utracono połączenie z serwerem",
+    "WS_CONNECTED": "Nawiązano połączenie WebSocket",
+    "INVALID_OR_EXPIRED_SESSION": "Nieprawidłowa lub wygasła sesja",
+    "USER_NOT_IN_GAME": "Użytkownik nie jest w grze"
   }
 }
