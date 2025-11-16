@@ -1,11 +1,21 @@
 import React from 'react';
 import { useAuthStore } from '../store/authStore';
+import { useLobbyStore } from '../store/lobbyStore';
 import { useNavigate } from 'react-router-dom';
 import UsernamePopup from './UsernamePopup';
+import { useEffect } from 'react';
 
 const Lobby: React.FC = () => {
   const { logout, user, showUsernamePopup, confirmEmail } = useAuthStore();
+  const { lobbyId } = useLobbyStore();
   const navigate = useNavigate();
+
+  // Przekieruj na lobby jeśli istnieje lobbyId
+  useEffect(() => {
+    if (lobbyId) {
+      navigate(`/lobby/${lobbyId}`);
+    }
+  }, [lobbyId, navigate]);
 
   const handleLogout = () => {
     logout();

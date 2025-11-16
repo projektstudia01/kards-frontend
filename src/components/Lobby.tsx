@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { useLobbyStore } from "../store/lobbyStore";
 import { useLobbyAPI } from "../hooks/useLobbyAPI";
 import QRCodeGenerator from "./QRCodeGenerator";
 import type { LobbySettings, Player, Invitation } from "../types/lobby";
@@ -16,6 +17,7 @@ const Lobby: React.FC<LobbyProps> = ({ wsRef }) => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { clearLobby } = useLobbyStore();
   const { t } = useTranslation();
   const { getLobby, generateInvitation, leaveLobby, startGame } = useLobbyAPI();
 
@@ -102,10 +104,12 @@ const Lobby: React.FC<LobbyProps> = ({ wsRef }) => {
 
     try {
       await leaveLobby(lobby.id);
+      clearLobby(); // Wyczyść lobbyId i inne dane lobby ze store
       navigate("/welcome");
     } catch (error) {
       console.error("Error leaving lobby:", error);
       toast.error(t("lobby.errors.leave_failed"));
+      clearLobby(); // Wyczyść nawet w przypadku błędu
       navigate("/welcome"); // Navigate anyway
     }
   };

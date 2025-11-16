@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { useLobbyStore } from "../store/lobbyStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import Lobby from "../components/Lobby";
@@ -8,6 +9,8 @@ import Lobby from "../components/Lobby";
 const LobbyPage: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const { user, logout } = useAuthStore();
+  const { clearLobby } = useLobbyStore();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const ws = useRef<any>(null);
   const reconnectTimeout = useRef<any>(null);
@@ -61,19 +64,22 @@ const LobbyPage: React.FC = () => {
           case "WS_CONNECTED":
             console.log("WebSocket connection confirmed");
             return;
-          case "USER_NOT_IN_GAME":
-            toast.error(t("errors.USER_NOT_IN_GAME"));
-            console.log("User not in game, stopping reconnection attempts");
+          case "INVALID_OR_EXPIRED_SESSION":
+            console.log("Invalid or expired session, logging out");
             shouldReconnect.current = false;
+            logout();
+            navigate("/login");
+            return;
+          case "USER_NOT_IN_GAME":
+            console.log("User not in game, leaving lobby");
+            shouldReconnect.current = false;
+            clearLobby();
+            toast.error(t("errors.USER_NOT_IN_GAME"));
+            navigate("/welcome");
             return;
           case "GAME_FINISHED":
             // funkcjaZaToOdpowiadająca(data.data);
             console.log("Game finished:", data.data);
-            break;
-          case "INVALID_OR_EXPIRED_SESSION":
-            // W ws też musimy sprawdzać sesję
-            console.log("Invalid session, logging out");
-            logout();
             break;
           default:
             const errorMessage = t(`errors.${data.event}`);

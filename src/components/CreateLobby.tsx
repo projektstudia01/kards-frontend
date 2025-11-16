@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLobbyAPI } from '../hooks/useLobbyAPI';
+import { useLobbyStore } from '../store/lobbyStore';
 import type { CreateLobbyRequest } from '../types/lobby';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +10,7 @@ import { createGame } from '../api/index';
 const CreateLobby: React.FC = () => {
   const navigate = useNavigate();
   const { createLobby } = useLobbyAPI();
+  const { setLobbyId } = useLobbyStore();
   const { t } = useTranslation();
   
   const [formData, setFormData] = useState<CreateLobbyRequest>({
@@ -45,6 +47,7 @@ const CreateLobby: React.FC = () => {
       await createGame(formData.name, formData.type, formData.maxPlayers);
       const lobby = await createLobby(formData);
       console.log('Created lobby:', lobby);
+      setLobbyId(lobby.id); // Zapisz lobbyId do store
       navigate(`/lobby/${lobby.id}`);
     } catch (error) {
       console.error('Error creating lobby:', error);
