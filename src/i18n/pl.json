@@ -20,6 +20,43 @@
     "invalid_verification_code": "Nieprawidłowy kod weryfikacyjny lub sesja wygasła."
   },
   "lobby": {
+    "title": "Lobby Gry",
+    "players": "graczy",
+    "decks": "talii",
+    "players_in_game": "Gracze w grze",
+    "no_players": "Brak graczy",
+    "you": "Ty",
+    "owner": "WŁAŚCICIEL",
+    "online": "Online",
+    "points": "punktów",
+    "available_decks": "Dostępne talie",
+    "no_available_decks": "Brak dostępnych talii",
+    "public": "Publiczna",
+    "black_cards": "czarnych kart",
+    "white_cards": "białych kart",
+    "in_game": "W grze",
+    "add": "Dodaj",
+    "previous": "Poprzednia",
+    "next": "Następna",
+    "page": "Strona",
+    "of": "z",
+    "decks_in_game": "Talie w grze",
+    "no_decks_selected": "Nie wybrano żadnych talii",
+    "add_decks_hint": "Dodaj talie z prawej strony",
+    "card_requirements": "Wymagania kart",
+    "remove": "Usuń",
+    "not_found": "Lobby nie znalezione",
+    "not_found_description": "Podana gra nie istnieje lub została usunięta",
+    "back_to_menu": "Powrót do menu głównego",
+    "need_more_players": "Potrzeba jeszcze {{count}} graczy",
+    "need_more_cards": "Potrzeba więcej kart w taliach",
+    "ready_to_start": "Gotowe do rozpoczęcia!",
+    "waiting_for_owner": "Oczekiwanie na właściciela...",
+    "leave": "Opuść",
+    "start_game": "Rozpocznij grę",
+    "player_joined": "{{name}} dołączył do gry",
+    "game_started": "Gra rozpoczęta!",
+    "game_finished": "Gra zakończona",
     "errors": {
       "name_required": "Nazwa lobby jest wymagana.",
       "decks_required": "Musisz wybrać przynajmniej jedną talię.",
@@ -31,8 +68,15 @@
       "not_found": "Nie znaleziono lobby.",
       "invite_failed": "Nie udało się wygenerować zaproszenia.",
       "min_players": "Do rozpoczęcia gry potrzeba co najmniej 3 graczy.",
+      "min_players_2": "Do rozpoczęcia gry potrzeba co najmniej 2 graczy.",
+      "not_enough_cards": "Niewystarczająca liczba kart w taliach. Każdy gracz potrzebuje minimum 1 czarnej i 10 białych kart.",
       "start_failed": "Nie udało się rozpocząć gry.",
-      "leave_failed": "Nie udało się opuścić lobby."
+      "leave_failed": "Nie udało się opuścić lobby.",
+      "game_not_found": "Nie znaleziono gry.",
+      "game_already_started": "Gra już się rozpoczęła.",
+      "not_owner": "Tylko właściciel może to zrobić.",
+      "deck_not_found": "Nie znaleziono talii.",
+      "game_id_required": "Kod gry jest wymagany."
     }
   },
   "success": {
@@ -51,6 +95,8 @@
     "WEBSOCKET_DISCONNECT": "Utracono połączenie z serwerem",
     "WS_CONNECTED": "Nawiązano połączenie WebSocket",
     "INVALID_OR_EXPIRED_SESSION": "Nieprawidłowa lub wygasła sesja",
-    "USER_NOT_IN_GAME": "Użytkownik nie jest w grze"
+    "USER_NOT_IN_GAME": "Użytkownik nie jest w grze",
+    "KICKED_FROM_GAME": "Zostałeś wyrzucony z gry",
+    "websocket_not_connected": "Brak połączenia z serwerem"
   }
 }

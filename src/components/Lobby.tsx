@@ -1,146 +1,134 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/authStore";
-import { useLobbyStore } from "../store/lobbyStore";
-import { useLobbyAPI } from "../hooks/useLobbyAPI";
-import QRCodeGenerator from "./QRCodeGenerator";
-import type { LobbySettings, Player, Invitation } from "../types/lobby";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
-import { createGame } from "../api/index";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import PlayersInGame from './PlayersInGame';
+import DecksInGame from './DecksInGame';
+import AvailableDecks from './AvailableDecks';
+import QRCodeGenerator from './QRCodeGenerator';
+import type { Player, Deck } from '../types/lobby';
 
 interface LobbyProps {
-  wsRef: React.MutableRefObject<any>;
+  wsRef: React.MutableRefObject<WebSocket | null>;
+  gameId: string | null;
+  players: Player[];
+  decksInGame: Deck[];
+  availableDecks: Deck[];
+  availableDecksPage: number;
+  availableDecksTotal: number;
+  availableDecksPageSize: number;
 }
 
-const Lobby: React.FC<LobbyProps> = ({ wsRef }) => {
-  const { lobbyId } = useParams<{ lobbyId: string }>();
+const Lobby: React.FC<LobbyProps> = ({ 
+  wsRef, 
+  gameId, 
+  players, 
+  decksInGame,
+  availableDecks,
+  availableDecksPage,
+  availableDecksTotal,
+  availableDecksPageSize
+}) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { clearLobby } = useLobbyStore();
   const { t } = useTranslation();
-  const { getLobby, generateInvitation, leaveLobby, startGame } = useLobbyAPI();
+  const [showQRCode, setShowQRCode] = useState(false);
 
-  const [lobby, setLobby] = useState<LobbySettings | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [invitation, setInvitation] = useState<Invitation | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showInviteModal, setShowInviteModal] = useState(false);
+  // Find current user as player to check if owner
+  const currentPlayer = players.find(p => p.id === user?.id);
+  const isOwner = currentPlayer?.owner || false;
 
-  const isHost = lobby && user && lobby.createdBy === user.email;
-  const canGenerateInvite = lobby?.type === "private" && isHost;
-
-  useEffect(() => {
-    if (!lobbyId) {
-      navigate("/welcome");
+  const handleAddDeck = (deckId: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      toast.error(t('errors.websocket_not_connected'));
       return;
     }
 
-    const fetchLobbyData = async () => {
-      try {
-        const data = await getLobby(lobbyId);
-        setLobby(data.lobby);
-        setPlayers(data.players);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching lobby:", error);
-        toast.error(t("lobby.errors.not_found"));
-        navigate("/welcome");
-      }
-    };
-
-    fetchLobbyData();
-  }, [lobbyId, getLobby, navigate, t]);
-
-  const generateInvite = async () => {
-    if (!lobby) return;
-
-    setIsLoading(true);
-    try {
-      const newInvitation = await generateInvitation(lobby.id);
-      setInvitation(newInvitation);
-      setShowInviteModal(true);
-    } catch (error) {
-      console.error("Error generating invitation:", error);
-      toast.error(t("lobby.errors.invite_failed"));
-    } finally {
-      setIsLoading(false);
-    }
+    wsRef.current.send(JSON.stringify({
+      event: 'ADD_DECKS_TO_GAME',
+      data: { decks: [deckId] }
+    }));
   };
 
-  const copyInviteLink = () => {
-    if (!invitation) return;
-
-    const inviteUrl = `${window.location.origin}/join-lobby?invite=${invitation.token}`;
-    navigator.clipboard.writeText(inviteUrl).then(() => {
-      toast.success(t("success.lobby.invite_copied"));
-    });
-  };
-
-  const handleStartGame = async () => {
-    if (!lobby || !isHost) return;
-
-
-    if (players.length < 3) {
-      toast.error(t("lobby.errors.min_players"));
+  const handleRemoveDeck = (deckId: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      toast.error(t('errors.websocket_not_connected'));
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const gameData = await startGame(lobby.id);
-      console.log("Game started:", gameData);
-      navigate(`/game/${gameData.gameId}`);
-    } catch (error) {
-      console.error("Error starting game:", error);
-      toast.error(t("lobby.errors.start_failed"));
-    } finally {
-      setIsLoading(false);
+    wsRef.current.send(JSON.stringify({
+      event: 'REMOVE_DECKS_FROM_GAME',
+      data: { decks: [deckId] }
+    }));
+  };
+
+  const handleStartGame = () => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      toast.error(t('errors.websocket_not_connected'));
+      return;
+    }
+
+    // Validate requirements
+    if (players.length < 2) {
+      toast.error(t('lobby.errors.min_players_2'));
+      return;
+    }
+
+    const totalBlackCards = decksInGame.reduce((sum, deck) => sum + deck.blackCardsCount, 0);
+    const totalWhiteCards = decksInGame.reduce((sum, deck) => sum + deck.whiteCardsCount, 0);
+    const requiredBlackCards = players.length * 1;
+    const requiredWhiteCards = players.length * 10;
+
+    if (totalBlackCards < requiredBlackCards || totalWhiteCards < requiredWhiteCards) {
+      toast.error(t('lobby.errors.not_enough_cards'));
+      return;
+    }
+
+    wsRef.current.send(JSON.stringify({
+      event: 'START_GAME'
+    }));
+  };
+
+  const handleLeaveLobby = () => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        event: 'LEAVE_GAME'
+      }));
+      // Give it a moment to send before navigating
+      setTimeout(() => {
+        navigate('/welcome');
+      }, 100);
+    } else {
+      navigate('/welcome');
     }
   };
 
-  const handleLeaveLobby = async () => {
-    if (!lobby) return;
+  // Check if can start game
+  const totalBlackCards = decksInGame.reduce((sum, deck) => sum + deck.blackCardsCount, 0);
+  const totalWhiteCards = decksInGame.reduce((sum, deck) => sum + deck.whiteCardsCount, 0);
+  const requiredBlackCards = Math.max(2, players.length) * 1;
+  const requiredWhiteCards = Math.max(2, players.length) * 10;
+  const hasEnoughPlayers = players.length >= 2;
+  const hasEnoughCards = totalBlackCards >= requiredBlackCards && totalWhiteCards >= requiredWhiteCards;
+  const canStartGame = isOwner && hasEnoughPlayers && hasEnoughCards;
 
-    try {
-      await leaveLobby(lobby.id);
-      clearLobby(); // Wyczyść lobbyId i inne dane lobby ze store
-      navigate("/welcome");
-    } catch (error) {
-      console.error("Error leaving lobby:", error);
-      toast.error(t("lobby.errors.leave_failed"));
-      clearLobby(); // Wyczyść nawet w przypadku błędu
-      navigate("/welcome"); // Navigate anyway
-    }
-  };
-
-  if (isLoading && !lobby) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">⏳</div>
-          <p className="text-muted-foreground">Ładowanie lobby...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!lobby) {
+  if (!gameId) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">❌</div>
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            Lobby nie znalezione
+            {t('lobby.not_found')}
           </h1>
           <p className="text-muted-foreground mb-4">
-            Podane lobby nie istnieje lub zostało usunięte
+            {t('lobby.not_found_description')}
           </p>
           <button
-            onClick={() => navigate("/welcome")}
+            onClick={() => navigate('/welcome')}
             className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
           >
-            Powrót do menu głównego
+            {t('lobby.back_to_menu')}
           </button>
         </div>
       </div>
@@ -149,241 +137,139 @@ const Lobby: React.FC<LobbyProps> = ({ wsRef }) => {
 
   return (
     <div className="min-h-screen bg-background p-6 pt-12">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">{lobby.name}</h1>
-          <div className="flex items-center justify-center space-x-4 text-muted-foreground">
+          <h1 className="text-4xl font-bold text-primary mb-2">
+            {t('lobby.title')}
+          </h1>
+          <div className="flex items-center justify-center space-x-4 text-muted-foreground mb-3">
             <span className="flex items-center">
-              {lobby.type === "private" ? "🔒" : "🌍"}
-              {lobby.type === "private" ? "Prywatne" : "Publiczne"}
+              👥 {players.length} {t('lobby.players')}
             </span>
-            <span>
-              👥 {players.length}/{lobby.maxPlayers} graczy
+            <span className="flex items-center">
+              🎴 {decksInGame.length} {t('lobby.decks')}
             </span>
-            <span>🎴 {lobby.selectedDecks.length} talii</span>
+          </div>
+          
+          {/* Game ID - do kopiowania i udostępniania */}
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-sm text-muted-foreground">ID Gry:</span>
+            <code className="px-3 py-1 bg-accent rounded border border-border text-sm font-mono">
+              {gameId}
+            </code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(gameId || '');
+                toast.success('ID gry skopiowane!');
+              }}
+              className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
+            >
+              📋 Kopiuj
+            </button>
+            <button
+              onClick={() => setShowQRCode(!showQRCode)}
+              className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            >
+              📱 {showQRCode ? 'Ukryj QR' : 'Pokaż QR'}
+            </button>
+          </div>
+          
+          {/* QR Code Modal */}
+          {showQRCode && (
+            <div className="mt-4 p-4 bg-card rounded-lg border border-border inline-block">
+              <p className="text-sm text-muted-foreground mb-2 text-center">
+                Zeskanuj kod aby dołączyć do gry
+              </p>
+              <QRCodeGenerator 
+                text={`${window.location.origin}/lobby/${gameId}`}
+                size={200}
+                className="mx-auto"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Left Column - Players */}
+          <div className="lg:col-span-1">
+            <PlayersInGame players={players} />
+          </div>
+
+          {/* Middle Column - Decks in Game */}
+          <div className="lg:col-span-1">
+            <DecksInGame
+              onRemoveDeck={handleRemoveDeck}
+              isOwner={isOwner}
+              decksInGame={decksInGame}
+              players={players}
+            />
+          </div>
+
+          {/* Right Column - Available Decks */}
+          <div className="lg:col-span-1">
+            <AvailableDecks
+              onAddDeck={handleAddDeck}
+              isOwner={isOwner}
+              wsRef={wsRef}
+              availableDecks={availableDecks}
+              decksInGame={decksInGame}
+              availableDecksPage={availableDecksPage}
+              availableDecksTotal={availableDecksTotal}
+              availableDecksPageSize={availableDecksPageSize}
+            />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Players List */}
-          <div className="lg:col-span-2">
-            <div className="bg-card rounded-lg p-6 border border-border">
-              <h2 className="text-xl font-bold text-card-foreground mb-4">
-                Gracze w lobby
-              </h2>
-
-              <div className="space-y-3">
-                {players.map((player) => (
-                  <div
-                    key={player.id}
-                    className="flex items-center justify-between p-4 bg-accent rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                        <span className="text-primary-foreground font-bold">
-                          {player.username.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-card-foreground">
-                          {player.username}
-                          {player.isHost && (
-                            <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
-                              HOST
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Dołączył:{" "}
-                          {new Date(player.joinedAt).toLocaleTimeString()}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                      <span className="text-sm text-muted-foreground">
-                        Online
-                      </span>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Empty slots */}
-                {Array.from({ length: lobby.maxPlayers - players.length }).map(
-                  (_, index) => (
-                    <div
-                      key={`empty-${index}`}
-                      className="flex items-center p-4 bg-secondary/50 rounded-lg border-2 border-dashed border-border"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                          <span className="text-muted-foreground">?</span>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">
-                            Oczekiwanie na gracza...
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Lobby Controls */}
-          <div className="space-y-6">
-            {/* Game Settings */}
-            <div className="bg-card rounded-lg p-6 border border-border">
-              <h3 className="text-lg font-bold text-card-foreground mb-4">
-                Ustawienia gry
-              </h3>
-
-              <div className="space-y-3">
-                <div>
-                  <span className="text-sm text-muted-foreground">
-                    Wybrane talie:
-                  </span>
-                  <div className="mt-1 space-y-1">
-                    {lobby.selectedDecks.map((deck) => (
-                      <div
-                        key={deck}
-                        className="text-sm bg-accent px-3 py-1 rounded"
-                      >
-                        🎴 {deck}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Invite Section - Only for private lobbies and hosts */}
-            {canGenerateInvite && (
-              <div className="bg-card rounded-lg p-6 border border-border">
-                <h3 className="text-lg font-bold text-card-foreground mb-4">
-                  Zaproszenia
-                </h3>
-
-                <button
-                  onClick={generateInvite}
-                  disabled={isLoading}
-                  className="w-full px-4 py-3 bg-info text-info-foreground rounded-lg font-medium hover:bg-info/90 transition-colors disabled:opacity-50"
-                >
-                  {isLoading ? "Generowanie..." : "📨 Wygeneruj zaproszenie"}
-                </button>
-
-                {invitation && (
-                  <div className="mt-4 p-4 bg-accent rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Aktywne zaproszenie:
-                    </p>
-                    <div className="space-y-2">
-                      <button
-                        onClick={copyInviteLink}
-                        className="w-full px-3 py-2 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
-                      >
-                        📋 Skopiuj link
-                      </button>
-                      <div className="text-center">
-                        <QRCodeGenerator
-                          text={`${window.location.origin}/join-lobby?invite=${invitation.token}`}
-                          size={80}
-                          className="mx-auto"
-                          alt="Kod QR zaproszenia do lobby"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Kod QR
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Game Actions */}
-            <div className="space-y-3">
-              {isHost ? (
-                <button
-                  onClick={handleStartGame}
-                  disabled={isLoading || players.length < 3}
-                  className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {players.length < 3
-                    ? `Potrzeba ${3 - players.length} więcej graczy`
-                    : "🎮 Rozpocznij grę"}
-                </button>
-              ) : (
-                <div className="w-full px-4 py-3 bg-secondary text-secondary-foreground rounded-lg font-medium text-center">
-                  ⏳ Oczekiwanie na hosta...
-                </div>
+        {/* Control Panel */}
+        <div className="bg-card rounded-lg p-6 border border-border">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Status Messages */}
+            <div className="flex-1">
+              {!hasEnoughPlayers && (
+                <p className="text-sm text-muted-foreground">
+                  ⚠️ {t('lobby.need_more_players', { count: 2 - players.length })}
+                </p>
               )}
+              {hasEnoughPlayers && !hasEnoughCards && (
+                <p className="text-sm text-muted-foreground">
+                  ⚠️ {t('lobby.need_more_cards')}
+                </p>
+              )}
+              {hasEnoughPlayers && hasEnoughCards && isOwner && (
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  ✅ {t('lobby.ready_to_start')}
+                </p>
+              )}
+              {hasEnoughPlayers && hasEnoughCards && !isOwner && (
+                <p className="text-sm text-muted-foreground">
+                  ⏳ {t('lobby.waiting_for_owner')}
+                </p>
+              )}
+            </div>
 
+            {/* Action Buttons */}
+            <div className="flex gap-3">
               <button
                 onClick={handleLeaveLobby}
-                className="w-full px-4 py-3 bg-destructive text-destructive-foreground rounded-lg font-medium hover:bg-destructive/90 transition-colors"
+                className="px-6 py-2.5 bg-destructive text-destructive-foreground rounded-lg font-medium hover:bg-destructive/90 transition-colors"
               >
-                🚪 Opuść lobby
+                🚪 {t('lobby.leave')}
               </button>
+
+              {isOwner && (
+                <button
+                  onClick={handleStartGame}
+                  disabled={!canStartGame}
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  🎮 {t('lobby.start_game')}
+                </button>
+              )}
             </div>
           </div>
         </div>
-
-        {/* Invite Modal */}
-        {showInviteModal && invitation && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card rounded-lg p-6 max-w-md w-full mx-4 border border-border">
-              <h3 className="text-lg font-bold text-card-foreground mb-4">
-                Zaproszenie wygenerowane
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-2">
-                    Link zaproszenia:
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="text"
-                      value={`${window.location.origin}/join-lobby?invite=${invitation.token}`}
-                      readOnly
-                      className="flex-1 px-3 py-2 border border-border rounded-l-lg bg-background text-foreground text-sm"
-                    />
-                    <button
-                      onClick={copyInviteLink}
-                      className="px-3 py-2 bg-primary text-primary-foreground rounded-r-lg hover:bg-primary/90"
-                    >
-                      📋
-                    </button>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <QRCodeGenerator
-                    text={`${window.location.origin}/join-lobby?invite=${invitation.token}`}
-                    size={128}
-                    className="mx-auto mb-2"
-                    alt="Kod QR zaproszenia do lobby"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Zeskanuj kodem QR lub udostępnij link
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setShowInviteModal(false)}
-                  className="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/90"
-                >
-                  Zamknij
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

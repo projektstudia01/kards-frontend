@@ -1,34 +1,47 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import { useLobbyStore } from "../store/lobbyStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import Lobby from "../components/Lobby";
+import type { Player, Deck } from "../types/lobby";
 
 const LobbyPage: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const { user, logout } = useAuthStore();
-  const { clearLobby } = useLobbyStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const ws = useRef<any>(null);
+  const ws = useRef<WebSocket | null>(null);
   const reconnectTimeout = useRef<any>(null);
   const shouldReconnect = useRef<boolean>(true);
 
-  // Token to user.id (session id) z authStore
-  const token = "3e6f26dc-25d4-4df7-a496-b90fb5a9f920";
+  // Local state - following DeckEditor pattern
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [decksInGame, setDecksInGame] = useState<Deck[]>([]);
+  const [availableDecks, setAvailableDecks] = useState<Deck[]>([]);
+  const [availableDecksPage, setAvailableDecksPage] = useState(0);
+  const [availableDecksTotal, setAvailableDecksTotal] = useState(0);
+  const [availableDecksPageSize] = useState(10);
+  const [gameStarted, setGameStarted] = useState(false);
 
+  // Redirect to game when started (will be triggered by WebSocket GAME_STARTED event)
   useEffect(() => {
-    if (!token || !lobbyId) return;
+    if (gameStarted && lobbyId) {
+      navigate(`/game/${lobbyId}`);
+    }
+  }, [gameStarted, lobbyId, navigate]);
+
+  // WebSocket connection - stays at page level to avoid reconnects on component changes
+  useEffect(() => {
+    if (!lobbyId || !user) return;
 
     const BASE_WS_URL =
       import.meta.env.MODE === "development"
         ? import.meta.env.VITE_API_WS_GATEWAY_DEV ||
-          "wss://main-server-dev.1050100.xyz"
+          "ws://localhost:8000"
         : import.meta.env.VITE_API_WS_GATEWAY ||
           "wss://main-server-dev.1050100.xyz";
-    const endpoint = `${BASE_WS_URL}/game/connect`;
+    const endpoint = `${BASE_WS_URL}/game/connect?game=${lobbyId}`;
 
     const connect = () => {
       if (
@@ -36,63 +49,145 @@ const LobbyPage: React.FC = () => {
         (ws.current.readyState === WebSocket.CONNECTING ||
           ws.current.readyState === WebSocket.OPEN)
       ) {
-        console.log(
-          "WebSocket is already connecting or open. Skipping connect."
-        );
         return;
       }
 
-      console.log("Connecting to WebSocket:", endpoint);
       toast.info(t("reconnecting"));
-      ws.current = new WebSocket(endpoint, token);
-      // `BASE_URL?sessionToken=$token&gameId=${lobbyId}`;
-      ws.current.addEventListener("error", (error: any) => {
-        console.log("WebSocket error:", error);
+      
+      ws.current = new WebSocket(endpoint);
+      
+      ws.current.addEventListener("error", () => {
         toast.error(t("errors.UNKNOWN_ERROR"));
       });
 
       ws.current.addEventListener("open", () => {
-        console.log("WebSocket connected");
         toast.success(t("connected"));
+        // Backend sends initial data automatically via sendInitialData
       });
 
       ws.current.addEventListener("message", (event: any) => {
         const data = JSON.parse(event.data);
-        console.log("WebSocket message received:", data);
 
-        switch (data.event) {
+        const { event: eventType, data: eventData } = data;
+
+        switch (eventType) {
           case "WS_CONNECTED":
-            console.log("WebSocket connection confirmed");
             return;
+
           case "INVALID_OR_EXPIRED_SESSION":
-            console.log("Invalid or expired session, logging out");
             shouldReconnect.current = false;
             logout();
             navigate("/login");
             return;
+
           case "USER_NOT_IN_GAME":
-            console.log("User not in game, leaving lobby");
             shouldReconnect.current = false;
-            clearLobby();
             toast.error(t("errors.USER_NOT_IN_GAME"));
             navigate("/welcome");
             return;
+
+          case "KICKED_FROM_GAME":
+            shouldReconnect.current = false;
+            toast.error(t("errors.KICKED_FROM_GAME"));
+            navigate("/welcome");
+            return;
+
+          case "NEW_PLAYER_JOINED":
+            if (eventData && eventData.id && eventData.name) {
+              toast.info(t("lobby.player_joined", { name: eventData.name }));
+            }
+            return;
+
+          case "PLAYER_LEFT":
+            return;
+
+          case "PLAYERS_IN_GAME":
+            if (Array.isArray(eventData)) {
+              setPlayers(eventData);
+            }
+            return;
+
+          case "AVAILABLE_DECKS":
+            // Handle two structures from backend:
+            // 1. {event, data: [...], total, page} - from initial data
+            // 2. {event, data: {data: [...], total, page}} - from GET_DECKS_PAGINATED
+            let decksData, total, page;
+            
+            if (Array.isArray(eventData)) {
+              // Structure 1: data is directly an array
+              decksData = eventData;
+              total = data.total || eventData.length;
+              page = data.page || 0;
+            } else if (eventData && eventData.data && Array.isArray(eventData.data)) {
+              // Structure 2: data is nested
+              decksData = eventData.data;
+              total = eventData.total || 0;
+              page = eventData.page || 0;
+            } else {
+              return;
+            }
+            
+            setAvailableDecks(decksData);
+            setAvailableDecksTotal(total);
+            setAvailableDecksPage(page);
+            return;
+
+          case "DECKS_IN_GAME":
+            // Handle two structures: [] or {decks: [...]}
+            if (Array.isArray(eventData)) {
+              setDecksInGame(eventData);
+            } else if (eventData && Array.isArray(eventData.decks)) {
+              setDecksInGame(eventData.decks);
+            }
+            return;
+
+          case "GAME_STARTED":
+            setGameStarted(true);
+            toast.success(t("lobby.game_started"));
+            return;
+
           case "GAME_FINISHED":
-            // funkcjaZaToOdpowiadająca(data.data);
-            console.log("Game finished:", data.data);
-            break;
+            shouldReconnect.current = false;
+            toast.info(t("lobby.game_finished"));
+            navigate("/welcome");
+            return;
+
+          // Error events
+          case "not_enough_players":
+            toast.error(t("lobby.errors.min_players_2"));
+            return;
+
+          case "not_enough_cards_in_decks":
+            toast.error(t("lobby.errors.not_enough_cards"));
+            return;
+
+          case "game_not_found":
+            toast.error(t("lobby.errors.game_not_found"));
+            shouldReconnect.current = false;
+            navigate("/welcome");
+            return;
+
+          case "game_already_started":
+            toast.error(t("lobby.errors.game_already_started"));
+            return;
+
+          case "user_it_not_game_owner":
+            toast.error(t("lobby.errors.not_owner"));
+            return;
+
+          case "deck_not_found":
+            toast.error(t("lobby.errors.deck_not_found"));
+            return;
+
           default:
-            const errorMessage = t(`errors.${data.event}`);
-            toast.error(
-              errorMessage === `errors.${data.event}`
-                ? t("errors.UNKNOWN_ERROR")
-                : errorMessage
-            );
+            const errorMessage = t(`errors.${eventType}`);
+            if (errorMessage !== `errors.${eventType}`) {
+              toast.error(errorMessage);
+            }
         }
       });
 
       ws.current.addEventListener("close", () => {
-        console.log("WebSocket connection closed");
         toast.error(t("errors.WEBSOCKET_DISCONNECT"));
 
         if (shouldReconnect.current) {
@@ -101,17 +196,39 @@ const LobbyPage: React.FC = () => {
           }
 
           reconnectTimeout.current = setTimeout(() => {
-            console.log("Attempting to reconnect...");
             connect();
-          }, 2000); // 2 second delay
+          }, 2000);
         }
       });
     };
 
     connect();
 
+    // beforeunload handler to leave game when closing/refreshing page
+    const handleBeforeUnload = () => {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify({ event: 'LEAVE_GAME' }));
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
-      console.log("LobbyPage unmounting - closing WebSocket connection");
+      shouldReconnect.current = false;
+
+      // Send LEAVE_GAME before closing WebSocket
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify({ event: 'LEAVE_GAME' }));
+        setTimeout(() => {
+          if (ws.current) {
+            ws.current.close(1000, "Component unmounting");
+            ws.current = null;
+          }
+        }, 100);
+      } else if (ws.current) {
+        ws.current.close(1000, "Component unmounting");
+        ws.current = null;
+      }
 
       // Clear reconnect timeout
       if (reconnectTimeout.current) {
@@ -119,19 +236,27 @@ const LobbyPage: React.FC = () => {
         reconnectTimeout.current = null;
       }
 
-      // Close WebSocket
-      if (ws.current) {
-        ws.current.close(1000, "Component unmounting");
-        ws.current = null;
-      }
+      // Remove beforeunload listener
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [token, lobbyId, logout, t]);
+  }, [lobbyId, logout, t, navigate, user]);
 
   if (!lobbyId) {
     return null;
   }
 
-  return <Lobby wsRef={ws} />;
+  return (
+    <Lobby 
+      wsRef={ws} 
+      gameId={lobbyId}
+      players={players}
+      decksInGame={decksInGame}
+      availableDecks={availableDecks}
+      availableDecksPage={availableDecksPage}
+      availableDecksTotal={availableDecksTotal}
+      availableDecksPageSize={availableDecksPageSize}
+    />
+  );
 };
 
 export default LobbyPage;

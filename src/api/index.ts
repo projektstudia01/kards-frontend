@@ -252,6 +252,7 @@ export const createGame = async (name: string, lobbyType: string, maxPlayers: nu
     const response = await customAxios.post("/game/create", {
       name, lobbyType, maxPlayers
     });
+    
     return {
       isError: false,
       data: response.data.data,

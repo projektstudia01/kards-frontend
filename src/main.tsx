@@ -7,10 +7,10 @@ import App from './App.tsx'
 import { BrowserRouter } from 'react-router-dom'; // <--- DODAJ TEN IMPORT
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    {/* OPAKOWANIE APLIKACJI W BROWSERROUTER */}
+  // StrictMode disabled for WebSocket development
+  // <StrictMode>
     <BrowserRouter>
-      <App />
+      <App />
     </BrowserRouter>
-  </StrictMode>,
+  // </StrictMode>,
 )
