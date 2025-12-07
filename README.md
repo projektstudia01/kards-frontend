@@ -1,4 +1,243 @@
-# auth endpointy
+# WS - flow rund
+
+1. połączenie z ws
+
+`wss://main-server-dev.1050100.xyz/game/connect?sessionToken=TOKEN_SESJI&game=UUID_GRY`
+
+2. Wysłanie eventu WS - dodanie decku do gry, deck musi być publiczny lub należeć do twojego konta
+
+```json
+{
+  "event": "ADD_DECKS_TO_GAME",
+  "data": {
+    "decks": [
+      "deck-uuid-1",
+      "deck-uuid-2"
+    ]
+  }
+}
+```
+
+3. Wysłanie eventu WS - rozpoczęcie gry
+
+`{"event": "START_GAME"}`
+
+Potrzebne są 2 osoby, więc albo multikonto, albo edycja bazy (game -> Cuurrent players = 2)
+
+w decku odpowiednia liczba kart białych i czarnych
+
+4. odebrane zostaną eventy GAME_STARTED z ID gry oraz ROUND_STARTED
+
+```
+schema +- na oko:
+ROUND_STARTED:
+    data:
+        []cards:
+            id: uuid
+            text: tekst karty
+            type: white
+            blankSpaceAmount: liczba pustych miejsc
+        cardRef: uuuid gracza - sędzia rundy
+        blackCard:
+            id: uuid
+            text: tekst karty
+            type: black
+            blankSpaceAmount: liczba pustych miejsc
+```
+
+```json
+{
+  "event": "ROUND_STARTED",
+  "data": {
+    "cards": [
+      {
+        "id": "card-uuid",
+        "text": "Card text",
+        "type": "white",
+        "blankSpaceAmount": 0
+      }
+    ],
+    "cardRef": "player-uuid-of-judge",
+    "blackCard": {
+      "id": "card-uuid",
+      "text": "Black card text with ___ blank spaces",
+      "type": "black",
+      "blankSpaceAmount": 1
+    }
+  }
+}
+```
+
+5. wybór kart przez graczy, tyle ile wybosi blankSpaceAmount, czyli wysłać
+
+```json
+{
+  "event": "SUBMIT_CARDS",
+  "data": {
+    "cardIds": [
+      "white-card-uuid-1",
+      "white-card-uuid-2"
+    ]
+  }
+}
+```
+
+6. gdy już wszyscy się ogarną, dostaje się eevent ALL_CARDS_SUUBMITTED
+
+```json
+{
+  "event": "ALL_CARDS_SUBMITTED",
+  "code": 200,
+  "data": {
+    "submissions": [
+      {
+        "playerId": "player-uuid-1",
+        "playerName": "Player Name",
+        "cards": [
+          {
+            "id": "card-uuid",
+            "text": "Card text",
+            "type": "white",
+            "blankSpaceAmount": 0
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+7. sędzia musi wysłać SELECT_ROUND_WINNER:
+
+```json
+{
+  "event": "SELECT_ROUND_WINNER",
+  "data": {
+    "playerId": "winner-player-uuid"
+  }
+}
+```
+
+8. w tym momeencie runda powinna się skończyć, punkty przyznać, wszyscy otrzymać event jak niżej
+
+```json
+{
+  "event": "ROUND_FINISHED",
+  "code": 200,
+  "data": {
+    "winner": {
+      "id": "winner-player-uuid",
+      "name": "Winner Name",
+      "points": 5
+    },
+    "players": [
+      {
+        "id": "player-uuid-1",
+        "name": "Player 1",
+        "points": 5
+      },
+      {
+        "id": "player-uuid-2",
+        "name": "Player 2",
+        "points": 3
+      }
+    ]
+  }
+}
+```
+
+---
+
+# API gry/lobby
+
+Base URL: `https://main-server-dev.1050100.xyz/game`
+
+## POST `/game/create`
+
+Tworzy nową grę.
+
+**Req:**
+
+```json
+{
+  "name": "Nazwa gry",
+  "maxPlayers": 8,
+  "lobbyType": "public",
+  "invitationCode": "kod123"
+}
+```
+
+**Pola:**
+
+- `name` (string, wymagane) - nazwa gry
+- `maxPlayers` (number, wymagane) - max graczy (np. 8)
+- `lobbyType` (string, wymagane) - `"public"` lub `"private"`
+- `invitationCode` (string, opcjonalne) - kod do prywatnej gry
+
+**Res:**
+
+```json
+{
+  "data": {
+    "message": "Game created successfully",
+    "game": {
+      "id": "uuid-gry",
+      "name": "Nazwa gry",
+      "ownerId": "twoje-id",
+      "maxPlayers": 8,
+      "currentPlayers": 1,
+      "status": "waiting",
+      "lobbyType": "public",
+      "invitationCode": "kod123",
+      "createdAt": "2025-01-07T12:00:00.000Z",
+      "updatedAt": "2025-01-07T12:00:00.000Z"
+    }
+  }
+}
+```
+
+Automatycznie dołącza Cię do gry jako owner, zwiększa currentPlayers o 1
+
+---
+
+### GET `/game/list`
+
+Pobiera listę wszystkich gier.
+
+**Res:**
+
+```json
+{
+  "data": {
+    "games": [
+      {
+        "id": "uuid-gry",
+        "name": "Nazwa gry",
+        "ownerId": "owner-id",
+        "maxPlayers": 8,
+        "currentPlayers": 3,
+        "status": "waiting",
+        "lobbyType": "public",
+        "createdAt": "2025-01-07T12:00:00.000Z",
+        "players": [
+          {
+            "id": "player-id",
+            "points": 0,
+            "joinedAt": "2025-01-07T12:00:00.000Z"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+Opuszczanie lobby róbcie eventem Websocketowym LEAVE_GAME, nie endpointem HTTP, bo to deweloperskie coś jest.
+
+---
+
+# API Auth - endpointy
 
 ## POST: auth/register
 
@@ -205,11 +444,13 @@ Dodatkowo dostajemy cookiesa
 ```
 
 ## POST auth/logout
+
 Usuwa cookiesa i czyści sesje, trzeba być zalogowanym
 
 ## PUT auth/set-nickname
 
-### body: 
+### body:
+
 `
 {
     username: min(3) max(15) alfanumeryczne i podłogi
@@ -217,6 +458,7 @@ Usuwa cookiesa i czyści sesje, trzeba być zalogowanym
 `
 
 ### res 200
+
 `
 {
     "user": {
@@ -242,6 +484,7 @@ Usuwa cookiesa i czyści sesje, trzeba być zalogowanym
 ## POST deck/create
 
 ### body:
+
 ```
 {
     "title":"edisted",
@@ -250,6 +493,7 @@ Usuwa cookiesa i czyści sesje, trzeba być zalogowanym
 ```
 
 ## res 200:
+
 ```
 data: {
     "title": "edisted",
@@ -268,6 +512,7 @@ data: {
 ### body - Takie samo jak create ale pola opcjonalne.
 
 ## res 200:
+
 ```
 data: {
     "id": "b42396a9-92fd-4358-9075-8e2e11b7192e",
@@ -281,12 +526,13 @@ data: {
 ## DELETE deck/:id
 
 ### body: brak
-### res 200 body: brak
 
+### res 200 body: brak
 
 ## GET /deck
 
 ### res 200:
+
 ```
 data: [
     {
@@ -302,6 +548,7 @@ data: [
 ## GET deck/:id
 
 ### res 200:
+
 ```
 data: {
     "id": "e02cbb76-581d-4a09-8566-f47b142edcad",
@@ -315,6 +562,7 @@ data: {
 ## POST /deck/:id/cards
 
 ### body
+
 ```
 {
   "cards": [
@@ -337,6 +585,7 @@ data: {
 ```
 
 ### res 200:
+
 ```
 data: [
     {
@@ -378,6 +627,7 @@ data: [
 ## DELETE /deck/:id/cards
 
 ### body
+
 ```
 {
   "cardIds": ["17d38989-494a-4910-bae2-0fd76d8dbec5"]
@@ -389,11 +639,13 @@ data: [
 ## GET /deck/:id/cards
 
 ### query params:
+
 - page
 - pageSize
 - cardType -> white/black
 
 ### res 200
+
 ```
 {
     "data": [
