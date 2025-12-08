@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Registration from "./components/Registration";
 import Login from "./components/Login";
 import Welcome from "./components/Welcome";
-import Lobby from "./components/Lobby";
+import LobbyPage from "./pages/LobbyPage";
 import CreateLobby from "./components/CreateLobby";
 import JoinLobby from "./components/JoinLobby";
 import QRCodeDemo from "./components/QRCodeDemo";
@@ -56,7 +56,7 @@ function App() {
         {/* Konkretne lobby */}
         <Route
           path="/lobby/:lobbyId"
-          element={isLoggedIn ? <Lobby /> : <Navigate to="/login" replace />}
+          element={isLoggedIn ? <LobbyPage /> : <Navigate to="/login" replace />}
         />
         {/* QR Code Demo (for testing) */}
         <Route

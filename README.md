@@ -671,3 +671,51 @@ data: [
     "pageSize": 10
 }
 ```
+
+# WebSockets - Po lobby
+
+## Received events:
+
+- WS-CONNECTED: code: 200
+- INVALID_OR_EXPIRED_SESSION: code: 401
+- USER_NOT_IN_GAME: code: 403
+- KICKED_FROM_GAME: code: 403
+- NEW_PLAYER_JOINED: data: { id, name }, code: 200
+<!-- - PLAYER_LEFT: data: {id} code: 200 -->
+- DECKS_IN_GAME: data: [{
+  "id": "eeee39e3-5c2a-4817-9798-cec5aca306c5",
+  "title": "Test",
+  "description": "test",
+  "createdAt": "2025-11-29T15:17:49.172Z",
+  "isPublic": false,
+  "updatedAt": "2025-11-29T15:17:49.172Z",
+  "blackCardsCount": 20,
+  "whiteCardsCount": 26
+  }]
+- PLAYERS_IN_GAME: data: [{name, id, points, owner}]
+- AVAILABLE_DECKS: {data: [ {
+  "id": "eeee39e3-5c2a-4817-9798-cec5aca306c5",
+  "title": "Test",
+  "description": "test",
+  "createdAt": "2025-11-29T15:17:49.172Z",
+  "isPublic": false,
+  "updatedAt": "2025-11-29T15:17:49.172Z",
+  "blackCardsCount": 20,
+  "whiteCardsCount": 26
+  }], total, page, pageSize}
+
+## Send events:
+
+- LEAVE_GAME
+- START_GAME
+  Możliwe błędy
+  - code 400, event: not_enough_players musi byc minimum 2
+  - code 400, event: not_enough_cards_in_decks aktualnie na kazdego gracza jest minimum 1 czarna i 10 białych
+- ADD_DECKS_TO_GAME: data {"decks": ["eeee39e3-5c2a-4817-9798-cec5aca306c5"]}
+  Możliwe błędy
+  - code 404, event: game_not_found
+  - code 400, event: game_already_started
+  - code 403, event: user_it_not_game_owner
+  - code 404, event: deck_not_found
+- REMOVE_DECKS_FROM_GAME: data {"decks": ["eeee39e3-5c2a-4817-9798-cec5aca306c5"]}
+- GET_DECKS_PAGINATED - Do implementacji

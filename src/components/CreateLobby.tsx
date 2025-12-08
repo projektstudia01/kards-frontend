@@ -1,62 +1,67 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useErrorStore } from '../store/errorStore';
-import { useLobbyAPI } from '../hooks/useLobbyAPI';
-import type { CreateLobbyRequest } from '../types/lobby';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+import { createGame } from '../api/index';
+
+interface FormData {
+  name: string;
+  maxPlayers: number;
+}
 
 const CreateLobby: React.FC = () => {
   const navigate = useNavigate();
-  const { createLobby } = useLobbyAPI();
-  const setError = useErrorStore((state) => state.setError);
+  const { t } = useTranslation();
   
-  const [formData, setFormData] = useState<CreateLobbyRequest>({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
-    type: 'public',
-    maxPlayers: 6,
-    selectedDecks: []
+    maxPlayers: 6
   });
   
   const [isLoading, setIsLoading] = useState(false);
 
-  // Przykładowe talie - w przyszłości pobrane z API
-  const availableDecks = [
-    { id: 'basic', name: 'Podstawowa talia', description: 'Standardowe karty dla wszystkich' },
-    { id: 'adult', name: 'Dla dorosłych', description: 'Humor dla dorosłych' },
-    { id: 'clean', name: 'Czysta wersja', description: 'Bezpieczne dla rodziny' },
-    { id: 'polish', name: 'Polskie referencje', description: 'Karty z polskimi odwołaniami' }
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      setError('lobby.errors.name_required');
-      return;
-    }
-    if (formData.selectedDecks.length === 0) {
-      setError('lobby.errors.decks_required');
+      toast.error(t('lobby.errors.name_required'));
       return;
     }
 
     setIsLoading(true);
     try {
-      const lobby = await createLobby(formData);
-      console.log('Created lobby:', lobby);
-      navigate(`/lobby/${lobby.id}`);
+      const response = await createGame(formData.name, 'public', formData.maxPlayers);
+      
+      if (!response.isError) {
+        const gameData = (response as any).data;
+        
+        // Backend returns: response.data.data with structure { game: { id: "..." } }
+        const gameId = gameData?.game?.id || gameData?.id || gameData?.gameId;
+        
+        if (!gameId || typeof gameId !== 'string') {
+          console.error('Invalid gameId from backend:', gameData);
+          toast.error('Błąd: nie można odczytać ID gry z odpowiedzi backendu');
+          return;
+        }
+        
+        navigate(`/lobby/${gameId}`);
+      } else {
+        const errorResponse = response as any;
+        
+        // Handle specific error - user already in game
+        if (errorResponse.key === 'backendErrors.user_already_in_game') {
+          toast.error(t('backendErrors.user_already_in_game') + ' - Musisz najpierw opuścić poprzednią grę.');
+        } else if (errorResponse.key) {
+          toast.error(t(errorResponse.key));
+        } else {
+          toast.error(t('lobby.errors.create_failed'));
+        }
+      }
     } catch (error) {
-      console.error('Error creating lobby:', error);
-      setError('lobby.errors.create_failed');
+      console.error('Error creating game:', error);
+      toast.error(t('lobby.errors.create_failed'));
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const toggleDeck = (deckId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedDecks: prev.selectedDecks.includes(deckId)
-        ? prev.selectedDecks.filter(id => id !== deckId)
-        : [...prev.selectedDecks, deckId]
-    }));
   };
 
   return (
@@ -65,7 +70,7 @@ const CreateLobby: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary mb-4">Stwórz nową grę</h1>
-          <p className="text-muted-foreground">Ustaw parametry swojego lobby</p>
+          <p className="text-muted-foreground">Nadaj nazwę i ustal liczbę graczy. Talie wybierzesz w lobby.</p>
         </div>
 
         {/* Form */}
@@ -85,46 +90,6 @@ const CreateLobby: React.FC = () => {
             />
           </div>
 
-          {/* Lobby Type */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-card-foreground mb-2">
-              Typ lobby
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, type: 'public' }))}
-                className={`p-4 border rounded-lg transition-colors ${
-                  formData.type === 'public'
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-background border-border hover:bg-accent'
-                }`}
-              >
-                <div className="text-center">
-                  <div className="text-2xl mb-2">🌍</div>
-                  <div className="font-medium">Publiczne</div>
-                  <div className="text-sm opacity-70">Widoczne dla wszystkich</div>
-                </div>
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, type: 'private' }))}
-                className={`p-4 border rounded-lg transition-colors ${
-                  formData.type === 'private'
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-background border-border hover:bg-accent'
-                }`}
-              >
-                <div className="text-center">
-                  <div className="text-2xl mb-2">🔒</div>
-                  <div className="font-medium">Prywatne</div>
-                  <div className="text-sm opacity-70">Tylko z zaproszeniem</div>
-                </div>
-              </button>
-            </div>
-          </div>
-
           {/* Max Players */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-card-foreground mb-2">
@@ -132,47 +97,23 @@ const CreateLobby: React.FC = () => {
             </label>
             <input
               type="range"
-              min="3"
+              min="2"
               max="8"
               value={formData.maxPlayers}
               onChange={(e) => setFormData(prev => ({ ...prev, maxPlayers: parseInt(e.target.value) }))}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             />
             <div className="flex justify-between text-sm text-muted-foreground mt-1">
-              <span>3</span>
+              <span>2</span>
               <span>8</span>
             </div>
           </div>
 
-          {/* Deck Selection */}
-          <div className="mb-8">
-            <label className="block text-sm font-medium text-card-foreground mb-4">
-              Wybierz talie kart
-            </label>
-            <div className="grid grid-cols-1 gap-3">
-              {availableDecks.map(deck => (
-                <button
-                  key={deck.id}
-                  type="button"
-                  onClick={() => toggleDeck(deck.id)}
-                  className={`p-4 border rounded-lg text-left transition-colors ${
-                    formData.selectedDecks.includes(deck.id)
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background border-border hover:bg-accent'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{deck.name}</div>
-                      <div className="text-sm opacity-70">{deck.description}</div>
-                    </div>
-                    <div className="text-xl">
-                      {formData.selectedDecks.includes(deck.id) ? '✅' : '⬜'}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+          {/* Info */}
+          <div className="mb-8 p-4 bg-accent rounded-lg border border-border">
+            <p className="text-sm text-muted-foreground">
+              💡 Po utworzeniu lobby będziesz mógł wybrać talie kart i poczekać na graczy przed rozpoczęciem gry.
+            </p>
           </div>
 
           {/* Action Buttons */}
@@ -186,7 +127,7 @@ const CreateLobby: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={isLoading || !formData.name.trim() || formData.selectedDecks.length === 0}
+              disabled={isLoading || !formData.name.trim()}
               className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Tworzenie...' : 'Stwórz lobby'}

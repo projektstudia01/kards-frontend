@@ -1,3 +1,25 @@
+// Types based on backend API responses (following docs.md)
+
+export interface Deck {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  isPublic: boolean;
+  blackCardsCount: number;
+  whiteCardsCount: number;
+}
+
+export interface Player {
+  id: string; // gamePlayerId
+  userId?: string; // actual userId from session
+  name: string;
+  points: number;
+  owner: boolean;
+}
+
+// Legacy types - kept for backward compatibility with existing API hooks
 export interface LobbySettings {
   id: string;
   name: string;
@@ -10,13 +32,6 @@ export interface LobbySettings {
   isActive: boolean;
 }
 
-export interface Player {
-  id: string;
-  username: string;
-  isHost: boolean;
-  joinedAt: string;
-}
-
 export interface Invitation {
   id: string;
   lobbyId: string;
@@ -24,24 +39,4 @@ export interface Invitation {
   expiresAt: string;
   createdBy: string;
   isUsed: boolean;
-}
-
-export interface LobbyState {
-  lobby: LobbySettings | null;
-  players: Player[];
-  invitation: Invitation | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export interface CreateLobbyRequest {
-  name: string;
-  type: 'private' | 'public';
-  maxPlayers: number;
-  selectedDecks: string[];
-}
-
-export interface JoinLobbyRequest {
-  lobbyId?: string;
-  invitationToken?: string;
 }

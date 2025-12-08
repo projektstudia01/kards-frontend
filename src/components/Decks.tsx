@@ -1,18 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDeckStore } from '../store/deckStore';
-
-interface Deck {
-  id: string;
-  name: string;
-  description: string;
-  isDefault: boolean;
-}
+import { toast } from 'sonner';
+import { getDecks, createDeck, deleteDeck, type Deck } from '../api';
 
 interface CreateDeckModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (name: string, description: string) => void;
+  onSubmit: (title: string, description: string) => void;
 }
 
 const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose, onSubmit }) => {
@@ -92,51 +86,75 @@ const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose, onSu
 const Decks: React.FC = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const { setCurrentDeck } = useDeckStore();
-  
-  // Use regular useState for deck list - will be fetched from backend later
   const [userDecks, setUserDecks] = useState<Deck[]>([]);
-  
-  // Default deck (cannot be modified)
-  const defaultDeck: Deck = {
-    id: 'default',
-    name: 'domyślna',
-    description: 'Domyślna talia z podstawowymi kartami',
-    isDefault: true
-  };
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleCreateDeck = (name: string, description: string) => {
-    const newDeck: Deck = {
-      id: `deck-${Date.now()}`,
-      name,
-      description,
-      isDefault: false
+  const MAX_DECKS = 3;
+
+  // Fetch user decks on mount
+  useEffect(() => {
+    const fetchDecks = async () => {
+      setIsLoading(true);
+      const response = await getDecks();
+      
+      if (!response.isError) {
+        setUserDecks(response.data);
+      }
+      setIsLoading(false);
     };
-    setUserDecks([...userDecks, newDeck]);
     
-    // Initialize empty deck in Zustand store for editing
-    setCurrentDeck(newDeck.id, [], []);
+    fetchDecks();
+  }, []);
+
+  const handleCreateDeck = async (title: string, description: string) => {
+    const response = await createDeck(title, description);
     
-    // Navigate to deck creation/editing page
-    navigate(`/deck/${newDeck.id}/edit`);
+    if (!response.isError) {
+      const newDeck = response.data;
+      setUserDecks([...userDecks, newDeck]);
+      
+      // Navigate to deck editor to add cards
+      navigate(`/deck/${newDeck.id}/edit`);
+    }
   };
 
   const handleAddDeckClick = () => {
-    if (userDecks.length < 2) {
+    if (userDecks.length < MAX_DECKS) {
       setIsModalOpen(true);
+    } else {
+      toast.error('Maksymalna liczba talii to 3');
     }
   };
 
   const handleDeckClick = (deck: Deck) => {
-    if (deck.isDefault) {
-      // View only for default deck
-      navigate(`/deck/${deck.id}`);
-    } else {
-      // Edit for user decks
-      navigate(`/deck/${deck.id}/edit`);
+    navigate(`/deck/${deck.id}/edit`);
+  };
+
+  const handleDeleteDeck = async (e: React.MouseEvent, deckId: string) => {
+    e.stopPropagation(); // Prevent deck click event
+    
+    if (!confirm('Czy na pewno chcesz usunąć tę talię?')) {
+      return;
+    }
+
+    const response = await deleteDeck(deckId);
+    
+    if (!response.isError) {
+      setUserDecks(userDecks.filter(d => d.id !== deckId));
+      toast.success('Talia została usunięta');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-muted-foreground">Ładowanie talii...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -146,82 +164,67 @@ const Decks: React.FC = () => {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Default Deck */}
-          <div
-            onClick={() => handleDeckClick(defaultDeck)}
-            className="bg-card border border-border 
-                     rounded-lg p-8 flex flex-col items-center justify-center h-64 
-                     cursor-pointer hover:shadow-xl transition-shadow"
-          >
-            <h2 className="text-2xl font-bold text-card-foreground mb-4">
-              {defaultDeck.name}
-            </h2>
-            <p className="text-muted-foreground text-center text-sm">
-              {defaultDeck.description}
-            </p>
-          </div>
-
-          {/* User Deck #1 */}
-          {userDecks[0] ? (
-            <div
-              onClick={() => handleDeckClick(userDecks[0])}
-              className="bg-card border border-border 
-                       rounded-lg p-8 flex flex-col items-center justify-center h-64 
-                       cursor-pointer hover:shadow-xl transition-shadow"
-            >
-              <h2 className="text-2xl font-bold text-card-foreground mb-4">
-                {userDecks[0].name}
-              </h2>
-              <p className="text-muted-foreground text-center text-sm">
-                {userDecks[0].description}
-              </p>
-            </div>
-          ) : (
-            <div
-              onClick={handleAddDeckClick}
-              className="bg-card border border-border 
-                       rounded-lg p-8 flex flex-col items-center justify-center h-64 
-                       cursor-pointer hover:shadow-xl transition-shadow hover:bg-accent"
-            >
-              <h2 className="text-2xl font-bold text-card-foreground mb-4">
-                user #1
-              </h2>
-              <button className="text-primary font-semibold text-lg hover:underline">
-                dodaj talię
-              </button>
-            </div>
-          )}
-
-          {/* User Deck #2 */}
-          {userDecks[1] ? (
-            <div
-              onClick={() => handleDeckClick(userDecks[1])}
-              className="bg-card border border-border 
-                       rounded-lg p-8 flex flex-col items-center justify-center h-64 
-                       cursor-pointer hover:shadow-xl transition-shadow"
-            >
-              <h2 className="text-2xl font-bold text-card-foreground mb-4">
-                {userDecks[1].name}
-              </h2>
-              <p className="text-muted-foreground text-center text-sm">
-                {userDecks[1].description}
-              </p>
-            </div>
-          ) : userDecks.length < 2 ? (
-            <div
-              onClick={handleAddDeckClick}
-              className="bg-card border border-border 
-                       rounded-lg p-8 flex flex-col items-center justify-center h-64 
-                       cursor-pointer hover:shadow-xl transition-shadow hover:bg-accent"
-            >
-              <h2 className="text-2xl font-bold text-card-foreground mb-4">
-                user #2
-              </h2>
-              <button className="text-primary font-semibold text-lg hover:underline">
-                dodaj talię
-              </button>
-            </div>
-          ) : null}
+          {/* Deck Slots (0-2) */}
+          {[0, 1, 2].map((index) => {
+            const deck = userDecks[index];
+            
+            if (deck) {
+              // Existing deck
+              return (
+                <div
+                  key={deck.id}
+                  className="bg-card border border-border 
+                           rounded-lg p-8 flex flex-col items-center justify-center h-64 
+                           cursor-pointer hover:shadow-xl transition-shadow relative group"
+                  onClick={() => handleDeckClick(deck)}
+                >
+                  <h2 className="text-2xl font-bold text-card-foreground mb-4">
+                    {deck.title}
+                  </h2>
+                  <p className="text-muted-foreground text-center text-sm">
+                    {deck.description || 'Brak opisu'}
+                  </p>
+                  
+                  {/* Delete button */}
+                  <button
+                    onClick={(e) => handleDeleteDeck(e, deck.id)}
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 
+                             transition-opacity p-2 bg-destructive text-destructive-foreground 
+                             rounded-full hover:bg-destructive/90"
+                    title="Usuń talię"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              );
+            } else {
+              // Empty slot
+              return (
+                <div
+                  key={`empty-${index}`}
+                  onClick={handleAddDeckClick}
+                  className="bg-card border-2 border-dashed border-border 
+                           rounded-lg p-8 flex flex-col items-center justify-center h-64 
+                           cursor-pointer hover:shadow-xl hover:border-primary transition-all hover:bg-accent"
+                >
+                  <div className="text-6xl mb-4 text-muted-foreground">+</div>
+                  <h2 className="text-2xl font-bold text-card-foreground mb-2">
+                    Talia #{index + 1}
+                  </h2>
+                  <button className="text-primary font-semibold text-lg hover:underline">
+                    Dodaj talię
+                  </button>
+                </div>
+              );
+            }
+          })}
+        </div>
+        
+        {/* Info about deck limit */}
+        <div className="text-center mt-8 text-muted-foreground">
+          <p>Masz {userDecks.length} / {MAX_DECKS} talii</p>
         </div>
       </div>
 

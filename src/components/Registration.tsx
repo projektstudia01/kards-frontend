@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import VerifyEmail from "./VerifyEmail";
 import { register } from "../api";
 import { toast } from "sonner";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 interface RegistrationData {
   email: string;
@@ -13,6 +13,7 @@ interface RegistrationData {
 }
 
 const Registration: React.FC = () => {
+  const { t } = useTranslation();
   const [sessionId, setSessionId] = useState<string>("");
 
   const [formData, setFormData] = useState<RegistrationData>({
@@ -21,7 +22,6 @@ const Registration: React.FC = () => {
     confirmPassword: "",
   });
   const [emailForVerification, setEmailForVerification] = useState<string>("");
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,36 +29,25 @@ const Registration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate passwords
+    
     if (formData.password !== formData.confirmPassword) {
-      toast.error(t("errors.register.password_mismatch"));
+      toast.error(t("frontendErrors.password_mismatch"));
       return;
     }
 
     if (formData.password.length < 8) {
-      toast.error(t("errors.register.password_too_short"));
+      toast.error(t("frontendErrors.password_too_short"));
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await register(formData.email, formData.password);
-      if (res.isError) {
-        toast.error(
-          t(`errors.register.${res.key}`) || t("errors.unknown_error")
-        );
-        setLoading(false);
-        return;
-      }
-
-      const { sessionId } = res.data;
-      setSessionId(sessionId);
-      setEmailForVerification(formData.email);
-    } catch (error) {
-      toast.error(t("errors.server_error"));
-    } finally {
-      setLoading(false);
+    const response = await register(formData.email, formData.password);
+    if (response.isError) {
+      return;
     }
+
+    const { sessionId } = response.data;
+    setSessionId(sessionId);
+    setEmailForVerification(formData.email);
   };
 
   const isFormValid =
@@ -136,10 +125,10 @@ const Registration: React.FC = () => {
 
           <button
             type="submit"
-            disabled={!isFormValid || loading}
+            disabled={!isFormValid}
             className="w-full my-6 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Tworzenie konta..." : "Utwórz Konto"}
+            Utwórz Konto
           </button>
 
           <div className="flex items-center justify-center mb-4">

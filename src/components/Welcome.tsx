@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import UsernamePopup from './UsernamePopup';
 
-const Lobby: React.FC = () => {
+const Welcome: React.FC = () => {
   const { logout, user, showUsernamePopup, confirmEmail } = useAuthStore();
   const navigate = useNavigate();
 
@@ -136,7 +136,7 @@ const Lobby: React.FC = () => {
             </div>
             <div className="flex-1">
               <p className="text-card-foreground font-medium">
-                Witaj, {user?.username ? user.username : 'Gościu'}
+                Witaj, {user?.name ?? 'Gościu'}
               </p>
               <p className="text-muted-foreground text-sm">
                 ID: {user?.email ? user.email.substring(0, 3) + '***' + user.email.slice(-3) : 'brak'}
@@ -163,4 +163,4 @@ const Lobby: React.FC = () => {
   );
 };
 
-export default Lobby;
+export default Welcome;
