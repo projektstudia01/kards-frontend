@@ -3,15 +3,16 @@ import { useAuthStore } from "../store/authStore";
 import { toast } from "sonner";
 import i18n from "../i18n";
 export const customAxios = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL || "https://main-server-dev.1050100.xyz",
   withCredentials: true,
 });
 
 export const axiosErrorHandler = (error: any) => {
-  console.log('Full error:', error);
-  console.log('Error response:', error.response?.data);
-  console.log('Error status:', error.response?.status);
-  
+  console.log("Full error:", error);
+  console.log("Error response:", error.response?.data);
+  console.log("Error status:", error.response?.status);
+
   let translationKey = "backendErrors.internal_server_error";
   if (error.response?.data?.key)
     translationKey = `backendErrors.${error.response.data.key.toLowerCase()}`;
