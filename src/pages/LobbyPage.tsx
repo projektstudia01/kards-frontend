@@ -90,17 +90,8 @@ const LobbyPage: React.FC = () => {
           case "NEW_PLAYER_JOINED":
             if (eventData && eventData.id && eventData.name) {
               toast.info(t("lobby.player_joined", { name: eventData.name }));
-              // Add new player to list if not already present
-              setPlayers((prev) => {
-                const exists = prev.some(p => p.id === eventData.id);
-                if (exists) return prev;
-                return [...prev, {
-                  id: eventData.id,
-                  name: eventData.name,
-                  points: 0,
-                  owner: false
-                }];
-              });
+              // Don't manually add player - wait for PLAYERS_IN_GAME event
+              // which contains correct owner status
             }
             return;
 
