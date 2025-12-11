@@ -87,11 +87,32 @@ const GamePage: React.FC = () => {
 
   // Listen to WebSocket messages (WebSocket created in LobbyPage)
   useEffect(() => {
-    if (!ws || !gameId || !user) return;
+    console.log("[GamePage] Message handler effect triggered");
+    if (!ws || !gameId || !user) {
+      console.log(
+        "[GamePage] Missing dependencies - ws:",
+        !!ws,
+        "gameId:",
+        gameId,
+        "user:",
+        !!user
+      );
+      return;
+    }
+
+    console.log(
+      "[GamePage] Setting up message handler, ws state:",
+      ws.readyState
+    );
 
     const handleMessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
       const { event: eventType, data: eventData } = data;
+      console.log(
+        "[GamePage] WebSocket message received:",
+        eventType,
+        eventData
+      );
 
       switch (eventType) {
         case "WS_CONNECTED":
@@ -210,11 +231,16 @@ const GamePage: React.FC = () => {
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
+      console.log(
+        "[GamePage] Message handler cleanup, isIntentionalLeave:",
+        isIntentionalLeave.current
+      );
       ws.removeEventListener("message", handleMessage);
       window.removeEventListener("beforeunload", handleBeforeUnload);
 
       // Close WebSocket when unmounting (but don't send LEAVE_GAME - button handler already did)
       if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log("[GamePage] Closing WebSocket on unmount");
         ws.close(1000, "Component unmounting");
       }
     };
@@ -257,10 +283,13 @@ const GamePage: React.FC = () => {
   };
 
   const handleLeaveGame = () => {
+    console.log("[GamePage] handleLeaveGame called");
     isIntentionalLeave.current = true;
     if (ws) {
+      console.log("[GamePage] Closing WebSocket, state:", ws.readyState);
       ws.close(1000, "User left game");
     }
+    console.log("[GamePage] Navigating to welcome");
     navigate("/welcome");
   };
 
