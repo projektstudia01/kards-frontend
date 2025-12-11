@@ -30,7 +30,7 @@ export interface ResendResponse {
 }
 export const login = async (email: string, password: string) => {
   try {
-    const data = await customAxios.post("/auth/login", { email, password });
+    const data = await customAxios.post("auth/login", { email, password });
     const usernameSet = data.data.data.user.customUsername;
     useAuthStore.getState().setAuthState({
       ...data.data.data.user,
@@ -51,7 +51,7 @@ export const login = async (email: string, password: string) => {
 
 export const register = async (email: string, password: string) => {
   try {
-    const data = await customAxios.post("/auth/register", { email, password });
+    const data = await customAxios.post("auth/register", { email, password });
     return data.data;
   } catch (error) {
     return axiosErrorHandler(error);
@@ -175,7 +175,7 @@ export const getDeck = async (deckId: string) => {
 export interface Card {
   id?: string;
   text: string;
-  type: 'black' | 'white';
+  type: "black" | "white";
   blankSpaceAmount?: number | null;
   createdAt?: string;
   updatedAt?: string;
@@ -202,17 +202,17 @@ export const addCards = async (deckId: string, cards: Card[]) => {
 };
 
 export const getCards = async (
-  deckId: string, 
-  page: number = 0, 
+  deckId: string,
+  page: number = 0,
   pageSize: number = 50,
-  cardType?: 'white' | 'black'
+  cardType?: "white" | "black"
 ) => {
   try {
     const params: any = { page, pageSize };
     if (cardType) {
       params.cardType = cardType;
     }
-    
+
     const response = await customAxios.get(`/deck/${deckId}/cards`, {
       params,
     });
@@ -247,12 +247,18 @@ export const deleteCards = async (deckId: string, cardIds: string[]) => {
   }
 };
 
-export const createGame = async (name: string, lobbyType: string, maxPlayers: number) => {
+export const createGame = async (
+  name: string,
+  lobbyType: string,
+  maxPlayers: number
+) => {
   try {
     const response = await customAxios.post("/game/create", {
-      name, lobbyType, maxPlayers
+      name,
+      lobbyType,
+      maxPlayers,
     });
-    
+
     return {
       isError: false,
       data: response.data.data,
@@ -265,7 +271,7 @@ export const createGame = async (name: string, lobbyType: string, maxPlayers: nu
 export const getGamesList = async () => {
   try {
     const response = await customAxios.get("/game/list");
-    
+
     return {
       isError: false,
       data: response.data.data.games,
