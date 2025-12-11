@@ -95,8 +95,8 @@ const Lobby: React.FC<LobbyProps> = ({
       wsRef.current.send(JSON.stringify({
         event: 'LEAVE_GAME'
       }));
-      // Give it a moment to send before navigating
       setTimeout(() => {
+        wsRef.current?.close(1000, "User left lobby");
         navigate('/welcome');
       }, 100);
     } else {

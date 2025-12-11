@@ -25,8 +25,6 @@ const Game: React.FC<GameProps> = ({
   const { t } = useTranslation();
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
 
-  console.log('[Game]', gameState.gamePhase, '| Judge:', gameState.isJudge, '| Cards:', gameState.myCards.length);
-
   // Clear selected cards when new round starts (gamePhase changes to 'selecting')
   useEffect(() => {
     if (gameState.gamePhase === 'selecting') {
@@ -52,6 +50,7 @@ const Game: React.FC<GameProps> = ({
     if (!gameState.blackCard) return;
     
     const requiredCards = gameState.blackCard.blankSpaceAmount;
+    
     if (selectedCardIds.length === requiredCards) {
       onSubmitCards(selectedCardIds);
       setSelectedCardIds([]);

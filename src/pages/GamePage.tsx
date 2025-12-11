@@ -37,7 +37,6 @@ const GamePage: React.FC = () => {
   useEffect(() => {
     const navState = location.state as { roundData?: RoundStartedData };
     if (navState?.roundData) {
-      console.log('[GamePage] Initializing from navigation state');
       const roundData = navState.roundData;
       
       initialDataLoaded.current = true;
@@ -98,11 +97,9 @@ const GamePage: React.FC = () => {
 
         case "ROUND_STARTED":
           const roundData = eventData as RoundStartedData;
-          console.log('[ROUND_STARTED via WS] Cards:', roundData.cards?.length);
           
           // Skip if we already have initial data
           if (initialDataLoaded.current && (!roundData.cards || roundData.cards.length === 0)) {
-            console.log('[ROUND_STARTED] Ignoring empty data');
             return;
           }
           
@@ -184,12 +181,9 @@ const GamePage: React.FC = () => {
       ws.removeEventListener("message", handleMessage);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       
-      // Close WebSocket when leaving game
+      // Close WebSocket when unmounting (but don't send LEAVE_GAME - button handler already did)
       if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ event: 'LEAVE_GAME' }));
-        setTimeout(() => {
-          ws.close(1000, "Leaving game");
-        }, 100);
+        ws.close(1000, "Component unmounting");
       }
     };
   }, [ws, gameId, user, logout, navigate, t, gameState.players]);
@@ -230,6 +224,7 @@ const GamePage: React.FC = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ event: 'LEAVE_GAME' }));
       setTimeout(() => {
+        ws.close(1000, "User left game");
         navigate('/welcome');
       }, 100);
     } else {
