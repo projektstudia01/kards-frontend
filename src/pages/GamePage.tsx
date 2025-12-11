@@ -244,7 +244,7 @@ const GamePage: React.FC = () => {
         ws.close(1000, "Component unmounting");
       }
     };
-  }, [ws, gameId, user, logout, navigate, t, gameState.players]);
+  }, [ws]);
 
   const handleSubmitCards = (cardIds: string[]) => {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
