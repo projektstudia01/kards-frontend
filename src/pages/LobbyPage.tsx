@@ -65,6 +65,7 @@ const LobbyPage: React.FC = () => {
         const data = JSON.parse(event.data);
 
         const { event: eventType, data: eventData } = data;
+        console.log('[WebSocket Event]', eventType, eventData);
 
         switch (eventType) {
           case "WS_CONNECTED":
@@ -91,15 +92,31 @@ const LobbyPage: React.FC = () => {
           case "NEW_PLAYER_JOINED":
             if (eventData && eventData.id && eventData.name) {
               toast.info(t("lobby.player_joined", { name: eventData.name }));
+              // Add new player to list if not already present
+              setPlayers((prev) => {
+                const exists = prev.some(p => p.id === eventData.id);
+                if (exists) return prev;
+                return [...prev, {
+                  id: eventData.id,
+                  name: eventData.name,
+                  points: 0,
+                  owner: false
+                }];
+              });
             }
             return;
 
           case "PLAYER_LEFT":
+            if (eventData && eventData.id) {
+              setPlayers((prev) => prev.filter(p => p.id !== eventData.id));
+            }
             return;
 
           case "PLAYERS_IN_GAME":
+            console.log('[PLAYERS_IN_GAME] Received players:', eventData);
             if (Array.isArray(eventData)) {
               setPlayers(eventData);
+              console.log('[PLAYERS_IN_GAME] Players updated, count:', eventData.length);
             }
             return;
 

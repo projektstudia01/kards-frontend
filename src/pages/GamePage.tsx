@@ -68,6 +68,7 @@ const GamePage: React.FC = () => {
       ws.current.addEventListener("message", (event: any) => {
         const data = JSON.parse(event.data);
         const { event: eventType, data: eventData } = data;
+        console.log('[Game WebSocket Event]', eventType, eventData);
 
         switch (eventType) {
           case "WS_CONNECTED":
