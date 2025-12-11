@@ -37,12 +37,12 @@ const GamePage: React.FC = () => {
   useEffect(() => {
     const { ws, connect } = useGameWebSocketStore.getState();
     
-    if (!user?.id) return;
+    if (!gameId) return;
     
     if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
-      connect(user.id);
+      connect(gameId);
     }
-  }, [user?.id]);
+  }, [gameId]);
 
   // Initialize game state from navigation state if available
   useEffect(() => {
