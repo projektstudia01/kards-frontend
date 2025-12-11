@@ -33,6 +33,17 @@ const GamePage: React.FC = () => {
     gamePhase: 'waiting',
   });
 
+  // Connect to WebSocket when page mounts
+  useEffect(() => {
+    const { ws, connect } = useGameWebSocketStore.getState();
+    
+    if (!user?.id) return;
+    
+    if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+      connect(user.id);
+    }
+  }, [user?.id]);
+
   // Initialize game state from navigation state if available
   useEffect(() => {
     const navState = location.state as { roundData?: RoundStartedData };
