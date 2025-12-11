@@ -1,0 +1,102 @@
+{
+    "frontendErrors": {
+        "password_mismatch": "Passwords do not match.",
+        "password_too_short": "Password must be at least 8 characters long.",
+        "missing_session": "Verification session is missing or expired."
+    },
+    "backendErrors": {
+        "invalid_json_body": "Invalid JSON body in request.",
+        "internal_server_error": "Internal server error.",
+        "user_not_found": "User not found.",
+        "invalid_argument": "Invalid argument.",
+        "unauthorized": "Unauthorized access.",
+        "validation_error": "Validation error.",
+        "auth_fail": "Authentication failed.",
+        "user_already_in_game": "User is already in a game.",
+        "deck_amount_exceeded": "Maximum number of decks exceeded.",
+        "deck_not_found": "Deck not found.",
+        "wrong_credentials": "Wrong credentials.",
+        "email_not_verified": "Email not verified.",
+        "invalid_verification_code": "Invalid verification code or session expired."
+    },
+    "lobby": {
+        "title": "Game Lobby",
+        "players": "players",
+        "decks": "decks",
+        "players_in_game": "Players in Game",
+        "no_players": "No players",
+        "you": "You",
+        "owner": "OWNER",
+        "online": "Online",
+        "points": "points",
+        "available_decks": "Available Decks",
+        "no_available_decks": "No available decks",
+        "public": "Public",
+        "black_cards": "black cards",
+        "white_cards": "white cards",
+        "in_game": "In Game",
+        "add": "Add",
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page",
+        "of": "of",
+        "decks_in_game": "Decks in Game",
+        "no_decks_selected": "No decks selected",
+        "add_decks_hint": "Add decks from the right side",
+        "card_requirements": "Card Requirements",
+        "remove": "Remove",
+        "not_found": "Lobby not found",
+        "not_found_description": "The specified game does not exist or has been removed",
+        "back_to_menu": "Back to main menu",
+        "need_more_players": "Need {{count}} more players",
+        "need_more_cards": "Need more cards in decks",
+        "ready_to_start": "Ready to start!",
+        "waiting_for_owner": "Waiting for owner...",
+        "leave": "Leave",
+        "start_game": "Start Game",
+        "player_joined": "{{name}} joined the game",
+        "game_started": "Game started!",
+        "game_finished": "Game finished",
+        "errors": {
+            "name_required": "Lobby name is required.",
+            "decks_required": "At least one deck must be selected.",
+            "create_failed": "Failed to create lobby.",
+            "fetch_failed": "Failed to fetch lobbies.",
+            "join_failed": "Failed to join lobby.",
+            "invite_required": "Invitation code is required.",
+            "invalid_invite": "Invalid or expired invitation code.",
+            "not_found": "Lobby not found.",
+            "invite_failed": "Failed to generate invitation.",
+            "min_players": "At least 3 players are required to start the game.",
+            "min_players_2": "At least 2 players are required to start the game.",
+            "not_enough_cards": "Not enough cards in decks. Each player needs minimum 1 black and 10 white cards.",
+            "start_failed": "Failed to start game.",
+            "leave_failed": "Failed to leave lobby.",
+            "game_not_found": "Game not found.",
+            "game_already_started": "Game already started.",
+            "not_owner": "Only the owner can do this.",
+            "deck_not_found": "Deck not found.",
+            "game_id_required": "Game ID is required."
+        }
+    },
+    "success": {
+        "verify": {
+            "email_verified": "Email verified successfully!",
+            "code_resent": "Verification code has been resent."
+        },
+        "lobby": {
+            "invite_copied": "Invitation link copied to clipboard!"
+        }
+    },
+    "reconnecting": "Reconnecting to server...",
+    "connected": "Connected to server",
+    "errors": {
+        "UNKNOWN_ERROR": "An unknown error occurred",
+        "WEBSOCKET_DISCONNECT": "Lost connection to server",
+        "WS_CONNECTED": "WebSocket connection established",
+        "INVALID_OR_EXPIRED_SESSION": "Invalid or expired session",
+        "USER_NOT_IN_GAME": "User is not in game",
+        "KICKED_FROM_GAME": "You have been kicked from the game",
+        "websocket_not_connected": "Not connected to server"
+    }
+}
