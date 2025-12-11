@@ -20,6 +20,7 @@ const GamePage: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const initialDataLoaded = useRef<boolean>(false);
+  const isIntentionalLeave = useRef<boolean>(false);
 
   const [gameState, setGameState] = useState<GameState>({
     gameId: gameId || "",
@@ -46,7 +47,7 @@ const GamePage: React.FC = () => {
     ) {
       connect(gameId);
     }
-  }, [gameId]);
+  }, [gameId]); // Only depend on gameId, not other changing values
 
   // Initialize game state from navigation state if available
   useEffect(() => {
@@ -249,6 +250,7 @@ const GamePage: React.FC = () => {
   };
 
   const handleLeaveGame = () => {
+    isIntentionalLeave.current = true;
     if (ws) {
       ws.close(1000, "User left game");
     }
