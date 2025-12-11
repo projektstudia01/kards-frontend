@@ -39,11 +39,6 @@ const Lobby: React.FC<LobbyProps> = ({
   const currentPlayer = players.find(p => p.id === user?.id);
   const isOwner = currentPlayer?.owner || false;
 
-  console.log('[Lobby] Current user:', user?.id);
-  console.log('[Lobby] Current player:', currentPlayer);
-  console.log('[Lobby] Is owner:', isOwner);
-  console.log('[Lobby] All players:', players);
-
   const handleAddDeck = (deckId: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
       toast.error(t('errors.websocket_not_connected'));

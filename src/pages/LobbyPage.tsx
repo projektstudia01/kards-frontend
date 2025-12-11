@@ -63,7 +63,6 @@ const LobbyPage: React.FC = () => {
         const data = JSON.parse(event.data);
 
         const { event: eventType, data: eventData } = data;
-        console.log('[WebSocket Event]', eventType, eventData);
 
         switch (eventType) {
           case "WS_CONNECTED":
@@ -107,10 +106,8 @@ const LobbyPage: React.FC = () => {
             return;
 
           case "PLAYERS_IN_GAME":
-            console.log('[PLAYERS_IN_GAME] Received players:', eventData);
             if (Array.isArray(eventData)) {
               setPlayers(eventData);
-              console.log('[PLAYERS_IN_GAME] Players updated, count:', eventData.length);
             }
             return;
 

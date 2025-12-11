@@ -14,6 +14,23 @@ const WhiteCardsHand: React.FC<WhiteCardsHandProps> = ({
   onCardSelect,
   disabled,
 }) => {
+  console.log('[WhiteCardsHand] Rendering with cards:', cards.length);
+  console.log('[WhiteCardsHand] Cards:', cards);
+  console.log('[WhiteCardsHand] Disabled:', disabled);
+  
+  if (cards.length === 0) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center">
+          Your Cards
+        </h3>
+        <p className="text-center text-gray-500 dark:text-gray-400">
+          No cards available
+        </p>
+      </div>
+    );
+  }
+  
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center">

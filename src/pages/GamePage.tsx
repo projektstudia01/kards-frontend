@@ -105,6 +105,13 @@ const GamePage: React.FC = () => {
 
           case "ROUND_STARTED":
             const roundData = eventData as RoundStartedData;
+            console.log('[ROUND_STARTED] Full data:', roundData);
+            console.log('[ROUND_STARTED] Cards count:', roundData.cards?.length);
+            console.log('[ROUND_STARTED] CardRef (judge):', roundData.cardRef);
+            console.log('[ROUND_STARTED] Current user:', user?.id);
+            console.log('[ROUND_STARTED] Is judge:', roundData.cardRef === user?.id);
+            console.log('[ROUND_STARTED] Black card:', roundData.blackCard);
+            
             setGameState((prev) => ({
               ...prev,
               currentJudgeId: roundData.cardRef,

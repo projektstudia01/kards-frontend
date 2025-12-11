@@ -11,9 +11,6 @@ const PlayersInGame: React.FC<PlayersInGameProps> = ({ players }) => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
 
-  console.log('[PlayersInGame] Rendering with players:', players);
-  console.log('[PlayersInGame] Current user ID:', user?.id);
-
   if (players.length === 0) {
     return (
       <div className="bg-card rounded-lg p-6 border border-border">
