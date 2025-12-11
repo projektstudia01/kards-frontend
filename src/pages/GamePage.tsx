@@ -84,6 +84,25 @@ const GamePage: React.FC = () => {
             toast.success(t("game.started"));
             return;
 
+          case "PLAYERS_IN_GAME":
+            console.log('[Game PLAYERS_IN_GAME] Received players:', eventData);
+            if (Array.isArray(eventData)) {
+              setGameState((prev) => ({
+                ...prev,
+                players: eventData,
+              }));
+            }
+            return;
+
+          case "PLAYER_LEFT":
+            if (eventData && eventData.id) {
+              const leavingPlayer = gameState.players.find(p => p.id === eventData.id);
+              if (leavingPlayer) {
+                toast.info(t("lobby.player_left", { name: leavingPlayer.name }));
+              }
+            }
+            return;
+
           case "ROUND_STARTED":
             const roundData = eventData as RoundStartedData;
             setGameState((prev) => ({

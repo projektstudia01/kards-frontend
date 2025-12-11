@@ -15,6 +15,19 @@ const GamePlayers: React.FC<GamePlayersProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  if (players.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+          {t("lobby.players")}
+        </h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {t("lobby.no_players")}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
       <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">

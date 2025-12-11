@@ -55,6 +55,7 @@
     "leave": "Opuść",
     "start_game": "Rozpocznij grę",
     "player_joined": "{{name}} dołączył do gry",
+    "player_left": "{{name}} opuścił grę",
     "game_started": "Gra rozpoczęta!",
     "game_finished": "Gra zakończona",
     "errors": {

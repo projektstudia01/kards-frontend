@@ -55,6 +55,7 @@
     "leave": "Leave",
     "start_game": "Start Game",
     "player_joined": "{{name}} joined the game",
+    "player_left": "{{name}} left the game",
     "game_started": "Game started!",
     "game_finished": "Game finished",
     "errors": {

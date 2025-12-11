@@ -97,6 +97,11 @@ const LobbyPage: React.FC = () => {
 
           case "PLAYER_LEFT":
             if (eventData && eventData.id) {
+              // Find player name before removing
+              const leavingPlayer = players.find(p => p.id === eventData.id);
+              if (leavingPlayer) {
+                toast.info(t("lobby.player_left", { name: leavingPlayer.name }));
+              }
               setPlayers((prev) => prev.filter(p => p.id !== eventData.id));
             }
             return;
