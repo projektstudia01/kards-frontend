@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { useGameWebSocketStore } from "../store/gameWebSocketStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import Lobby from "../components/Lobby";
@@ -10,9 +11,9 @@ import { getCookie } from "../utils/qrcode";
 const LobbyPage: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const { user, logout } = useAuthStore();
+  const { ws, setWebSocket } = useGameWebSocketStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const ws = useRef<WebSocket | null>(null);
   const reconnectTimeout = useRef<any>(null);
   const shouldReconnect = useRef<boolean>(true);
 
@@ -39,27 +40,28 @@ const LobbyPage: React.FC = () => {
 
     const connect = () => {
       if (
-        ws.current &&
-        (ws.current.readyState === WebSocket.CONNECTING ||
-          ws.current.readyState === WebSocket.OPEN)
+        ws &&
+        (ws.readyState === WebSocket.CONNECTING ||
+          ws.readyState === WebSocket.OPEN)
       ) {
         return;
       }
 
       toast.info(t("reconnecting"));
       
-      ws.current = new WebSocket(endpoint);
+      const newWs = new WebSocket(endpoint);
+      setWebSocket(newWs);
       
-      ws.current.addEventListener("error", () => {
+      newWs.addEventListener("error", () => {
         toast.error(t("errors.UNKNOWN_ERROR"));
       });
 
-      ws.current.addEventListener("open", () => {
+      newWs.addEventListener("open", () => {
         toast.success(t("connected"));
         // Backend sends initial data automatically via sendInitialData
       });
 
-      ws.current.addEventListener("message", (event: any) => {
+      newWs.addEventListener("message", (event: any) => {
         const data = JSON.parse(event.data);
 
         const { event: eventType, data: eventData } = data;
@@ -151,14 +153,10 @@ const LobbyPage: React.FC = () => {
             return;
 
           case "ROUND_STARTED":
-            // Pass round data to game page via navigation state
+            // Don't close WebSocket - GamePage will reuse the same connection
             shouldReconnect.current = false;
             
-            // Close WebSocket before navigating
-            if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-              ws.current.close(1000, "Navigating to game");
-            }
-            
+            // Navigate with round data - WebSocket stays open
             navigate(`/game/${lobbyId}`, { 
               state: { 
                 roundData: eventData 
@@ -207,7 +205,7 @@ const LobbyPage: React.FC = () => {
         }
       });
 
-      ws.current.addEventListener("close", () => {
+      newWs.addEventListener("close", () => {
         toast.error(t("errors.WEBSOCKET_DISCONNECT"));
 
         if (shouldReconnect.current) {
@@ -226,8 +224,8 @@ const LobbyPage: React.FC = () => {
 
     // beforeunload handler to leave game when closing/refreshing page
     const handleBeforeUnload = () => {
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify({ event: 'LEAVE_GAME' }));
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ event: 'LEAVE_GAME' }));
       }
     };
 
@@ -235,20 +233,9 @@ const LobbyPage: React.FC = () => {
 
     return () => {
       shouldReconnect.current = false;
-
-      // Send LEAVE_GAME before closing WebSocket
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify({ event: 'LEAVE_GAME' }));
-        setTimeout(() => {
-          if (ws.current) {
-            ws.current.close(1000, "Component unmounting");
-            ws.current = null;
-          }
-        }, 100);
-      } else if (ws.current) {
-        ws.current.close(1000, "Component unmounting");
-        ws.current = null;
-      }
+      
+      // DON'T close WebSocket here - GamePage will reuse it
+      // Only close on actual page leave (beforeunload handles that)
 
       // Clear reconnect timeout
       if (reconnectTimeout.current) {
@@ -259,15 +246,18 @@ const LobbyPage: React.FC = () => {
       // Remove beforeunload listener
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [lobbyId, logout, t, navigate, user]);
+  }, [lobbyId, logout, t, navigate, user, ws, setWebSocket]);
 
   if (!lobbyId) {
     return null;
   }
 
+  const wsRef = useRef<WebSocket | null>(ws);
+  wsRef.current = ws;
+
   return (
     <Lobby 
-      wsRef={ws} 
+      wsRef={wsRef} 
       gameId={lobbyId}
       players={players}
       decksInGame={decksInGame}

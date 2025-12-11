@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { useGameWebSocketStore } from "../store/gameWebSocketStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { getCookie } from "../utils/qrcode";
 import Game from "../components/Game";
 import type {
   GameState,
@@ -15,13 +15,11 @@ import type {
 const GamePage: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const { user, logout } = useAuthStore();
+  const { ws } = useGameWebSocketStore();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const ws = useRef<WebSocket | null>(null);
-  const reconnectTimeout = useRef<any>(null);
-  const shouldReconnect = useRef<boolean>(true);
-  const initialDataLoaded = useRef<boolean>(false); // Track if we got initial round data
+  const initialDataLoaded = useRef<boolean>(false);
 
   const [gameState, setGameState] = useState<GameState>({
     gameId: gameId || '',
@@ -39,245 +37,174 @@ const GamePage: React.FC = () => {
   useEffect(() => {
     const navState = location.state as { roundData?: RoundStartedData };
     if (navState?.roundData) {
-      console.log('[GamePage] Initializing from navigation state:', navState.roundData);
+      console.log('[GamePage] Initializing from navigation state');
       const roundData = navState.roundData;
       
-      initialDataLoaded.current = true; // Mark that we have initial data
+      initialDataLoaded.current = true;
+      
+      const uniqueCards = roundData.cards ? 
+        Array.from(new Map(roundData.cards.map(card => [card.id, card])).values()) : 
+        [];
       
       setGameState((prev) => ({
         ...prev,
         currentJudgeId: roundData.cardRef,
         blackCard: roundData.blackCard,
-        myCards: roundData.cards || [],
+        myCards: uniqueCards,
         selectedCardIds: [],
         submissions: [],
         isJudge: roundData.cardRef === user?.id,
         gamePhase: 'selecting',
       }));
       
-      // Clear navigation state
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, user?.id, navigate, location.pathname]);
 
+  // Listen to WebSocket messages (WebSocket created in LobbyPage)
   useEffect(() => {
-    if (!gameId || !user) return;
+    if (!ws || !gameId || !user) return;
 
-    const BASE_WS_URL =
-      import.meta.env.MODE === "development"
-        ? import.meta.env.VITE_API_WS_GATEWAY_DEV
-        : import.meta.env.VITE_API_WS_GATEWAY;
-    
-    // Get sessionToken from cookies
-    const sessionToken = getCookie('sessionToken');
-    const endpoint = `${BASE_WS_URL}/game/connect?${sessionToken ? `sessionToken=${sessionToken}&` : ''}game=${gameId}`;
+    const handleMessage = (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
+      const { event: eventType, data: eventData } = data;
 
-    const connect = () => {
-      if (
-        ws.current &&
-        (ws.current.readyState === WebSocket.CONNECTING ||
-          ws.current.readyState === WebSocket.OPEN)
-      ) {
-        return;
-      }
+      switch (eventType) {
+        case "WS_CONNECTED":
+          return;
 
-      toast.info(t("reconnecting"));
-      ws.current = new WebSocket(endpoint);
+        case "INVALID_OR_EXPIRED_SESSION":
+          logout();
+          navigate("/login");
+          return;
 
-      ws.current.addEventListener("error", () => {
-        toast.error(t("errors.UNKNOWN_ERROR"));
-      });
-
-      ws.current.addEventListener("open", () => {
-        toast.success(t("connected"));
-      });
-
-      ws.current.addEventListener("message", (event: any) => {
-        const data = JSON.parse(event.data);
-        const { event: eventType, data: eventData } = data;
-
-        switch (eventType) {
-          case "WS_CONNECTED":
-            return;
-
-          case "INVALID_OR_EXPIRED_SESSION":
-            shouldReconnect.current = false;
-            logout();
-            navigate("/login");
-            return;
-
-          case "GAME_STARTED":
-            toast.success(t("game.started"));
-            return;
-
-          case "PLAYERS_IN_GAME":
-            if (Array.isArray(eventData)) {
-              setGameState((prev) => ({
-                ...prev,
-                players: eventData,
-              }));
-            }
-            return;
-
-          case "PLAYER_LEFT":
-            if (eventData && eventData.id) {
-              const leavingPlayer = gameState.players.find(p => p.id === eventData.id);
-              if (leavingPlayer) {
-                toast.info(t("lobby.player_left", { name: leavingPlayer.name }));
-              }
-            }
-            return;
-
-          case "ROUND_STARTED":
-            const roundData = eventData as RoundStartedData;
-            console.log('[ROUND_STARTED via WS] Cards:', roundData.cards?.length, 'Judge:', roundData.cardRef);
-            
-            // Skip if we already have initial data from navigation state
-            if (initialDataLoaded.current && (!roundData.cards || roundData.cards.length === 0)) {
-              console.log('[ROUND_STARTED] Ignoring empty data - already have cards from navigation state');
-              return;
-            }
-            
-            // This is a new round (second+ round) or we don't have data yet
-            initialDataLoaded.current = true;
-            
-            // Validate data from backend
-            if (!roundData.cardRef) {
-              console.error('[ROUND_STARTED] ERROR: No cardRef (judge) provided by backend!');
-              toast.error('Backend error: No judge assigned');
-            }
-            if (!roundData.blackCard) {
-              console.error('[ROUND_STARTED] ERROR: No black card provided by backend!');
-              toast.error('Backend error: No black card');
-            }
-            if (!roundData.cards || roundData.cards.length === 0) {
-              console.error('[ROUND_STARTED] ERROR: No white cards provided by backend!');
-              toast.error('Backend error: No cards in hand - check if decks have enough cards');
-            }
-            
+        case "PLAYERS_IN_GAME":
+          if (Array.isArray(eventData)) {
             setGameState((prev) => ({
               ...prev,
-              currentJudgeId: roundData.cardRef,
-              blackCard: roundData.blackCard,
-              myCards: roundData.cards || [],
-              selectedCardIds: [],
-              submissions: [],
-              isJudge: roundData.cardRef === user?.id,
-              gamePhase: 'selecting',
+              players: eventData,
             }));
-            return;
-
-          case "ALL_CARDS_SUBMITTED":
-            const submittedData = eventData as AllCardsSubmittedData;
-            setGameState((prev) => ({
-              ...prev,
-              submissions: submittedData.submissions,
-              gamePhase: 'judging',
-            }));
-            return;
-
-          case "ROUND_FINISHED":
-            const finishedData = eventData as RoundFinishedData;
-            setGameState((prev) => ({
-              ...prev,
-              players: finishedData.players,
-              gamePhase: 'results',
-            }));
-            toast.success(
-              t("game.round_winner", { name: finishedData.winner.name })
-            );
-            
-            // Auto-hide results after 5 seconds
-            setTimeout(() => {
-              setGameState((prev) => ({
-                ...prev,
-                gamePhase: 'waiting',
-              }));
-            }, 5000);
-            return;
-
-          case "KICKED_FROM_GAME":
-            shouldReconnect.current = false;
-            toast.error(t("errors.KICKED_FROM_GAME"));
-            navigate("/welcome");
-            return;
-
-          case "GAME_FINISHED":
-            shouldReconnect.current = false;
-            toast.info(t("game.finished"));
-            navigate("/welcome");
-            return;
-
-          default:
-            const errorMessage = t(`errors.${eventType}`);
-            if (errorMessage !== `errors.${eventType}`) {
-              toast.error(errorMessage);
-            }
-        }
-      });
-
-      ws.current.addEventListener("close", () => {
-        toast.error(t("errors.WEBSOCKET_DISCONNECT"));
-
-        if (shouldReconnect.current) {
-          if (reconnectTimeout.current) {
-            clearTimeout(reconnectTimeout.current);
           }
+          return;
 
-          reconnectTimeout.current = setTimeout(() => {
-            connect();
-          }, 2000);
-        }
-      });
+        case "PLAYER_LEFT":
+          if (eventData && eventData.id) {
+            const leavingPlayer = gameState.players.find(p => p.id === eventData.id);
+            if (leavingPlayer) {
+              toast.info(t("lobby.player_left", { name: leavingPlayer.name }));
+            }
+          }
+          return;
+
+        case "ROUND_STARTED":
+          const roundData = eventData as RoundStartedData;
+          console.log('[ROUND_STARTED via WS] Cards:', roundData.cards?.length);
+          
+          // Skip if we already have initial data
+          if (initialDataLoaded.current && (!roundData.cards || roundData.cards.length === 0)) {
+            console.log('[ROUND_STARTED] Ignoring empty data');
+            return;
+          }
+          
+          initialDataLoaded.current = true;
+          
+          const uniqueCards = roundData.cards ? 
+            Array.from(new Map(roundData.cards.map(card => [card.id, card])).values()) : 
+            [];
+          
+          setGameState((prev) => ({
+            ...prev,
+            currentJudgeId: roundData.cardRef,
+            blackCard: roundData.blackCard,
+            myCards: uniqueCards,
+            selectedCardIds: [],
+            submissions: [],
+            isJudge: roundData.cardRef === user?.id,
+            gamePhase: 'selecting',
+          }));
+          return;
+
+        case "ALL_CARDS_SUBMITTED":
+          const submittedData = eventData as AllCardsSubmittedData;
+          setGameState((prev) => ({
+            ...prev,
+            submissions: submittedData.submissions,
+            gamePhase: 'judging',
+          }));
+          return;
+
+        case "ROUND_FINISHED":
+          const finishedData = eventData as RoundFinishedData;
+          setGameState((prev) => ({
+            ...prev,
+            players: finishedData.players,
+            gamePhase: 'results',
+          }));
+          toast.success(
+            t("game.round_winner", { name: finishedData.winner.name })
+          );
+          
+          setTimeout(() => {
+            setGameState((prev) => ({
+              ...prev,
+              gamePhase: 'waiting',
+            }));
+          }, 5000);
+          return;
+
+        case "KICKED_FROM_GAME":
+          toast.error(t("errors.KICKED_FROM_GAME"));
+          navigate("/welcome");
+          return;
+
+        case "GAME_FINISHED":
+          toast.info(t("game.finished"));
+          navigate("/welcome");
+          return;
+
+        default:
+          const errorMessage = t(`errors.${eventType}`);
+          if (errorMessage !== `errors.${eventType}`) {
+            toast.error(errorMessage);
+          }
+      }
     };
 
-    connect();
+    ws.addEventListener("message", handleMessage);
 
     const handleBeforeUnload = () => {
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify({ event: 'LEAVE_GAME' }));
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ event: 'LEAVE_GAME' }));
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      shouldReconnect.current = false;
-
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify({ event: 'LEAVE_GAME' }));
-        setTimeout(() => {
-          if (ws.current) {
-            ws.current.close(1000, "Component unmounting");
-            ws.current = null;
-          }
-        }, 100);
-      } else if (ws.current) {
-        ws.current.close(1000, "Component unmounting");
-        ws.current = null;
-      }
-
-      if (reconnectTimeout.current) {
-        clearTimeout(reconnectTimeout.current);
-        reconnectTimeout.current = null;
-      }
-
+      ws.removeEventListener("message", handleMessage);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      
+      // Close WebSocket when leaving game
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ event: 'LEAVE_GAME' }));
+        setTimeout(() => {
+          ws.close(1000, "Leaving game");
+        }, 100);
+      }
     };
-  }, [gameId, logout, t, navigate, user]);
+  }, [ws, gameId, user, logout, navigate, t, gameState.players]);
 
   const handleSubmitCards = (cardIds: string[]) => {
-    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
       toast.error(t('errors.websocket_not_connected'));
       return;
     }
 
-    ws.current.send(JSON.stringify({
+    ws.send(JSON.stringify({
       event: 'SUBMIT_CARDS',
       data: { cardIds }
     }));
 
-    // After submitting, player waits for ALL_CARDS_SUBMITTED
     setGameState((prev) => ({
       ...prev,
       selectedCardIds: cardIds,
@@ -288,20 +215,20 @@ const GamePage: React.FC = () => {
   };
 
   const handleSelectWinner = (playerId: string) => {
-    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
       toast.error(t('errors.websocket_not_connected'));
       return;
     }
 
-    ws.current.send(JSON.stringify({
+    ws.send(JSON.stringify({
       event: 'SELECT_ROUND_WINNER',
       data: { playerId }
     }));
   };
 
   const handleLeaveGame = () => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({ event: 'LEAVE_GAME' }));
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ event: 'LEAVE_GAME' }));
       setTimeout(() => {
         navigate('/welcome');
       }, 100);
