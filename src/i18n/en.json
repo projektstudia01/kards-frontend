@@ -98,5 +98,24 @@
     "USER_NOT_IN_GAME": "User is not in game",
     "KICKED_FROM_GAME": "You have been kicked from the game",
     "websocket_not_connected": "Not connected to server"
+  },
+  "game": {
+    "title": "Cards Against Humanity",
+    "waiting_for_round": "Waiting for next round to start...",
+    "judge": "Judge",
+    "judge_waiting": "You are the Card Czar this round!",
+    "players_selecting": "Waiting for players to submit their cards...",
+    "submit_cards": "Submit Cards",
+    "select_winner": "Select the Winning Answer",
+    "judge_selecting": "The Card Czar is choosing the winner...",
+    "round_finished": "Round Results",
+    "rank": "Rank",
+    "player": "Player",
+    "points": "Points",
+    "next_round_starting": "Next round starting soon...",
+    "cards_submitted": "Cards submitted!",
+    "round_winner": "{{name}} won this round!",
+    "started": "Game started!",
+    "finished": "Game has ended"
   }
 }

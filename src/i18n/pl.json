@@ -98,5 +98,24 @@
     "USER_NOT_IN_GAME": "Użytkownik nie jest w grze",
     "KICKED_FROM_GAME": "Zostałeś wyrzucony z gry",
     "websocket_not_connected": "Brak połączenia z serwerem"
+  },
+  "game": {
+    "title": "Cards Against Humanity",
+    "waiting_for_round": "Oczekiwanie na rozpoczęcie kolejnej rundy...",
+    "judge": "Sędzia",
+    "judge_waiting": "Jesteś Carem Kart w tej rundzie!",
+    "players_selecting": "Oczekiwanie na wybór kart przez graczy...",
+    "submit_cards": "Wyślij karty",
+    "select_winner": "Wybierz zwycięską odpowiedź",
+    "judge_selecting": "Car Kart wybiera zwycięzcę...",
+    "round_finished": "Wyniki rundy",
+    "rank": "Miejsce",
+    "player": "Gracz",
+    "points": "Punkty",
+    "next_round_starting": "Następna runda rozpocznie się wkrótce...",
+    "cards_submitted": "Karty wysłane!",
+    "round_winner": "{{name}} wygrał tę rundę!",
+    "started": "Gra rozpoczęta!",
+    "finished": "Gra zakończona"
   }
 }

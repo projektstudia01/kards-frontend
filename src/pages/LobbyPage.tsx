@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import Lobby from "../components/Lobby";
 import type { Player, Deck } from "../types/lobby";
+import { getCookie } from "../utils/qrcode";
 
 const LobbyPage: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
@@ -22,14 +23,6 @@ const LobbyPage: React.FC = () => {
   const [availableDecksPage, setAvailableDecksPage] = useState(0);
   const [availableDecksTotal, setAvailableDecksTotal] = useState(0);
   const [availableDecksPageSize] = useState(10);
-  const [gameStarted, setGameStarted] = useState(false);
-
-  // Redirect to game when started (will be triggered by WebSocket GAME_STARTED event)
-  useEffect(() => {
-    if (gameStarted && lobbyId) {
-      navigate(`/game/${lobbyId}`);
-    }
-  }, [gameStarted, lobbyId, navigate]);
 
   // WebSocket connection - stays at page level to avoid reconnects on component changes
   useEffect(() => {
@@ -41,7 +34,10 @@ const LobbyPage: React.FC = () => {
           "ws://localhost:8000"
         : import.meta.env.VITE_API_WS_GATEWAY ||
           "wss://main-server-dev.1050100.xyz";
-    const endpoint = `${BASE_WS_URL}/game/connect?game=${lobbyId}`;
+    
+    // Get sessionToken from cookies
+    const sessionToken = getCookie('sessionToken');
+    const endpoint = `${BASE_WS_URL}/game/connect?${sessionToken ? `sessionToken=${sessionToken}&` : ''}game=${lobbyId}`;
 
     const connect = () => {
       if (
@@ -142,8 +138,9 @@ const LobbyPage: React.FC = () => {
             return;
 
           case "GAME_STARTED":
-            setGameStarted(true);
+            shouldReconnect.current = false;
             toast.success(t("lobby.game_started"));
+            navigate(`/game/${lobbyId}`);
             return;
 
           case "GAME_FINISHED":
