@@ -36,18 +36,25 @@ const GamePage: React.FC = () => {
 
   // Connect to WebSocket when page mounts
   useEffect(() => {
+    console.log("[GamePage] Connect effect triggered, gameId:", gameId);
     const { ws, connect } = useGameWebSocketStore.getState();
 
-    if (!gameId) return;
+    if (!gameId) {
+      console.log("[GamePage] No gameId, returning");
+      return;
+    }
 
     if (
       !ws ||
       ws.readyState === WebSocket.CLOSED ||
       ws.readyState === WebSocket.CLOSING
     ) {
+      console.log("[GamePage] Creating new WebSocket connection");
       connect(gameId);
+    } else {
+      console.log("[GamePage] WebSocket already open, state:", ws.readyState);
     }
-  }, [gameId]); // Only depend on gameId, not other changing values
+  }, [gameId]);
 
   // Initialize game state from navigation state if available
   useEffect(() => {
