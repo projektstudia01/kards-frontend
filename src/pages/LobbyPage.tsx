@@ -149,8 +149,13 @@ const LobbyPage: React.FC = () => {
             return;
 
           case "GAME_STARTED":
-            shouldReconnect.current = false;
             toast.success(t("lobby.game_started"));
+            // Don't close WebSocket yet - wait for ROUND_STARTED
+            return;
+
+          case "ROUND_STARTED":
+            // Now that we have round data, redirect to game
+            shouldReconnect.current = false;
             navigate(`/game/${lobbyId}`);
             return;
 
