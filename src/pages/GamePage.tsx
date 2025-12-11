@@ -21,6 +21,7 @@ const GamePage: React.FC = () => {
   const ws = useRef<WebSocket | null>(null);
   const reconnectTimeout = useRef<any>(null);
   const shouldReconnect = useRef<boolean>(true);
+  const initialDataLoaded = useRef<boolean>(false); // Track if we got initial round data
 
   const [gameState, setGameState] = useState<GameState>({
     gameId: gameId || '',
@@ -40,6 +41,8 @@ const GamePage: React.FC = () => {
     if (navState?.roundData) {
       console.log('[GamePage] Initializing from navigation state:', navState.roundData);
       const roundData = navState.roundData;
+      
+      initialDataLoaded.current = true; // Mark that we have initial data
       
       setGameState((prev) => ({
         ...prev,
@@ -127,7 +130,16 @@ const GamePage: React.FC = () => {
 
           case "ROUND_STARTED":
             const roundData = eventData as RoundStartedData;
-            console.log('[ROUND_STARTED] Cards:', roundData.cards?.length, 'Judge:', roundData.cardRef);
+            console.log('[ROUND_STARTED via WS] Cards:', roundData.cards?.length, 'Judge:', roundData.cardRef);
+            
+            // Skip if we already have initial data from navigation state
+            if (initialDataLoaded.current && (!roundData.cards || roundData.cards.length === 0)) {
+              console.log('[ROUND_STARTED] Ignoring empty data - already have cards from navigation state');
+              return;
+            }
+            
+            // This is a new round (second+ round) or we don't have data yet
+            initialDataLoaded.current = true;
             
             // Validate data from backend
             if (!roundData.cardRef) {
@@ -151,7 +163,7 @@ const GamePage: React.FC = () => {
               selectedCardIds: [],
               submissions: [],
               isJudge: roundData.cardRef === user?.id,
-              gamePhase: 'selecting', // Both judge and players start in 'selecting'
+              gamePhase: 'selecting',
             }));
             return;
 
