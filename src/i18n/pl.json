@@ -21,7 +21,7 @@
   },
   "lobby": {
     "title": "Lobby Gry",
-    "players": "graczy",
+    "players": "Gracze",
     "decks": "talii",
     "players_in_game": "Gracze w grze",
     "no_players": "Brak graczy",
@@ -55,6 +55,7 @@
     "leave": "Opuść",
     "start_game": "Rozpocznij grę",
     "player_joined": "{{name}} dołączył do gry",
+    "player_left": "{{name}} opuścił grę",
     "game_started": "Gra rozpoczęta!",
     "game_finished": "Gra zakończona",
     "errors": {
@@ -98,5 +99,34 @@
     "USER_NOT_IN_GAME": "Użytkownik nie jest w grze",
     "KICKED_FROM_GAME": "Zostałeś wyrzucony z gry",
     "websocket_not_connected": "Brak połączenia z serwerem"
+  },
+  "game": {
+    "title": "Cards Against Humanity",
+    "waiting_for_round": "Oczekiwanie na rozpoczęcie kolejnej rundy...",
+    "judge": "Sędzia",
+    "judge_waiting": "Jesteś Carem Kart w tej rundzie!",
+    "players_selecting": "Oczekiwanie na wybór kart przez graczy...",
+    "submit_cards": "Wyślij karty",
+    "select_winner": "Wybierz zwycięską odpowiedź",
+    "judge_selecting": "Car Kart wybiera zwycięzcę...",
+    "round_finished": "Wyniki rundy",
+    "rank": "Miejsce",
+    "player": "Gracz",
+    "points": "Punkty",
+    "next_round_starting": "Następna runda rozpocznie się wkrótce...",
+    "cards_submitted": "Karty wysłane!",
+    "waiting_for_others": "Oczekiwanie aż inni gracze wyślą swoje karty...",
+    "round_winner": "{{name}} wygrał tę rundę!",
+    "started": "Gra rozpoczęta!",
+    "finished": "Gra zakończona"
+  },
+  "welcome": {
+    "public_games": "Publiczne gry",
+    "loading": "Ładowanie",
+    "no_public_games": "Brak dostępnych publicznych gier",
+    "create_first_game": "Stwórz pierwszą grę!",
+    "waiting": "Oczekuje",
+    "join": "Dołącz",
+    "auto_refresh": "Odświeżane co 5 sekund"
   }
 }
