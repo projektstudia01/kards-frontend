@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import VerifyEmail from "./VerifyEmail";
-import { useAuthStore } from "../store/authStore";
-import { useErrorStore } from "../store/errorStore";
-import { customAxios } from "../api/customAxios";
+import { register } from "../api";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface RegistrationData {
   email: string;
@@ -13,18 +13,15 @@ interface RegistrationData {
 }
 
 const Registration: React.FC = () => {
-  const setVerificationData = useAuthStore((s) => s.setVerificationData);
-  const emailForVerification = useAuthStore((s) => s.emailForVerification);
-  const clearVerificationData = useAuthStore((s) => s.clearVerificationData);
-  const setError = useErrorStore((s) => s.setError);
-  const clearError = useErrorStore((s) => s.clearError);
+  const { t } = useTranslation();
+  const [sessionId, setSessionId] = useState<string>("");
 
   const [formData, setFormData] = useState<RegistrationData>({
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [emailForVerification, setEmailForVerification] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,49 +29,31 @@ const Registration: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
-
-    // walidacja lokalna: hasła muszą być takie same i mieć co najmniej 8 znaków
+    
     if (formData.password !== formData.confirmPassword) {
-      setError("errors.register.password_mismatch");
+      toast.error(t("frontendErrors.password_mismatch"));
       return;
     }
 
     if (formData.password.length < 8) {
-      setError("errors.register.password_too_short");
+      toast.error(t("frontendErrors.password_too_short"));
       return;
     }
 
-    setLoading(true);
-    try {
-      // POST do /auth/register
-      const res = await customAxios.post("/auth/register", {
-        email: formData.email,
-        password: formData.password,
-      });
-
-      const { sessionId, code } = res.data.data;
-
-      // zapis do Zustand, aby VerifyEmail mógł użyć tych danych
-      setVerificationData({
-        email: formData.email,
-        sessionId,
-        code,
-      });
-
-      // Do not log in the user yet; wait for email verification
-    } catch (err: any) {
-      if (err.response) {
-        const { key } = err.response.data;
-        // klucz z API → i18n, fallback "unknown_error"
-        setError(key ? `errors.register.${key}` : "errors.unknown_error");
-      } else {
-        setError("errors.network_error");
-      }
-    } finally {
-      setLoading(false);
+    const response = await register(formData.email, formData.password);
+    if (response.isError) {
+      return;
     }
+
+    const { sessionId } = response.data;
+    setSessionId(sessionId);
+    setEmailForVerification(formData.email);
   };
+
+  const isFormValid =
+    formData.email.includes("@") &&
+    formData.password.length >= 8 &&
+    formData.confirmPassword.length >= 8;
 
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -100,7 +79,7 @@ const Registration: React.FC = () => {
               id="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="imie@firma.pl"
+              placeholder="example@domain.pl"
               required
               className="bg-input border border-border text-card-foreground sm:text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 ring-ring"
             />
@@ -146,10 +125,10 @@ const Registration: React.FC = () => {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full my-6 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            disabled={!isFormValid}
+            className="w-full my-6 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Tworzenie konta..." : "Utwórz Konto"}
+            Utwórz Konto
           </button>
 
           <div className="flex items-center justify-center mb-4">
@@ -172,8 +151,11 @@ const Registration: React.FC = () => {
       {/* Jeśli mamy dane w store — pokaż popup VerifyEmail nad stroną rejestracji */}
       {emailForVerification && (
         <VerifyEmail
+          sessionId={sessionId}
+          emailForVerification={emailForVerification}
           onClose={() => {
-            clearVerificationData();
+            setEmailForVerification("");
+            setSessionId("");
           }}
         />
       )}

@@ -1,155 +1,276 @@
-import React from 'react';
-import { useAuthStore } from '../store/authStore';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import UsernamePopup from './UsernamePopup';
+import { useAuthStore } from '../store/authStore';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import PlayersInGame from './PlayersInGame';
+import DecksInGame from './DecksInGame';
+import AvailableDecks from './AvailableDecks';
+import QRCodeGenerator from './QRCodeGenerator';
+import type { Player, Deck } from '../types/lobby';
 
-const Lobby: React.FC = () => {
-  const { logout, user, showUsernamePopup, confirmEmail } = useAuthStore();
+interface LobbyProps {
+  wsRef: React.MutableRefObject<WebSocket | null>;
+  gameId: string | null;
+  players: Player[];
+  decksInGame: Deck[];
+  availableDecks: Deck[];
+  availableDecksPage: number;
+  availableDecksTotal: number;
+  availableDecksPageSize: number;
+}
+
+const Lobby: React.FC<LobbyProps> = ({ 
+  wsRef, 
+  gameId, 
+  players, 
+  decksInGame,
+  availableDecks,
+  availableDecksPage,
+  availableDecksTotal,
+  availableDecksPageSize
+}) => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { t } = useTranslation();
+  const [showQRCode, setShowQRCode] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  // Find current user as player to check if owner
+  const currentPlayer = players.find(p => p.id === user?.id);
+  const isOwner = currentPlayer?.owner || false;
+
+  const handleAddDeck = (deckId: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      toast.error(t('errors.websocket_not_connected'));
+      return;
+    }
+
+    wsRef.current.send(JSON.stringify({
+      event: 'ADD_DECKS_TO_GAME',
+      data: { decks: [deckId] }
+    }));
   };
 
-  const handleChangeUsername = () => {
-    confirmEmail();
+  const handleRemoveDeck = (deckId: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      toast.error(t('errors.websocket_not_connected'));
+      return;
+    }
+
+    wsRef.current.send(JSON.stringify({
+      event: 'REMOVE_DECKS_FROM_GAME',
+      data: { decks: [deckId] }
+    }));
   };
+
+  const handleStartGame = () => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      toast.error(t('errors.websocket_not_connected'));
+      return;
+    }
+
+    // Validate requirements
+    if (players.length < 2) {
+      toast.error(t('lobby.errors.min_players_2'));
+      return;
+    }
+
+    const totalBlackCards = decksInGame.reduce((sum, deck) => sum + deck.blackCardsCount, 0);
+    const totalWhiteCards = decksInGame.reduce((sum, deck) => sum + deck.whiteCardsCount, 0);
+    const requiredBlackCards = players.length * 1;
+    const requiredWhiteCards = players.length * 10;
+
+    if (totalBlackCards < requiredBlackCards || totalWhiteCards < requiredWhiteCards) {
+      toast.error(t('lobby.errors.not_enough_cards'));
+      return;
+    }
+
+    wsRef.current.send(JSON.stringify({
+      event: 'START_GAME'
+    }));
+  };
+
+  const handleLeaveLobby = () => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        event: 'LEAVE_GAME'
+      }));
+      // Give it a moment to send before navigating
+      setTimeout(() => {
+        navigate('/welcome');
+      }, 100);
+    } else {
+      navigate('/welcome');
+    }
+  };
+
+  // Check if can start game
+  const totalBlackCards = decksInGame.reduce((sum, deck) => sum + deck.blackCardsCount, 0);
+  const totalWhiteCards = decksInGame.reduce((sum, deck) => sum + deck.whiteCardsCount, 0);
+  const requiredBlackCards = Math.max(2, players.length) * 1;
+  const requiredWhiteCards = Math.max(2, players.length) * 10;
+  const hasEnoughPlayers = players.length >= 2;
+  const hasEnoughCards = totalBlackCards >= requiredBlackCards && totalWhiteCards >= requiredWhiteCards;
+  const canStartGame = isOwner && hasEnoughPlayers && hasEnoughCards;
+
+  if (!gameId) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">❌</div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {t('lobby.not_found')}
+          </h1>
+          <p className="text-muted-foreground mb-4">
+            {t('lobby.not_found_description')}
+          </p>
+          <button
+            onClick={() => navigate('/welcome')}
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+          >
+            {t('lobby.back_to_menu')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background p-6 pt-12 relative">
-      {showUsernamePopup && <UsernamePopup />}
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background p-6 pt-12">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-primary mb-6">CardOSR</h1>
-          <p className="text-xl text-muted-foreground mb-4">
-            Wieloosobowa Gra Karciana Online
-          </p>
-          <p className="text-sm text-muted-foreground flex items-center justify-center">
-            <span className="text-primary mr-2">⚡</span>
-            Zabawna, szybka i pełna humoru!
-          </p>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-primary mb-2">
+            {t('lobby.title')}
+          </h1>
+          <div className="flex items-center justify-center space-x-4 text-muted-foreground mb-3">
+            <span className="flex items-center">
+              👥 {players.length} {t('lobby.players')}
+            </span>
+            <span className="flex items-center">
+              🎴 {decksInGame.length} {t('lobby.decks')}
+            </span>
+          </div>
+          
+          {/* Game ID - do kopiowania i udostępniania */}
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-sm text-muted-foreground">ID Gry:</span>
+            <code className="px-3 py-1 bg-accent rounded border border-border text-sm font-mono">
+              {gameId}
+            </code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(gameId || '');
+                toast.success('ID gry skopiowane!');
+              }}
+              className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
+            >
+              📋 Kopiuj
+            </button>
+            <button
+              onClick={() => setShowQRCode(!showQRCode)}
+              className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            >
+              📱 {showQRCode ? 'Ukryj QR' : 'Pokaż QR'}
+            </button>
+          </div>
+          
+          {/* QR Code Modal */}
+          {showQRCode && (
+            <div className="mt-4 p-4 bg-card rounded-lg border border-border inline-block">
+              <p className="text-sm text-muted-foreground mb-2 text-center">
+                Zeskanuj kod aby dołączyć do gry
+              </p>
+              <QRCodeGenerator 
+                text={`${window.location.origin}/lobby/${gameId}`}
+                size={200}
+                className="mx-auto"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Game Rules Section */}
-        <div className="bg-card rounded-lg p-8 mb-12 border border-border">
-          <h2 className="text-2xl font-bold text-card-foreground text-center mb-8">
-            Jak grać w CardOSR?
-          </h2>
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Left Column - Players */}
+          <div className="lg:col-span-1">
+            <PlayersInGame players={players} />
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Rule 1 */}
-            <div className="bg-accent border border-border rounded-lg p-6">
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-destructive rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🎯</span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-card-foreground font-medium">
-                    Sędzia losuje kartę
-                  </p>
-                </div>
-              </div>
-            </div>
+          {/* Middle Column - Decks in Game */}
+          <div className="lg:col-span-1">
+            <DecksInGame
+              onRemoveDeck={handleRemoveDeck}
+              isOwner={isOwner}
+              decksInGame={decksInGame}
+              players={players}
+            />
+          </div>
 
-            {/* Rule 2 */}
-            <div className="bg-accent border border-border rounded-lg p-6">
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🏆</span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-card-foreground font-medium">
-                    Gracze zagrywają po jednej białej karcie
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Rule 3 */}
-            <div className="bg-accent border border-border rounded-lg p-6">
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-warning rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🚗</span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-card-foreground font-medium">
-                    Sędzia wybiera najśmieszniejszą odpowiedź
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Rule 4 */}
-            <div className="bg-accent border border-border rounded-lg p-6">
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-success rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🏅</span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-card-foreground font-medium">
-                    Zwycięzca rundy dostaje punkt
-                  </p>
-                </div>
-              </div>
-            </div>
+          {/* Right Column - Available Decks */}
+          <div className="lg:col-span-1">
+            <AvailableDecks
+              onAddDeck={handleAddDeck}
+              isOwner={isOwner}
+              wsRef={wsRef}
+              availableDecks={availableDecks}
+              decksInGame={decksInGame}
+              availableDecksPage={availableDecksPage}
+              availableDecksTotal={availableDecksTotal}
+              availableDecksPageSize={availableDecksPageSize}
+            />
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-6 mb-12 justify-center">
-          <button className="px-10 py-4 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
-            ▶ Stwórz grę
-          </button>
-          <button className="px-10 py-4 bg-info text-info-foreground rounded-lg font-medium hover:bg-info/90 transition-colors">
-            🏠 Dołącz do lobby
-          </button>
-          <button className="px-10 py-4 bg-warning text-warning-foreground rounded-lg font-medium hover:bg-warning/90 transition-colors">
-            👤 Profil gracza
-          </button>
-        </div>
-
-        {/* User Profile Card */}
-        <div className="bg-card rounded-lg p-6 mb-12 border border-border max-w-sm mx-auto">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">👤</span>
-            </div>
+        {/* Control Panel */}
+        <div className="bg-card rounded-lg p-6 border border-border">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Status Messages */}
             <div className="flex-1">
-              <p className="text-card-foreground font-medium">
-                Witaj, {user?.username ? user.username : 'Gościu'}
-              </p>
-              <p className="text-muted-foreground text-sm">
-                ID: {user?.email ? user.email.substring(0, 3) + '***' + user.email.slice(-3) : 'brak'}
-              </p>
+              {!hasEnoughPlayers && (
+                <p className="text-sm text-muted-foreground">
+                  ⚠️ {t('lobby.need_more_players', { count: 2 - players.length })}
+                </p>
+              )}
+              {hasEnoughPlayers && !hasEnoughCards && (
+                <p className="text-sm text-muted-foreground">
+                  ⚠️ {t('lobby.need_more_cards')}
+                </p>
+              )}
+              {hasEnoughPlayers && hasEnoughCards && isOwner && (
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  ✅ {t('lobby.ready_to_start')}
+                </p>
+              )}
+              {hasEnoughPlayers && hasEnoughCards && !isOwner && (
+                <p className="text-sm text-muted-foreground">
+                  ⏳ {t('lobby.waiting_for_owner')}
+                </p>
+              )}
             </div>
-            <button
-              onClick={handleChangeUsername}
-              className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90"
-            >
-              Zmień nazwę
-            </button>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleLeaveLobby}
+                className="px-6 py-2.5 bg-destructive text-destructive-foreground rounded-lg font-medium hover:bg-destructive/90 transition-colors"
+              >
+                🚪 {t('lobby.leave')}
+              </button>
+
+              {isOwner && (
+                <button
+                  onClick={handleStartGame}
+                  disabled={!canStartGame}
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  🎮 {t('lobby.start_game')}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Logout Button - Bottom Left Corner */}
-      <button
-        onClick={handleLogout}
-        className="fixed bottom-6 left-6 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg font-medium hover:bg-destructive/90 transition-colors shadow-lg"
-      >
-        Wyloguj
-      </button>
     </div>
   );
 };

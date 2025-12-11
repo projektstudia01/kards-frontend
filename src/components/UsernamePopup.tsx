@@ -1,23 +1,26 @@
-import React, { useState } from 'react';
-import { useAuthStore } from '../store/authStore';
+import React, { useState } from "react";
+import { useAuthStore } from "../store/authStore";
 
 const UsernamePopup: React.FC = () => {
   const { setUsername, showUsernamePopup } = useAuthStore();
-  const [username, setUsernameInput] = useState('');
+  const [username, setUsernameInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) return;
+    const userName = username.trim();
+    if (!userName) return;
 
     setIsSubmitting(true);
-    
+
     // Symulacja API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    setUsername(username.trim());
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    setUsername(userName);
     setIsSubmitting(false);
   };
+
+  const isUsernameValid = username.trim().length >= 3;
 
   if (!showUsernamePopup) return null;
 
@@ -38,7 +41,6 @@ const UsernamePopup: React.FC = () => {
         <h2 className="text-2xl font-bold text-card-foreground text-center mb-6">
           Wybierz swoją nazwę użytkownika
         </h2>
-        
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -67,10 +69,10 @@ const UsernamePopup: React.FC = () => {
 
           <button
             type="submit"
-            disabled={isSubmitting || !username.trim()}
+            disabled={!isUsernameValid || isSubmitting}
             className="w-full text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Zapisuję...' : 'Potwierdź nazwę'}
+            {isSubmitting ? "Zapisuję..." : "Potwierdź nazwę"}
           </button>
         </form>
 

@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { customAxios } from '../api/customAxios';
-import { useErrorStore } from '../store/errorStore';
-
-// import { useAuthStore } from '../store/authStore'; // Będziemy tego potrzebować do logowania
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import VerifyEmail from "./VerifyEmail"; // Import VerifyEmail component
+import { login, resendVerificationCode } from "../api";
 
 // Interfejs dla danych logowania
 interface LoginData {
@@ -13,14 +11,14 @@ interface LoginData {
 }
 
 const Login: React.FC = () => {
-  // const setAuthState = useAuthStore(state => state.setAuthState); // Do integracji z Zustand
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const [emailForVerification, setEmailForVerification] = useState<string>("");
+  const [sessionId, setSessionId] = useState<string>("");
 
   // 1. Stan przechowujący dane logowania
   const [formData, setFormData] = useState<LoginData>({
-    email: '', // Zmienione z emailOrUsername na samo 'email'
-    password: '',
+    email: "", // Zmienione z emailOrUsername na samo 'email'
+    password: "",
   });
 
   // 2. Funkcja obsługująca zmianę wartości pól
@@ -31,37 +29,45 @@ const Login: React.FC = () => {
     });
   };
 
-  const errorStoreSetError = useErrorStore((s) => s.setError);
-
   // 3. Szkielet funkcji obsługującej logowanie
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Dane do logowania:', formData);
+      const response = await login(formData.email, formData.password)
 
-    try {
-      const response = await customAxios.post('/auth/login', formData);
-      console.log('Login successful:', response.data);
-      errorStoreSetError(null); // Clear error on success
-      navigate('/lobby'); // Navigate to the lobby on success
-    } catch (err: any) {
-      if (err.response && err.response.data.key) {
-        errorStoreSetError(`errors.login.${err.response.data.key}`);
-      } else {
-        errorStoreSetError('errors.unknown_error');
+      if(response.isError) {
+        // Check if it's email not verified error
+        if(response.error?.errorKey === "email_not_verified"){
+          const resendData = await resendVerificationCode(formData.email);
+          setEmailForVerification(formData.email);
+          setSessionId(resendData.data?.sessionId);
+        }
+        return;
       }
-    }
+
+      console.log("Login successful:", response.data);
+   
   };
+
+  const isFormValid =
+    formData.email.includes("@") && formData.password.length >= 8;
 
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="w-full max-w-md p-6 bg-card rounded-lg shadow sm:p-8 border border-border">
-        <h2 className="text-3xl font-bold text-center text-card-foreground mb-4">{t('login.title', 'Zaloguj się')}</h2>
-        <p className="text-base text-muted-foreground mb-6 text-center">{t('login.subtitle', 'Witaj ponownie! Zaloguj się aby kontynuować')}</p>
+        <h2 className="text-3xl font-bold text-center text-card-foreground mb-4">
+          {t("login.title", "Zaloguj się")}
+        </h2>
+        <p className="text-base text-muted-foreground mb-6 text-center">
+          {t("login.subtitle", "Witaj ponownie! Zaloguj się aby kontynuować")}
+        </p>
 
         <form className="space-y-6 w-full" onSubmit={handleSubmit} noValidate>
           <div className="w-full">
-            <label htmlFor="email" className="block mb-2 text-sm font-medium text-card-foreground">
-              {t('login.email', 'Adres Email')}
+            <label
+              htmlFor="email"
+              className="block mb-2 text-sm font-medium text-card-foreground"
+            >
+              {t("login.email", "Adres Email")}
             </label>
             <input
               type="email"
@@ -76,8 +82,11 @@ const Login: React.FC = () => {
           </div>
 
           <div className="w-full">
-            <label htmlFor="password" className="block mb-2 text-sm font-medium text-card-foreground">
-              {t('login.password', 'Hasło')}
+            <label
+              htmlFor="password"
+              className="block mb-2 text-sm font-medium text-card-foreground"
+            >
+              {t("login.password", "Hasło")}
             </label>
             <input
               type="password"
@@ -93,25 +102,41 @@ const Login: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full mt-2 mb-2 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            disabled={!isFormValid}
+            className="w-full mt-2 mb-2 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('login.submit', 'Zaloguj się')}
+            {t("login.submit", "Zaloguj się")}
           </button>
 
           <div className="flex items-center justify-center mb-4">
             <hr className="flex-1 border-t border-muted-foreground" />
-            <span className="mx-2 text-muted-foreground">{t('login.or', 'lub')}</span>
+            <span className="mx-2 text-muted-foreground">
+              {t("login.or", "lub")}
+            </span>
             <hr className="flex-1 border-t border-muted-foreground" />
           </div>
 
           <p className="text-sm font-light text-muted-foreground text-center">
-            {t('login.no_account', 'Nie masz jeszcze konta?')}{' '}
-            <Link to="/register" className="font-medium text-primary hover:underline">
-              {t('login.register', 'Zarejestruj się')}
+            {t("login.no_account", "Nie masz jeszcze konta?")}{" "}
+            <Link
+              to="/register"
+              className="font-medium text-primary hover:underline"
+            >
+              {t("login.register", "Zarejestruj się")}
             </Link>
           </p>
         </form>
       </div>
+      {emailForVerification && sessionId && (
+        <VerifyEmail
+          sessionId={sessionId}
+          emailForVerification={emailForVerification}
+          onClose={() => {
+            setEmailForVerification("");
+            setSessionId("");
+          }}
+        />
+      )}
     </div>
   );
 };

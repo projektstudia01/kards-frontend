@@ -1,0 +1,1 @@
+{"root":["../src/api/customaxios.ts","../src/api/index.ts","../src/i18n/index.ts","../src/store/authstore.ts","../src/store/deckstore.ts","../src/store/errorstore.ts","../src/types/lobby.ts","../src/utils/qrcode.ts"],"version":"5.9.3"}
