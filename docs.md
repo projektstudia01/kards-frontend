@@ -441,4 +441,4 @@ data: [
   - code 403, event: user_it_not_game_owner
   - code 404, event: deck_not_found
 - REMOVE_DECKS_FROM_GAME: data {"decks": ["eeee39e3-5c2a-4817-9798-cec5aca306c5"]}
-- GET_DECKS_PAGINATED - Do implementacji
+- GET_DECKS_PAGINATED
