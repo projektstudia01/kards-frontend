@@ -3,7 +3,7 @@ import { useAuthStore } from "../store/authStore";
 import { toast } from "sonner";
 import i18n from "../i18n";
 export const customAxios = axios.create({
-  baseURL: "https://main-server-dev.1050100.xyz",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
 });
 

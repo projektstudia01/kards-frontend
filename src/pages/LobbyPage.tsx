@@ -30,10 +30,8 @@ const LobbyPage: React.FC = () => {
 
     const BASE_WS_URL =
       import.meta.env.MODE === "development"
-        ? import.meta.env.VITE_API_WS_GATEWAY_DEV ||
-          "ws://localhost:8000"
-        : import.meta.env.VITE_API_WS_GATEWAY ||
-          "wss://main-server-dev.1050100.xyz";
+        ? import.meta.env.VITE_API_WS_GATEWAY_DEV
+        : import.meta.env.VITE_API_WS_GATEWAY;
     
     // Get sessionToken from cookies
     const sessionToken = getCookie('sessionToken');
