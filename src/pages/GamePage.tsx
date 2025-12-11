@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -16,6 +16,7 @@ const GamePage: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const ws = useRef<WebSocket | null>(null);
   const reconnectTimeout = useRef<any>(null);
@@ -32,6 +33,29 @@ const GamePage: React.FC = () => {
     isJudge: false,
     gamePhase: 'waiting',
   });
+
+  // Initialize game state from navigation state if available
+  useEffect(() => {
+    const navState = location.state as { roundData?: RoundStartedData };
+    if (navState?.roundData) {
+      console.log('[GamePage] Initializing from navigation state:', navState.roundData);
+      const roundData = navState.roundData;
+      
+      setGameState((prev) => ({
+        ...prev,
+        currentJudgeId: roundData.cardRef,
+        blackCard: roundData.blackCard,
+        myCards: roundData.cards || [],
+        selectedCardIds: [],
+        submissions: [],
+        isJudge: roundData.cardRef === user?.id,
+        gamePhase: 'selecting',
+      }));
+      
+      // Clear navigation state
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, user?.id, navigate, location.pathname]);
 
   useEffect(() => {
     if (!gameId || !user) return;
@@ -68,7 +92,6 @@ const GamePage: React.FC = () => {
       ws.current.addEventListener("message", (event: any) => {
         const data = JSON.parse(event.data);
         const { event: eventType, data: eventData } = data;
-        console.log('[Game WebSocket Event]', eventType, eventData);
 
         switch (eventType) {
           case "WS_CONNECTED":
@@ -85,7 +108,6 @@ const GamePage: React.FC = () => {
             return;
 
           case "PLAYERS_IN_GAME":
-            console.log('[Game PLAYERS_IN_GAME] Received players:', eventData);
             if (Array.isArray(eventData)) {
               setGameState((prev) => ({
                 ...prev,
@@ -105,18 +127,27 @@ const GamePage: React.FC = () => {
 
           case "ROUND_STARTED":
             const roundData = eventData as RoundStartedData;
-            console.log('[ROUND_STARTED] Full data:', roundData);
-            console.log('[ROUND_STARTED] Cards count:', roundData.cards?.length);
-            console.log('[ROUND_STARTED] CardRef (judge):', roundData.cardRef);
-            console.log('[ROUND_STARTED] Current user:', user?.id);
-            console.log('[ROUND_STARTED] Is judge:', roundData.cardRef === user?.id);
-            console.log('[ROUND_STARTED] Black card:', roundData.blackCard);
+            console.log('[ROUND_STARTED] Cards:', roundData.cards?.length, 'Judge:', roundData.cardRef);
+            
+            // Validate data from backend
+            if (!roundData.cardRef) {
+              console.error('[ROUND_STARTED] ERROR: No cardRef (judge) provided by backend!');
+              toast.error('Backend error: No judge assigned');
+            }
+            if (!roundData.blackCard) {
+              console.error('[ROUND_STARTED] ERROR: No black card provided by backend!');
+              toast.error('Backend error: No black card');
+            }
+            if (!roundData.cards || roundData.cards.length === 0) {
+              console.error('[ROUND_STARTED] ERROR: No white cards provided by backend!');
+              toast.error('Backend error: No cards in hand - check if decks have enough cards');
+            }
             
             setGameState((prev) => ({
               ...prev,
               currentJudgeId: roundData.cardRef,
               blackCard: roundData.blackCard,
-              myCards: roundData.cards,
+              myCards: roundData.cards || [],
               selectedCardIds: [],
               submissions: [],
               isJudge: roundData.cardRef === user?.id,

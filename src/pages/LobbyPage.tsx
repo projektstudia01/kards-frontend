@@ -151,9 +151,19 @@ const LobbyPage: React.FC = () => {
             return;
 
           case "ROUND_STARTED":
-            // Now that we have round data, redirect to game
+            // Pass round data to game page via navigation state
             shouldReconnect.current = false;
-            navigate(`/game/${lobbyId}`);
+            
+            // Close WebSocket before navigating
+            if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+              ws.current.close(1000, "Navigating to game");
+            }
+            
+            navigate(`/game/${lobbyId}`, { 
+              state: { 
+                roundData: eventData 
+              } 
+            });
             return;
 
           case "GAME_FINISHED":

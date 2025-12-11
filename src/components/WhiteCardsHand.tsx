@@ -14,9 +14,7 @@ const WhiteCardsHand: React.FC<WhiteCardsHandProps> = ({
   onCardSelect,
   disabled,
 }) => {
-  console.log('[WhiteCardsHand] Rendering with cards:', cards.length);
-  console.log('[WhiteCardsHand] Cards:', cards);
-  console.log('[WhiteCardsHand] Disabled:', disabled);
+
   
   if (cards.length === 0) {
     return (
