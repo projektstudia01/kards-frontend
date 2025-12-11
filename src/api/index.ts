@@ -65,7 +65,7 @@ export const verifyEmail = async (
 ) => {
   try {
     const result = (
-      await customAxios.post("/auth/verify-email", {
+      await customAxios.post("auth/verify-email", {
         code,
         email,
         sessionId,
@@ -85,7 +85,7 @@ export const verifyEmail = async (
 
 export const resendVerificationCode = async (email: string) => {
   try {
-    const data = await customAxios.post("/auth/resend-verification-code", {
+    const data = await customAxios.post("auth/resend-verification-code", {
       email,
     });
     return {
@@ -111,7 +111,7 @@ export interface Deck {
 
 export const getDecks = async () => {
   try {
-    const response = await customAxios.get("/deck");
+    const response = await customAxios.get("deck");
     return {
       isError: false,
       data: response.data.data || [],
@@ -126,7 +126,7 @@ export const getDecks = async () => {
 
 export const createDeck = async (title: string, description: string) => {
   try {
-    const response = await customAxios.post("/deck/create", {
+    const response = await customAxios.post("deck/create", {
       title,
       description,
     });
@@ -144,7 +144,7 @@ export const createDeck = async (title: string, description: string) => {
 
 export const deleteDeck = async (deckId: string) => {
   try {
-    await customAxios.delete(`/deck/${deckId}`);
+    await customAxios.delete(`deck/${deckId}`);
     return {
       isError: false,
     };
@@ -158,7 +158,7 @@ export const deleteDeck = async (deckId: string) => {
 
 export const getDeck = async (deckId: string) => {
   try {
-    const response = await customAxios.get(`/deck/${deckId}`);
+    const response = await customAxios.get(`deck/${deckId}`);
     return {
       isError: false,
       data: response.data.data,
@@ -186,7 +186,7 @@ export interface Card {
 
 export const addCards = async (deckId: string, cards: Card[]) => {
   try {
-    const response = await customAxios.post(`/deck/${deckId}/cards`, {
+    const response = await customAxios.post(`deck/${deckId}/cards`, {
       cards,
     });
     return {
@@ -213,7 +213,7 @@ export const getCards = async (
       params.cardType = cardType;
     }
 
-    const response = await customAxios.get(`/deck/${deckId}/cards`, {
+    const response = await customAxios.get(`deck/${deckId}/cards`, {
       params,
     });
     return {
@@ -233,7 +233,7 @@ export const getCards = async (
 
 export const deleteCards = async (deckId: string, cardIds: string[]) => {
   try {
-    await customAxios.delete(`/deck/${deckId}/cards`, {
+    await customAxios.delete(`deck/${deckId}/cards`, {
       data: { cardIds },
     });
     return {
@@ -253,7 +253,7 @@ export const createGame = async (
   maxPlayers: number
 ) => {
   try {
-    const response = await customAxios.post("/game/create", {
+    const response = await customAxios.post("game/create", {
       name,
       lobbyType,
       maxPlayers,
@@ -270,7 +270,7 @@ export const createGame = async (
 
 export const getGamesList = async () => {
   try {
-    const response = await customAxios.get("/game/list");
+    const response = await customAxios.get("game/list");
 
     return {
       isError: false,
