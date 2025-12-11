@@ -261,3 +261,19 @@ export const createGame = async (name: string, lobbyType: string, maxPlayers: nu
     return axiosErrorHandler(error);
   }
 };
+
+export const getGamesList = async () => {
+  try {
+    const response = await customAxios.get("/game/list");
+    
+    return {
+      isError: false,
+      data: response.data.data.games,
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};

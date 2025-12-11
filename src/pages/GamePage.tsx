@@ -113,7 +113,7 @@ const GamePage: React.FC = () => {
               selectedCardIds: [],
               submissions: [],
               isJudge: roundData.cardRef === user?.id,
-              gamePhase: roundData.cardRef === user?.id ? 'judging' : 'selecting',
+              gamePhase: 'selecting', // Both judge and players start in 'selecting'
             }));
             return;
 
@@ -227,8 +227,10 @@ const GamePage: React.FC = () => {
       data: { cardIds }
     }));
 
+    // After submitting, player waits for ALL_CARDS_SUBMITTED
     setGameState((prev) => ({
       ...prev,
+      selectedCardIds: cardIds,
       gamePhase: 'waiting',
     }));
     

@@ -29,8 +29,8 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
           width: size,
           margin: 2,
           color: {
-            dark: "#000000", // Black modules
-            light: "#FFFFFF", // White background
+            dark: "#a8df75ff", // Black modules
+            light: "#c55dabff", // White background
           },
           errorCorrectionLevel: "M", // Medium error correction
         });

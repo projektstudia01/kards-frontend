@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { GameState } from "../types/game";
 import BlackCardDisplay from "./BlackCardDisplay";
@@ -24,6 +24,13 @@ const Game: React.FC<GameProps> = ({
 }) => {
   const { t } = useTranslation();
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+
+  // Clear selected cards when new round starts (gamePhase changes to 'selecting')
+  useEffect(() => {
+    if (gameState.gamePhase === 'selecting') {
+      setSelectedCardIds([]);
+    }
+  }, [gameState.gamePhase]);
 
   const handleCardSelect = (cardId: string) => {
     if (!gameState.blackCard) return;
@@ -76,11 +83,29 @@ const Game: React.FC<GameProps> = ({
 
         {/* Main game area */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          {gameState.gamePhase === 'waiting' && (
+          {gameState.gamePhase === 'waiting' && !gameState.blackCard && (
             <div className="text-center py-12">
               <p className="text-xl text-gray-600 dark:text-gray-300">
                 {t("game.waiting_for_round")}
               </p>
+            </div>
+          )}
+
+          {gameState.gamePhase === 'waiting' && gameState.blackCard && (
+            <div className="space-y-6">
+              {/* Show black card */}
+              <div className="flex justify-center">
+                <BlackCardDisplay card={gameState.blackCard} />
+              </div>
+              
+              <div className="text-center py-8">
+                <p className="text-lg text-green-600 dark:text-green-400 font-semibold mb-2">
+                  ✓ {t("game.cards_submitted")}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {t("game.waiting_for_others")}
+                </p>
+              </div>
             </div>
           )}
 

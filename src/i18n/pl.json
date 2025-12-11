@@ -21,7 +21,7 @@
   },
   "lobby": {
     "title": "Lobby Gry",
-    "players": "graczy",
+    "players": "Gracze",
     "decks": "talii",
     "players_in_game": "Gracze w grze",
     "no_players": "Brak graczy",
@@ -115,8 +115,18 @@
     "points": "Punkty",
     "next_round_starting": "Następna runda rozpocznie się wkrótce...",
     "cards_submitted": "Karty wysłane!",
+    "waiting_for_others": "Oczekiwanie aż inni gracze wyślą swoje karty...",
     "round_winner": "{{name}} wygrał tę rundę!",
     "started": "Gra rozpoczęta!",
     "finished": "Gra zakończona"
+  },
+  "welcome": {
+    "public_games": "Publiczne gry",
+    "loading": "Ładowanie",
+    "no_public_games": "Brak dostępnych publicznych gier",
+    "create_first_game": "Stwórz pierwszą grę!",
+    "waiting": "Oczekuje",
+    "join": "Dołącz",
+    "auto_refresh": "Odświeżane co 5 sekund"
   }
 }

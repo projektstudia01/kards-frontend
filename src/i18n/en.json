@@ -115,8 +115,18 @@
     "points": "Points",
     "next_round_starting": "Next round starting soon...",
     "cards_submitted": "Cards submitted!",
+    "waiting_for_others": "Waiting for other players to submit their cards...",
     "round_winner": "{{name}} won this round!",
     "started": "Game started!",
     "finished": "Game has ended"
+  },
+  "welcome": {
+    "public_games": "Public Games",
+    "loading": "Loading",
+    "no_public_games": "No public games available",
+    "create_first_game": "Be the first to create a game!",
+    "waiting": "Waiting",
+    "join": "Join",
+    "auto_refresh": "Auto-refreshes every 5 seconds"
   }
 }

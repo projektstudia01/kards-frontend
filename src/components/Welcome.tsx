@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import UsernamePopup from './UsernamePopup';
+import PublicGames from './PublicGames';
 
 const Welcome: React.FC = () => {
   const { logout, user, showUsernamePopup, confirmEmail } = useAuthStore();
@@ -126,6 +127,11 @@ const Welcome: React.FC = () => {
           >
             🃏 Talie
           </button>
+        </div>
+
+        {/* Public Games List */}
+        <div className="mb-12">
+          <PublicGames />
         </div>
 
         {/* User Profile Card */}
