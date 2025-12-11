@@ -249,18 +249,10 @@ const GamePage: React.FC = () => {
   };
 
   const handleLeaveGame = () => {
-    console.log("Leave game clicked, ws state:", ws?.readyState);
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      console.log("Sending LEAVE_GAME event");
-      ws.send(JSON.stringify({ event: "LEAVE_GAME" }));
-      setTimeout(() => {
-        ws.close(1000, "User left game");
-        navigate("/welcome");
-      }, 100);
-    } else {
-      console.log("WebSocket not open, navigating directly");
-      navigate("/welcome");
+    if (ws) {
+      ws.close(1000, "User left game");
     }
+    navigate("/welcome");
   };
 
   if (!gameId) {
