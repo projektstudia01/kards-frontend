@@ -26,14 +26,14 @@ const UsernamePopup: React.FC = () => {
 
   return (
     <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-lg p-8 max-w-md w-full border border-border shadow-xl relative">
+      <div className="bg-card rounded-lg p-8 max-w-md w-full border border-border shadow-xl relative hover:scale-[1.02] transition-all duration-300">
         <button
           aria-label="Zamknij"
           onClick={() => {
             const randomSuffix = Math.random().toString(36).substring(2, 7);
             setUsername(`Guest${randomSuffix}`);
           }}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-card-foreground"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-card-foreground hover:scale-110 cursor-pointer transition-all duration-200"
         >
           ×
         </button>
@@ -70,7 +70,7 @@ const UsernamePopup: React.FC = () => {
           <button
             type="submit"
             disabled={!isUsernameValid || isSubmitting}
-            className="w-full text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full text-primary-foreground bg-primary hover:bg-primary/80 hover:scale-[1.02] focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
           >
             {isSubmitting ? "Zapisuję..." : "Potwierdź nazwę"}
           </button>

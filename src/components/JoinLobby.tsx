@@ -42,7 +42,7 @@ const JoinLobby: React.FC = () => {
         </div>
 
         {/* Join Form */}
-        <div className="bg-card rounded-lg p-8 border border-border">
+        <div className="bg-card rounded-lg p-8 border border-border shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
           <div className="mb-6">
             <label className="block text-sm font-medium text-card-foreground mb-2">
               Kod gry (Game ID)
@@ -62,23 +62,23 @@ const JoinLobby: React.FC = () => {
           <button
             onClick={handleJoin}
             disabled={!gameId.trim()}
-            className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/80 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
           >
-            🎮 Dołącz do gry
+            Dołącz do gry
           </button>
 
           <div className="mt-6 text-center">
             <button
               onClick={() => navigate("/welcome")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground hover:scale-105 transition-all duration-200 cursor-pointer"
             >
               ← Powrót do menu głównego
             </button>
           </div>
 
-          <div className="mt-8 p-4 bg-accent rounded-lg border border-border">
+          <div className="mt-8 p-4 bg-accent rounded-lg border border-border hover:scale-[1.02] transition-all duration-200">
             <h3 className="text-sm font-medium text-card-foreground mb-2">
-              💡 Jak dołączyć?
+              Jak dołączyć?
             </h3>
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Poproś właściciela gry o kod</li>
@@ -90,7 +90,7 @@ const JoinLobby: React.FC = () => {
           <div className="mt-4 text-center">
             <button
               onClick={() => navigate("/create-lobby")}
-              className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/90 transition-colors"
+              className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/80 hover:scale-105 transition-all duration-200 cursor-pointer shadow-md"
             >
               + Lub stwórz nową grę
             </button>

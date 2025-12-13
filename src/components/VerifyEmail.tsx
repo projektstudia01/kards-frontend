@@ -107,7 +107,7 @@ const VerifyEmail: React.FC<Props> = ({
   return (
     <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
       <div className="relative w-full max-w-md mx-4">
-        <div className="bg-card rounded-lg shadow-lg p-6 border border-border">
+        <div className="bg-card rounded-lg shadow-lg p-6 border border-border hover:scale-[1.02] transition-all duration-300">
           <div className="flex justify-between items-start">
             <div>
               <h3 className="mb-1 text-xl font-semibold text-card-foreground">
@@ -120,7 +120,7 @@ const VerifyEmail: React.FC<Props> = ({
             <button
               onClick={onClose}
               aria-label="Zamknij"
-              className="text-muted-foreground hover:text-card-foreground ml-4"
+              className="text-muted-foreground hover:text-card-foreground hover:scale-110 ml-4 cursor-pointer transition-all duration-200"
             >
               ×
             </button>
@@ -144,7 +144,7 @@ const VerifyEmail: React.FC<Props> = ({
             <button
               onClick={handleVerify}
               disabled={!isCodeValid || loading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-primary hover:bg-primary/80 hover:scale-[1.02] text-primary-foreground font-medium rounded-lg py-2.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
             >
               {loading ? "Sprawdzanie..." : "Potwierdź e-mail"}
             </button>
@@ -152,7 +152,7 @@ const VerifyEmail: React.FC<Props> = ({
             <button
               onClick={handleResendCode}
               disabled={!canResend}
-              className="w-full text-sm rounded-lg py-2 text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-sm rounded-lg py-2 text-muted-foreground hover:text-card-foreground hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
             >
               {canResend
                 ? "Wyślij kod ponownie"

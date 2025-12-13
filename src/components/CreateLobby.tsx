@@ -74,7 +74,7 @@ const CreateLobby: React.FC = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-card rounded-lg p-8 border border-border">
+        <form onSubmit={handleSubmit} className="bg-card rounded-lg p-8 border border-border shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
           {/* Lobby Name */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-card-foreground mb-2">
@@ -95,14 +95,32 @@ const CreateLobby: React.FC = () => {
             <label className="block text-sm font-medium text-card-foreground mb-2">
               Maksymalna liczba graczy: {formData.maxPlayers}
             </label>
-            <input
-              type="range"
-              min="2"
-              max="8"
-              value={formData.maxPlayers}
-              onChange={(e) => setFormData(prev => ({ ...prev, maxPlayers: parseInt(e.target.value) }))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-            />
+            <div className="relative">
+              <input
+                type="range"
+                min="2"
+                max="8"
+                value={formData.maxPlayers}
+                onChange={(e) => setFormData(prev => ({ ...prev, maxPlayers: parseInt(e.target.value) }))}
+                style={{
+                  background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((formData.maxPlayers - 2) / 6) * 100}%, rgb(209 213 219) ${((formData.maxPlayers - 2) / 6) * 100}%, rgb(209 213 219) 100%)`,
+                  transition: 'background 0.3s ease-in-out'
+                }}
+                className="w-full h-3 rounded-lg appearance-none cursor-pointer
+                           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 
+                           [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[hsl(var(--primary))]
+                           [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg
+                           [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300
+                           [&::-webkit-slider-thumb]:border-0
+                           [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 
+                           [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[hsl(var(--primary))]
+                           [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg
+                           [&::-moz-range-thumb]:hover:scale-110 [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-300
+                           [&::-moz-range-thumb]:border-0
+                           [&::-moz-range-track]:bg-transparent
+                           [&::-webkit-slider-runnable-track]:bg-transparent"
+              />
+            </div>
             <div className="flex justify-between text-sm text-muted-foreground mt-1">
               <span>2</span>
               <span>8</span>
@@ -110,9 +128,9 @@ const CreateLobby: React.FC = () => {
           </div>
 
           {/* Info */}
-          <div className="mb-8 p-4 bg-accent rounded-lg border border-border">
+          <div className="mb-8 p-4 bg-accent rounded-lg border border-border hover:scale-[1.02] transition-all duration-200">
             <p className="text-sm text-muted-foreground">
-              💡 Po utworzeniu lobby będziesz mógł wybrać talie kart i poczekać na graczy przed rozpoczęciem gry.
+              Po utworzeniu lobby będziesz mógł wybrać talie kart i poczekać na graczy przed rozpoczęciem gry.
             </p>
           </div>
 
@@ -121,14 +139,14 @@ const CreateLobby: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/welcome')}
-              className="flex-1 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/90 transition-colors"
+              className="flex-1 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/80 hover:scale-105 transition-all duration-200 cursor-pointer shadow-md"
             >
               Anuluj
             </button>
             <button
               type="submit"
               disabled={isLoading || !formData.name.trim()}
-              className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/80 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
             >
               {isLoading ? 'Tworzenie...' : 'Stwórz lobby'}
             </button>

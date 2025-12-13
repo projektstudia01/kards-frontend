@@ -57,7 +57,7 @@ const Registration: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="w-full max-w-md p-6 bg-card rounded-lg shadow sm:p-8 border border-border">
+      <div className="w-full max-w-md p-6 bg-card rounded-lg shadow sm:p-8 border border-border hover:scale-[1.02] transition-all duration-300">
         <h2 className="text-3xl font-bold text-center text-card-foreground mb-4">
           Utwórz Konto
         </h2>
@@ -126,7 +126,7 @@ const Registration: React.FC = () => {
           <button
             type="submit"
             disabled={!isFormValid}
-            className="w-full my-6 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full my-6 text-primary-foreground bg-primary hover:bg-primary/80 hover:scale-[1.02] focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
           >
             Utwórz Konto
           </button>

@@ -48,7 +48,7 @@ const DecksInGame: React.FC<DecksInGameProps> = ({ onRemoveDeck, isOwner, decksI
   }
 
   return (
-    <div className="bg-card rounded-lg p-6 border border-border">
+    <div className="bg-card rounded-lg p-6 border border-border hover:scale-[1.02] transition-all duration-200">
       <h3 className="text-lg font-bold text-card-foreground mb-4">
         {t('lobby.decks_in_game')}
         <span className="ml-2 text-sm font-normal text-muted-foreground">
@@ -64,7 +64,6 @@ const DecksInGame: React.FC<DecksInGameProps> = ({ onRemoveDeck, isOwner, decksI
       }`}>
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium text-card-foreground">
-            {hasEnoughCards ? '✅ ' : '⚠️ '}
             {t('lobby.card_requirements')}
           </span>
         </div>
@@ -72,7 +71,7 @@ const DecksInGame: React.FC<DecksInGameProps> = ({ onRemoveDeck, isOwner, decksI
           <div className={`flex items-center justify-between ${
             totalBlackCards >= requiredBlackCards ? 'text-green-600 dark:text-green-400' : 'text-destructive'
           }`}>
-            <span>⚫ {t('lobby.black_cards')}</span>
+            <span>⚫{t('lobby.black_cards')}</span>
             <span className="font-mono">
               {totalBlackCards} / {requiredBlackCards}
             </span>
@@ -80,7 +79,7 @@ const DecksInGame: React.FC<DecksInGameProps> = ({ onRemoveDeck, isOwner, decksI
           <div className={`flex items-center justify-between ${
             totalWhiteCards >= requiredWhiteCards ? 'text-green-600 dark:text-green-400' : 'text-destructive'
           }`}>
-            <span>⚪ {t('lobby.white_cards')}</span>
+            <span>⚪{t('lobby.white_cards')}</span>
             <span className="font-mono">
               {totalWhiteCards} / {requiredWhiteCards}
             </span>
@@ -93,7 +92,7 @@ const DecksInGame: React.FC<DecksInGameProps> = ({ onRemoveDeck, isOwner, decksI
         {decksInGame.map((deck) => (
           <div
             key={deck.id}
-            className="p-4 rounded-lg bg-accent border border-border hover:border-primary transition-all"
+            className="p-4 rounded-lg bg-accent border border-border hover:border-primary hover:bg-accent/80 transition-all duration-200 cursor-pointer"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -115,7 +114,7 @@ const DecksInGame: React.FC<DecksInGameProps> = ({ onRemoveDeck, isOwner, decksI
               {isOwner && (
                 <button
                   onClick={() => handleRemoveDeck(deck.id)}
-                  className="ml-4 px-3 py-1.5 rounded-lg font-medium text-sm bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                  className="ml-4 px-3 py-1.5 rounded-lg font-medium text-sm bg-destructive text-destructive-foreground hover:bg-destructive/80 hover:scale-105 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl"
                 >
                   {t('lobby.remove')}
                 </button>

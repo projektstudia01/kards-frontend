@@ -117,7 +117,6 @@ const Lobby: React.FC<LobbyProps> = ({
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">❌</div>
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {t('lobby.not_found')}
           </h1>
@@ -126,7 +125,7 @@ const Lobby: React.FC<LobbyProps> = ({
           </p>
           <button
             onClick={() => navigate('/welcome')}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/80 hover:scale-105 transition-all duration-200 cursor-pointer"
           >
             {t('lobby.back_to_menu')}
           </button>
@@ -145,10 +144,10 @@ const Lobby: React.FC<LobbyProps> = ({
           </h1>
           <div className="flex items-center justify-center space-x-4 text-muted-foreground mb-3">
             <span className="flex items-center">
-              👥 {players.length} {t('lobby.players')}
+              {players.length} {t('lobby.players')}
             </span>
             <span className="flex items-center">
-              🎴 {decksInGame.length} {t('lobby.decks')}
+              {decksInGame.length} {t('lobby.decks')}
             </span>
           </div>
           
@@ -163,21 +162,21 @@ const Lobby: React.FC<LobbyProps> = ({
                 navigator.clipboard.writeText(gameId || '');
                 toast.success('ID gry skopiowane!');
               }}
-              className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
+              className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 hover:scale-105 transition-all duration-200 cursor-pointer"
             >
-              📋 Kopiuj
+              Kopiuj
             </button>
             <button
               onClick={() => setShowQRCode(!showQRCode)}
-              className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90"
+              className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/80 hover:scale-105 transition-all duration-200 cursor-pointer"
             >
-              📱 {showQRCode ? 'Ukryj QR' : 'Pokaż QR'}
+              {showQRCode ? 'Ukryj QR' : 'Pokaż QR'}
             </button>
           </div>
           
           {/* QR Code Modal */}
           {showQRCode && (
-            <div className="mt-4 p-4 bg-card rounded-lg border border-border inline-block">
+            <div className="mt-4 p-4 bg-card rounded-lg border border-border inline-block hover:scale-[1.02] transition-all duration-200">
               <p className="text-sm text-muted-foreground mb-2 text-center">
                 Zeskanuj kod aby dołączyć do gry
               </p>
@@ -223,28 +222,28 @@ const Lobby: React.FC<LobbyProps> = ({
         </div>
 
         {/* Control Panel */}
-        <div className="bg-card rounded-lg p-6 border border-border">
+        <div className="bg-card rounded-lg p-6 border border-border hover:scale-[1.01] transition-all duration-200">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Status Messages */}
             <div className="flex-1">
               {!hasEnoughPlayers && (
                 <p className="text-sm text-muted-foreground">
-                  ⚠️ {t('lobby.need_more_players', { count: 2 - players.length })}
+                  {t('lobby.need_more_players', { count: 2 - players.length })}
                 </p>
               )}
               {hasEnoughPlayers && !hasEnoughCards && (
                 <p className="text-sm text-muted-foreground">
-                  ⚠️ {t('lobby.need_more_cards')}
+                  {t('lobby.need_more_cards')}
                 </p>
               )}
               {hasEnoughPlayers && hasEnoughCards && isOwner && (
                 <p className="text-sm text-green-600 dark:text-green-400">
-                  ✅ {t('lobby.ready_to_start')}
+                  {t('lobby.ready_to_start')}
                 </p>
               )}
               {hasEnoughPlayers && hasEnoughCards && !isOwner && (
                 <p className="text-sm text-muted-foreground">
-                  ⏳ {t('lobby.waiting_for_owner')}
+                  {t('lobby.waiting_for_owner')}
                 </p>
               )}
             </div>
@@ -253,18 +252,18 @@ const Lobby: React.FC<LobbyProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={handleLeaveLobby}
-                className="px-6 py-2.5 bg-destructive text-destructive-foreground rounded-lg font-medium hover:bg-destructive/90 transition-colors"
+                className="px-6 py-2.5 bg-destructive text-destructive-foreground rounded-lg font-medium hover:bg-destructive/80 hover:scale-105 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl"
               >
-                🚪 {t('lobby.leave')}
+                {t('lobby.leave')}
               </button>
 
               {isOwner && (
                 <button
                   onClick={handleStartGame}
                   disabled={!canStartGame}
-                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/80 hover:scale-105 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  🎮 {t('lobby.start_game')}
+                  {t('lobby.start_game')}
                 </button>
               )}
             </div>

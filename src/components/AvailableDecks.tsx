@@ -59,7 +59,7 @@ const AvailableDecks: React.FC<AvailableDecksProps> = ({
   }
 
   return (
-    <div className="bg-card rounded-lg p-6 border border-border">
+    <div className="bg-card rounded-lg p-6 border border-border hover:scale-[1.02] transition-all duration-200">
       <h3 className="text-lg font-bold text-card-foreground mb-4">
         {t('lobby.available_decks')}
       </h3>
@@ -70,10 +70,10 @@ const AvailableDecks: React.FC<AvailableDecksProps> = ({
           return (
             <div
               key={deck.id}
-              className={`p-4 rounded-lg border transition-all ${
+              className={`p-4 rounded-lg border transition-all duration-200 ${
                 inGame
                   ? 'bg-accent/50 border-primary/50 opacity-60'
-                  : 'bg-accent border-border hover:border-primary'
+                  : 'bg-accent border-border hover:border-primary hover:bg-accent/80 cursor-pointer'
               }`}
             >
               <div className="flex items-start justify-between">
@@ -97,10 +97,10 @@ const AvailableDecks: React.FC<AvailableDecksProps> = ({
                   <button
                     onClick={() => handleAddDeck(deck)}
                     disabled={inGame}
-                    className={`ml-4 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors ${
+                    className={`ml-4 px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 shadow-lg ${
                       inGame
                         ? 'bg-secondary text-secondary-foreground cursor-not-allowed'
-                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'bg-primary text-primary-foreground hover:bg-primary/80 hover:scale-105 hover:shadow-xl cursor-pointer'
                     }`}
                   >
                     {inGame ? t('lobby.in_game') : t('lobby.add')}
@@ -118,7 +118,7 @@ const AvailableDecks: React.FC<AvailableDecksProps> = ({
           <button
             onClick={() => handlePageChange(availableDecksPage - 1)}
             disabled={availableDecksPage === 0}
-            className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-105 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm font-medium"
           >
             {t('lobby.previous')}
           </button>
@@ -130,7 +130,7 @@ const AvailableDecks: React.FC<AvailableDecksProps> = ({
           <button
             onClick={() => handlePageChange(availableDecksPage + 1)}
             disabled={availableDecksPage >= totalPages - 1}
-            className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-105 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm font-medium"
           >
             {t('lobby.next')}
           </button>

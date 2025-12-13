@@ -45,9 +45,9 @@ const PublicGames: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-card rounded-lg p-6 border border-border">
+      <div className="bg-card rounded-lg p-6 border border-border shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300">
         <h2 className="text-xl font-bold text-card-foreground mb-4">
-          🎮 {t('welcome.public_games')}
+          {t('welcome.public_games')}
         </h2>
         <p className="text-muted-foreground text-center py-8">
           {t('welcome.loading')}...
@@ -58,9 +58,9 @@ const PublicGames: React.FC = () => {
 
   if (games.length === 0) {
     return (
-      <div className="bg-card rounded-lg p-6 border border-border">
+      <div className="bg-card rounded-lg p-6 border border-border shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300">
         <h2 className="text-xl font-bold text-card-foreground mb-4">
-          🎮 {t('welcome.public_games')}
+          {t('welcome.public_games')}
         </h2>
         <p className="text-muted-foreground text-center py-8">
           {t('welcome.no_public_games')}
@@ -73,16 +73,16 @@ const PublicGames: React.FC = () => {
   }
 
   return (
-    <div className="bg-card rounded-lg p-6 border border-border">
+    <div className="bg-card rounded-lg p-6 border border-border shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300">
       <h2 className="text-xl font-bold text-card-foreground mb-4">
-        🎮 {t('welcome.public_games')}
+        {t('welcome.public_games')}
       </h2>
       
       <div className="space-y-3">
         {games.map((game) => (
           <div
             key={game.id}
-            className="bg-accent border border-border rounded-lg p-4 hover:bg-accent/80 transition cursor-pointer"
+            className="bg-accent border border-border rounded-lg p-4 hover:bg-accent/70 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer"
             onClick={() => handleJoinGame(game.id)}
           >
             <div className="flex items-center justify-between">
@@ -92,7 +92,7 @@ const PublicGames: React.FC = () => {
                 </h3>
                 <div className="flex items-center space-x-4 mt-1">
                   <span className="text-sm text-muted-foreground">
-                    👥 {game.currentPlayers}/{game.maxPlayers}
+                    {game.currentPlayers}/{game.maxPlayers} graczy
                   </span>
                   <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-1 rounded">
                     {t('welcome.waiting')}
@@ -105,7 +105,7 @@ const PublicGames: React.FC = () => {
                   e.stopPropagation();
                   handleJoinGame(game.id);
                 }}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/80 hover:scale-105 transition-all duration-200 cursor-pointer shadow-md"
               >
                 {t('welcome.join')}
               </button>

@@ -25,7 +25,7 @@ const PlayersInGame: React.FC<PlayersInGameProps> = ({ players }) => {
   }
 
   return (
-    <div className="bg-card rounded-lg p-6 border border-border">
+    <div className="bg-card rounded-lg p-6 border border-border hover:scale-[1.02] transition-all duration-200">
       <h2 className="text-xl font-bold text-card-foreground mb-4">
         {t('lobby.players_in_game')}
         <span className="ml-2 text-sm font-normal text-muted-foreground">
@@ -39,7 +39,7 @@ const PlayersInGame: React.FC<PlayersInGameProps> = ({ players }) => {
           return (
             <div
               key={player.id}
-              className={`flex items-center justify-between p-4 rounded-lg transition-all ${
+              className={`flex items-center justify-between p-4 rounded-lg transition-all hover:scale-105 cursor-pointer ${
                 isCurrentUser
                   ? 'bg-primary/10 border-2 border-primary'
                   : 'bg-accent border border-border'

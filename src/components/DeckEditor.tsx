@@ -299,21 +299,21 @@ const DeckEditor: React.FC = () => {
             </h1>
             {hasUnsavedChanges && (
               <p className="text-sm text-amber-500 mt-1">
-                ⚠️ Masz niezapisane zmiany
+                Masz niezapisane zmiany
               </p>
             )}
           </div>
           <div className="flex gap-3">
             <button
               onClick={handleCancel}
-              className="px-6 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 transition"
+              className="px-6 py-2 bg-accent border border-border text-card-foreground rounded-lg hover:bg-accent/60 hover:scale-105 transition-all duration-200 cursor-pointer"
             >
               Anuluj
             </button>
             <button
               onClick={handleSaveDeck}
               disabled={isSaving || !hasUnsavedChanges}
-              className="px-6 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="px-6 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/80 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
             >
               {isSaving ? 'Zapisywanie...' : hasUnsavedChanges ? 'Zapisz Talię' : 'Zapisano'}
             </button>
@@ -327,7 +327,7 @@ const DeckEditor: React.FC = () => {
               <h2 className="text-xl font-bold text-card-foreground mb-3 text-center">
                 Czarne Karty
               </h2>
-              <div className="flex-1 overflow-y-auto space-y-2 mb-3">
+              <div className="flex-1 overflow-y-auto space-y-2 mb-3 hover:scale-[1.01] transition-all duration-300">
                 {isLoading ? (
                   <div className="text-center text-muted-foreground py-4">
                     Ładowanie...
@@ -341,12 +341,12 @@ const DeckEditor: React.FC = () => {
                     {blackCards.map((card, index) => (
                       <div
                         key={card.id || `black-${index}`}
-                        className="bg-gray-800 text-white p-3 rounded text-sm flex justify-between items-start hover:bg-gray-700 transition"
+                        className="bg-gray-800 text-white p-3 pr-2 rounded text-sm flex justify-between items-start hover:bg-gray-700 transition-all duration-200 group"
                       >
-                        <span className="flex-1 break-words">{card.text}</span>
+                        <span className="flex-1 break-words mr-3">{card.text}</span>
                         <button
                           onClick={() => handleRemoveCard(card.id, index, 'black')}
-                          className="ml-2 text-red-400 hover:text-red-300 font-bold"
+                          className="ml-2 text-red-400 hover:text-red-300 hover:scale-110 font-bold cursor-pointer transition-all duration-200 flex-shrink-0"
                         >
                           ✕
                         </button>
@@ -356,7 +356,7 @@ const DeckEditor: React.FC = () => {
                       <button
                         onClick={loadMoreBlackCards}
                         disabled={loadingMoreBlack}
-                        className="w-full py-2 text-sm bg-muted hover:bg-muted/80 rounded text-muted-foreground disabled:opacity-50"
+                        className="w-full py-2 text-sm bg-muted hover:bg-muted/60 hover:scale-105 rounded text-muted-foreground disabled:opacity-50 cursor-pointer transition-all duration-200"
                       >
                         {loadingMoreBlack ? 'Ładowanie...' : 'Załaduj więcej'}
                       </button>
@@ -372,25 +372,25 @@ const DeckEditor: React.FC = () => {
 
           {/* Middle Panel - Card Creator */}
           <div className="col-span-6">
-            <div className="bg-card border border-border rounded-lg p-6 h-[700px] flex flex-col">
+            <div className="bg-card border border-border rounded-lg p-6 h-[700px] flex flex-col shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300">
               {/* Card Type Selector */}
               <div className="flex gap-4 mb-4">
                 <button
                   onClick={() => setSelectedType('black')}
-                  className={`flex-1 py-3 rounded-lg font-bold transition ${
+                  className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 cursor-pointer hover:scale-105 ${
                     selectedType === 'black'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      ? 'bg-gray-900 text-white shadow-lg'
+                      : 'bg-gray-300 dark:bg-muted text-gray-700 dark:text-muted-foreground hover:bg-gray-400 dark:hover:bg-muted/80'
                   }`}
                 >
                   Czarna Karta
                 </button>
                 <button
                   onClick={() => setSelectedType('white')}
-                  className={`flex-1 py-3 rounded-lg font-bold transition ${
+                  className={`flex-1 py-3 rounded-lg font-bold transition-all duration-200 cursor-pointer hover:scale-105 ${
                     selectedType === 'white'
-                      ? 'bg-white text-gray-900 border-2 border-gray-900'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      ? 'bg-gray-900 text-white shadow-lg'
+                      : 'bg-gray-300 dark:bg-muted text-gray-700 dark:text-muted-foreground hover:bg-gray-400 dark:hover:bg-muted/80'
                   }`}
                 >
                   Biała Karta
@@ -436,7 +436,7 @@ const DeckEditor: React.FC = () => {
                   (selectedType === 'white' && whiteTotal >= MAX_WHITE_CARDS)
                 }
                 className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-bold 
-                         hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition mb-6"
+                         hover:bg-primary/80 hover:scale-105 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed cursor-pointer transition-all duration-200 mb-6"
               >
                 {(selectedType === 'black' && blackTotal >= MAX_BLACK_CARDS) ||
                  (selectedType === 'white' && whiteTotal >= MAX_WHITE_CARDS)
@@ -450,7 +450,7 @@ const DeckEditor: React.FC = () => {
                   Podgląd Karty
                 </h3>
                 <div
-                  className={`w-64 h-80 border-4 rounded-lg flex flex-col items-center justify-center p-6 ${
+                  className={`w-64 h-80 border-4 rounded-lg flex flex-col items-center justify-center p-6 hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-2xl cursor-pointer ${
                     selectedType === 'black'
                       ? 'bg-gray-900 border-gray-900 text-white'
                       : 'bg-white border-gray-900 text-gray-900'
@@ -468,7 +468,7 @@ const DeckEditor: React.FC = () => {
                       )}
                     </>
                   ) : (
-                    <p className="text-muted-foreground text-center italic">
+                    <p className="text-center italic" style={{ color: selectedType === 'black' ? 'white' : '#111827' }}>
                       {selectedType === 'black' 
                         ? 'Użyj ___ aby oznaczyć puste miejsce' 
                         : 'Podgląd pojawi się tutaj'}
@@ -481,11 +481,11 @@ const DeckEditor: React.FC = () => {
 
           {/* Right Panel - White Cards */}
           <div className="col-span-3">
-            <div className="bg-card border border-border rounded-lg p-4 h-[700px] flex flex-col">
+            <div className="bg-card border border-border rounded-lg p-4 h-[700px] flex flex-col shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all duration-300">
               <h2 className="text-xl font-bold text-card-foreground mb-3 text-center">
                 Białe Karty
               </h2>
-              <div className="flex-1 overflow-y-auto space-y-2 mb-3">
+              <div className="flex-1 overflow-y-auto space-y-2 mb-3 hover:scale-[1.01] transition-all duration-300">
                 {isLoading ? (
                   <div className="text-center text-muted-foreground py-4">
                     Ładowanie...
@@ -499,12 +499,12 @@ const DeckEditor: React.FC = () => {
                     {whiteCards.map((card, index) => (
                       <div
                         key={card.id || `white-${index}`}
-                        className="bg-white border-2 border-gray-900 text-gray-900 p-3 rounded text-sm flex justify-between items-start hover:bg-gray-50 transition"
+                        className="bg-white border-2 border-gray-900 text-gray-900 p-3 pr-2 rounded text-sm flex justify-between items-start hover:bg-gray-50 transition-all duration-200 group"
                       >
-                        <span className="flex-1 break-words">{card.text}</span>
+                        <span className="flex-1 break-words mr-3">{card.text}</span>
                         <button
                           onClick={() => handleRemoveCard(card.id, index, 'white')}
-                          className="ml-2 text-red-500 hover:text-red-600 font-bold"
+                          className="ml-2 text-red-500 hover:text-red-600 hover:scale-110 font-bold cursor-pointer transition-all duration-200 flex-shrink-0"
                         >
                           ✕
                         </button>
@@ -514,7 +514,7 @@ const DeckEditor: React.FC = () => {
                       <button
                         onClick={loadMoreWhiteCards}
                         disabled={loadingMoreWhite}
-                        className="w-full py-2 text-sm bg-muted hover:bg-muted/80 rounded text-muted-foreground disabled:opacity-50"
+                        className="w-full py-2 text-sm bg-muted hover:bg-muted/60 hover:scale-105 rounded text-muted-foreground disabled:opacity-50 cursor-pointer transition-all duration-200"
                       >
                         {loadingMoreWhite ? 'Ładowanie...' : 'Załaduj więcej'}
                       </button>

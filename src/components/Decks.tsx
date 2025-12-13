@@ -26,8 +26,8 @@ const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose, onSu
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-card rounded-lg p-6 w-96 max-w-md border border-border">
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
+      <div className="bg-card rounded-lg p-6 w-96 max-w-md border border-border shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
         <h2 className="text-2xl font-bold mb-4 text-card-foreground">
           Utwórz Nową Talię
         </h2>
@@ -65,14 +65,14 @@ const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose, onSu
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-muted text-muted-foreground 
-                       rounded-md hover:bg-muted/80 transition"
+              className="px-4 py-2 bg-accent border border-border text-card-foreground 
+                       rounded-md hover:bg-accent/60 hover:scale-105 transition-all duration-200 cursor-pointer"
             >
               Anuluj
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/80 hover:scale-105 transition-all duration-200 cursor-pointer"
             >
               Utwórz
             </button>
@@ -159,6 +159,14 @@ const Decks: React.FC = () => {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-6xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/welcome')}
+          className="mb-8 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/80 hover:scale-105 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl flex items-center gap-2"
+        >
+          <span>←</span> Powrót
+        </button>
+        
         <h1 className="text-4xl font-bold text-center mb-12 text-foreground">
           TALIE
         </h1>
@@ -175,7 +183,7 @@ const Decks: React.FC = () => {
                   key={deck.id}
                   className="bg-card border border-border 
                            rounded-lg p-8 flex flex-col items-center justify-center h-64 
-                           cursor-pointer hover:shadow-xl transition-shadow relative group"
+                           cursor-pointer hover:shadow-xl hover:scale-105 transition-all duration-200 relative group"
                   onClick={() => handleDeckClick(deck)}
                 >
                   <h2 className="text-2xl font-bold text-card-foreground mb-4">
@@ -189,8 +197,8 @@ const Decks: React.FC = () => {
                   <button
                     onClick={(e) => handleDeleteDeck(e, deck.id)}
                     className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 
-                             transition-opacity p-2 bg-destructive text-destructive-foreground 
-                             rounded-full hover:bg-destructive/90"
+                             transition-all duration-200 p-2 bg-destructive text-destructive-foreground 
+                             rounded-full hover:bg-destructive/90 hover:scale-110 cursor-pointer"
                     title="Usuń talię"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -207,24 +215,19 @@ const Decks: React.FC = () => {
                   onClick={handleAddDeckClick}
                   className="bg-card border-2 border-dashed border-border 
                            rounded-lg p-8 flex flex-col items-center justify-center h-64 
-                           cursor-pointer hover:shadow-xl hover:border-primary transition-all hover:bg-accent"
+                           cursor-pointer hover:shadow-xl hover:border-primary hover:scale-105 transition-all duration-200 hover:bg-accent group"
                 >
-                  <div className="text-6xl mb-4 text-muted-foreground">+</div>
+                  <div className="text-6xl mb-4 text-muted-foreground transition-transform duration-200 group-hover:scale-110">+</div>
                   <h2 className="text-2xl font-bold text-card-foreground mb-2">
                     Talia #{index + 1}
                   </h2>
-                  <button className="text-primary font-semibold text-lg hover:underline">
+                  <button className="text-primary font-semibold text-lg hover:underline transition-transform duration-200 group-hover:scale-110">
                     Dodaj talię
                   </button>
                 </div>
               );
             }
           })}
-        </div>
-        
-        {/* Info about deck limit */}
-        <div className="text-center mt-8 text-muted-foreground">
-          <p>Masz {userDecks.length} / {MAX_DECKS} talii</p>
         </div>
       </div>
 
