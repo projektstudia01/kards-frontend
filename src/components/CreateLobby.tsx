@@ -7,6 +7,7 @@ import { createGame } from '../api/index';
 interface FormData {
   name: string;
   maxPlayers: number;
+  lobbyType: 'public' | 'private';
 }
 
 const CreateLobby: React.FC = () => {
@@ -15,7 +16,8 @@ const CreateLobby: React.FC = () => {
   
   const [formData, setFormData] = useState<FormData>({
     name: '',
-    maxPlayers: 6
+    maxPlayers: 6,
+    lobbyType: 'public'
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +31,7 @@ const CreateLobby: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await createGame(formData.name, 'public', formData.maxPlayers);
+      const response = await createGame(formData.name, formData.lobbyType, formData.maxPlayers);
       
       if (!response.isError) {
         const gameData = (response as any).data;
@@ -90,37 +92,50 @@ const CreateLobby: React.FC = () => {
             />
           </div>
 
+          {/* Lobby Type */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-card-foreground mb-2">
+              Typ lobby
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="lobbyType"
+                  value="public"
+                  checked={formData.lobbyType === 'public'}
+                  onChange={() => setFormData(prev => ({ ...prev, lobbyType: 'public' }))}
+                  className="w-4 h-4 text-primary bg-background border-border focus:ring-primary cursor-pointer"
+                />
+                <span className="text-card-foreground">Publiczna</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="lobbyType"
+                  value="private"
+                  checked={formData.lobbyType === 'private'}
+                  onChange={() => setFormData(prev => ({ ...prev, lobbyType: 'private' }))}
+                  className="w-4 h-4 text-primary bg-background border-border focus:ring-primary cursor-pointer"
+                />
+                <span className="text-card-foreground">Prywatna (wymagany kod)</span>
+              </label>
+            </div>
+          </div>
+
           {/* Max Players */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-card-foreground mb-2">
               Maksymalna liczba graczy: {formData.maxPlayers}
             </label>
-            <div className="relative">
-              <input
-                type="range"
-                min="2"
-                max="8"
-                value={formData.maxPlayers}
-                onChange={(e) => setFormData(prev => ({ ...prev, maxPlayers: parseInt(e.target.value) }))}
-                style={{
-                  background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((formData.maxPlayers - 2) / 6) * 100}%, rgb(209 213 219) ${((formData.maxPlayers - 2) / 6) * 100}%, rgb(209 213 219) 100%)`,
-                  transition: 'background 0.3s ease-in-out'
-                }}
-                className="w-full h-3 rounded-lg appearance-none cursor-pointer
-                           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 
-                           [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[hsl(var(--primary))]
-                           [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg
-                           [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300
-                           [&::-webkit-slider-thumb]:border-0
-                           [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 
-                           [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[hsl(var(--primary))]
-                           [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg
-                           [&::-moz-range-thumb]:hover:scale-110 [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-300
-                           [&::-moz-range-thumb]:border-0
-                           [&::-moz-range-track]:bg-transparent
-                           [&::-webkit-slider-runnable-track]:bg-transparent"
-              />
-            </div>
+            <input
+              type="range"
+              min="2"
+              max="8"
+              value={formData.maxPlayers}
+              onChange={(e) => setFormData(prev => ({ ...prev, maxPlayers: parseInt(e.target.value) }))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
             <div className="flex justify-between text-sm text-muted-foreground mt-1">
               <span>2</span>
               <span>8</span>

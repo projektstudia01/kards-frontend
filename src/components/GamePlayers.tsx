@@ -48,9 +48,10 @@ const GamePlayers: React.FC<GamePlayersProps> = ({
                 ${isCurrentUser ? 'font-bold' : ''}
               `}
             >
-              <span className="text-sm text-gray-900 dark:text-white">
+              <span className="text-sm text-gray-900 dark:text-white flex items-center gap-1">
                 {player.name}
                 {isCurrentUser && ' (You)'}
+                {player.hasSubmitted && <span className="text-green-500 font-bold ml-1">✓</span>}
               </span>
               
               {isJudge && (

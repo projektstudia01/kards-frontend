@@ -7,6 +7,7 @@ import PlayersInGame from './PlayersInGame';
 import DecksInGame from './DecksInGame';
 import AvailableDecks from './AvailableDecks';
 import QRCodeGenerator from './QRCodeGenerator';
+import Chat from './Chat';
 import type { Player, Deck } from '../types/lobby';
 
 interface LobbyProps {
@@ -18,6 +19,7 @@ interface LobbyProps {
   availableDecksPage: number;
   availableDecksTotal: number;
   availableDecksPageSize: number;
+  invitationCode: string | null;
 }
 
 const Lobby: React.FC<LobbyProps> = ({ 
@@ -28,7 +30,8 @@ const Lobby: React.FC<LobbyProps> = ({
   availableDecks,
   availableDecksPage,
   availableDecksTotal,
-  availableDecksPageSize
+  availableDecksPageSize,
+  invitationCode
 }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -38,6 +41,17 @@ const Lobby: React.FC<LobbyProps> = ({
   // Find current user as player to check if owner
   const currentPlayer = players.find(p => p.id === user?.id);
   const isOwner = currentPlayer?.owner || false;
+
+  const handleKickPlayer = (playerId: string) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      toast.error(t('errors.websocket_not_connected'));
+      return;
+    }
+    wsRef.current.send(JSON.stringify({
+      event: 'KICK_PLAYER',
+      data: { playerId }
+    }));
+  };
 
   const handleAddDeck = (deckId: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
@@ -152,19 +166,30 @@ const Lobby: React.FC<LobbyProps> = ({
           </div>
           
           {/* Game ID - do kopiowania i udostępniania */}
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             <span className="text-sm text-muted-foreground">ID Gry:</span>
             <code className="px-3 py-1 bg-accent rounded border border-border text-sm font-mono">
               {gameId}
             </code>
+
+            {invitationCode && (
+              <>
+                <span className="text-sm text-muted-foreground ml-2">Kod:</span>
+                <code className="px-3 py-1 bg-accent rounded border border-border text-sm font-mono">
+                  {invitationCode}
+                </code>
+              </>
+            )}
+
             <button
               onClick={() => {
-                navigator.clipboard.writeText(gameId || '');
-                toast.success('ID gry skopiowane!');
+                const url = `${window.location.origin}/lobby/${gameId}${invitationCode ? `?code=${invitationCode}` : ''}`;
+                navigator.clipboard.writeText(url);
+                toast.success('Link do lobby skopiowany!');
               }}
               className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 hover:scale-105 transition-all duration-200 cursor-pointer"
             >
-              Kopiuj
+              Kopiuj Link
             </button>
             <button
               onClick={() => setShowQRCode(!showQRCode)}
@@ -176,14 +201,13 @@ const Lobby: React.FC<LobbyProps> = ({
           
           {/* QR Code Modal */}
           {showQRCode && (
-            <div className="mt-4 p-4 bg-card rounded-lg border border-border inline-block hover:scale-[1.02] transition-all duration-200">
+            <div className="mt-4 p-4 bg-card rounded-lg border border-border flex flex-col items-center mx-auto w-fit hover:scale-[1.02] transition-all duration-200">
               <p className="text-sm text-muted-foreground mb-2 text-center">
                 Zeskanuj kod aby dołączyć do gry
               </p>
               <QRCodeGenerator 
-                text={`${window.location.origin}/lobby/${gameId}`}
+                text={`${window.location.origin}/lobby/${gameId}${invitationCode ? `?code=${invitationCode}` : ''}`}
                 size={200}
-                className="mx-auto"
               />
             </div>
           )}
@@ -192,8 +216,13 @@ const Lobby: React.FC<LobbyProps> = ({
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Left Column - Players */}
-          <div className="lg:col-span-1">
-            <PlayersInGame players={players} />
+          <div className="lg:col-span-1 space-y-6">
+            <PlayersInGame
+              players={players}
+              onKickPlayer={handleKickPlayer}
+              isOwner={isOwner}
+            />
+            <Chat />
           </div>
 
           {/* Middle Column - Decks in Game */}

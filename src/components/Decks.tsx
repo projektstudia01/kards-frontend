@@ -65,7 +65,7 @@ const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose, onSu
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-accent border border-border text-card-foreground 
+              className="px-4 py-2 bg-accent border border-border text-card-foreground
                        rounded-md hover:bg-accent/60 hover:scale-105 transition-all duration-200 cursor-pointer"
             >
               Anuluj
@@ -166,7 +166,7 @@ const Decks: React.FC = () => {
         >
           <span>←</span> Powrót
         </button>
-        
+
         <h1 className="text-4xl font-bold text-center mb-12 text-foreground">
           TALIE
         </h1>
@@ -197,7 +197,7 @@ const Decks: React.FC = () => {
                   <button
                     onClick={(e) => handleDeleteDeck(e, deck.id)}
                     className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 
-                             transition-all duration-200 p-2 bg-destructive text-destructive-foreground 
+                             transition-all duration-200 p-2 bg-destructive text-destructive-foreground
                              rounded-full hover:bg-destructive/90 hover:scale-110 cursor-pointer"
                     title="Usuń talię"
                   >
@@ -221,7 +221,7 @@ const Decks: React.FC = () => {
                   <h2 className="text-2xl font-bold text-card-foreground mb-2">
                     Talia #{index + 1}
                   </h2>
-                  <button className="text-primary font-semibold text-lg hover:underline transition-transform duration-200 group-hover:scale-110">
+                  <button className="text-primary font-semibold text-lg hover:underline cursor-pointer transition-transform duration-200 group-hover:scale-110">
                     Dodaj talię
                   </button>
                 </div>

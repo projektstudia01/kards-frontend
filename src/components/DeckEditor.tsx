@@ -381,7 +381,7 @@ const DeckEditor: React.FC = () => {
                     selectedType === 'black'
                       ? 'bg-gray-900 text-white shadow-lg'
                       : 'bg-gray-300 dark:bg-muted text-gray-700 dark:text-muted-foreground hover:bg-gray-400 dark:hover:bg-muted/80'
-                  }`}
+                  } cursor-pointer`}
                 >
                   Czarna Karta
                 </button>
@@ -391,7 +391,7 @@ const DeckEditor: React.FC = () => {
                     selectedType === 'white'
                       ? 'bg-gray-900 text-white shadow-lg'
                       : 'bg-gray-300 dark:bg-muted text-gray-700 dark:text-muted-foreground hover:bg-gray-400 dark:hover:bg-muted/80'
-                  }`}
+                  } cursor-pointer`}
                 >
                   Biała Karta
                 </button>

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../store/authStore";
+import { setNickname } from "../api";
+import { toast } from "sonner";
 
 const UsernamePopup: React.FC = () => {
   const { setUsername, showUsernamePopup } = useAuthStore();
@@ -13,8 +15,13 @@ const UsernamePopup: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // Symulacja API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    const response = await setNickname(userName);
+
+    if (response.isError) {
+      toast.error("Failed to set nickname"); // You might want to translate this
+      setIsSubmitting(false);
+      return;
+    }
 
     setUsername(userName);
     setIsSubmitting(false);

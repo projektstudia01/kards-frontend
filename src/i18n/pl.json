@@ -46,7 +46,7 @@
     "card_requirements": "Wymagania kart",
     "remove": "Usuń",
     "not_found": "Lobby nie znalezione",
-    "not_found_description": "Podana gra nie istnieje lub została usunięta",
+    "not_found_description": "Podana gra nie istnieje lub została usunięta.",
     "back_to_menu": "Powrót do menu głównego",
     "need_more_players": "Potrzeba jeszcze {{count}} graczy",
     "need_more_cards": "Potrzeba więcej kart w taliach",
@@ -98,7 +98,8 @@
     "INVALID_OR_EXPIRED_SESSION": "Nieprawidłowa lub wygasła sesja",
     "USER_NOT_IN_GAME": "Użytkownik nie jest w grze",
     "KICKED_FROM_GAME": "Zostałeś wyrzucony z gry",
-    "websocket_not_connected": "Brak połączenia z serwerem"
+    "websocket_not_connected": "Brak połączenia z serwerem",
+    "qr_code.generation_failed": "Generowanie kodu QR nie powiodło się."
   },
   "game": {
     "title": "Cards Against Humanity",
@@ -117,6 +118,7 @@
     "cards_submitted": "Karty wysłane!",
     "waiting_for_others": "Oczekiwanie aż inni gracze wyślą swoje karty...",
     "round_winner": "{{name}} wygrał tę rundę!",
+    "judge_changed": "Sędzia został zmieniony z powodu opuszczenia gry.",
     "started": "Gra rozpoczęta!",
     "finished": "Gra zakończona"
   },

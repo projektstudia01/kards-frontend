@@ -14,6 +14,7 @@ const Login: React.FC = () => {
   const { t } = useTranslation();
   const [emailForVerification, setEmailForVerification] = useState<string>("");
   const [sessionId, setSessionId] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 1. Stan przechowujący dane logowania
   const [formData, setFormData] = useState<LoginData>({
@@ -32,6 +33,8 @@ const Login: React.FC = () => {
   // 3. Szkielet funkcji obsługującej logowanie
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    try {
       const response = await login(formData.email, formData.password)
 
       if(response.isError) {
@@ -45,7 +48,9 @@ const Login: React.FC = () => {
       }
 
       console.log("Login successful:", response.data);
-   
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid =
@@ -102,10 +107,10 @@ const Login: React.FC = () => {
 
           <button
             type="submit"
-            disabled={!isFormValid}
-            className="w-full mt-2 mb-2 text-primary-foreground bg-primary hover:bg-primary/80 hover:scale-[1.02] focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
+            disabled={!isFormValid || isSubmitting}
+            className="w-full mt-2 mb-2 text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {t("login.submit", "Zaloguj się")}
+            {isSubmitting ? "Logowanie..." : t("login.submit", "Zaloguj się")}
           </button>
 
           <div className="flex items-center justify-center mb-4">

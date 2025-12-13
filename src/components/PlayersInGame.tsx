@@ -5,9 +5,11 @@ import type { Player } from '../types/lobby';
 
 interface PlayersInGameProps {
   players: Player[];
+  onKickPlayer?: (playerId: string) => void;
+  isOwner?: boolean;
 }
 
-const PlayersInGame: React.FC<PlayersInGameProps> = ({ players }) => {
+const PlayersInGame: React.FC<PlayersInGameProps> = ({ players, onKickPlayer, isOwner }) => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
 
@@ -78,13 +80,22 @@ const PlayersInGame: React.FC<PlayersInGameProps> = ({ players }) => {
                 </div>
               </div>
 
-              <div className="text-right">
+              <div className="text-right flex flex-col items-end">
                 <div className="text-lg font-bold text-card-foreground">
                   {player.points}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground mb-1">
                   {t('lobby.points')}
                 </div>
+                {isOwner && !isCurrentUser && onKickPlayer && (
+                  <button
+                    onClick={() => onKickPlayer(player.id)}
+                    className="text-xs text-destructive hover:text-destructive/80 font-bold border border-destructive px-2 py-0.5 rounded cursor-pointer"
+                    title="Kick player"
+                  >
+                    🚫 Kick
+                  </button>
+                )}
               </div>
             </div>
           );

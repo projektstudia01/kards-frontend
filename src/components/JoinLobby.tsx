@@ -83,7 +83,7 @@ const JoinLobby: React.FC = () => {
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Poproś właściciela gry o kod</li>
               <li>• Możesz też utworzyć własną grę</li>
-              <li>• Wszystkie gry są publiczne - wystarczy kod</li>
+              <li>• Gry publiczne nie wymagają kodu zaproszenia</li>
             </ul>
           </div>
 

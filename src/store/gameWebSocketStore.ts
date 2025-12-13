@@ -1,24 +1,24 @@
-import { create } from "zustand";
+import { create } from 'zustand';
+
+export interface ChatMessage {
+  senderId: string;
+  senderName: string;
+  text: string;
+  timestamp: string;
+}
 
 interface GameWebSocketStore {
   ws: WebSocket | null;
   setWebSocket: (ws: WebSocket | null) => void;
-  connect: (gameId: string) => void;
+  messages: ChatMessage[];
+  addMessage: (message: ChatMessage) => void;
+  clearMessages: () => void;
 }
 
 export const useGameWebSocketStore = create<GameWebSocketStore>((set) => ({
   ws: null,
   setWebSocket: (ws) => set({ ws }),
-  connect: (gameId: string) => {
-    const BASE_WS_URL =
-      import.meta.env.MODE === "development"
-        ? import.meta.env.VITE_API_WS_GATEWAY_DEV ||
-          "wss://main-server-dev.1050100.xyz"
-        : import.meta.env.VITE_API_WS_GATEWAY ||
-          "wss://main-server-dev.1050100.xyz";
-    const endpoint = `${BASE_WS_URL}/game/connect?game=${gameId}`;
-
-    const newWs = new WebSocket(endpoint);
-    set({ ws: newWs });
-  },
+  messages: [],
+  addMessage: (msg) => set((state) => ({ messages: [...state.messages, msg] })),
+  clearMessages: () => set({ messages: [] }),
 }));

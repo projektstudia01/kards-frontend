@@ -7,11 +7,12 @@ import { useTranslation } from "react-i18next";
 import Lobby from "../components/Lobby";
 import type { Player, Deck } from "../types/lobby";
 import { getCookie } from "../utils/qrcode";
+import { getGame } from "../api";
 
 const LobbyPage: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const { user, logout } = useAuthStore();
-  const { ws, setWebSocket } = useGameWebSocketStore();
+  const { ws, setWebSocket, addMessage, clearMessages } = useGameWebSocketStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const reconnectTimeout = useRef<any>(null);
@@ -24,6 +25,24 @@ const LobbyPage: React.FC = () => {
   const [availableDecksPage, setAvailableDecksPage] = useState(0);
   const [availableDecksTotal, setAvailableDecksTotal] = useState(0);
   const [availableDecksPageSize] = useState(10);
+  const [invitationCode, setInvitationCode] = useState<string | null>(null);
+
+  // Clear messages on lobby change
+  useEffect(() => {
+    clearMessages();
+  }, [lobbyId, clearMessages]);
+
+  // Fetch game details (for invitation code)
+  useEffect(() => {
+    if (!lobbyId) return;
+    const fetchGame = async () => {
+      const response = await getGame(lobbyId);
+      if (!response.isError && response.data) {
+        setInvitationCode(response.data.invitationCode || null);
+      }
+    };
+    fetchGame();
+  }, [lobbyId]);
 
   // WebSocket connection - stays at page level to avoid reconnects on component changes
   useEffect(() => {
@@ -36,7 +55,13 @@ const LobbyPage: React.FC = () => {
     
     // Get sessionToken from cookies
     const sessionToken = getCookie('sessionToken');
-    const endpoint = `${BASE_WS_URL}/game/connect?${sessionToken ? `sessionToken=${sessionToken}&` : ''}game=${lobbyId}`;
+    
+    // Get code from URL query params
+    const queryParams = new URLSearchParams(window.location.search);
+    const codeParam = queryParams.get('code');
+    const codeQuery = codeParam ? `&code=${codeParam}` : '';
+
+    const endpoint = `${BASE_WS_URL}/game/connect?${sessionToken ? `sessionToken=${sessionToken}&` : ''}game=${lobbyId}${codeQuery}`;
 
     const connect = () => {
       if (
@@ -70,6 +95,10 @@ const LobbyPage: React.FC = () => {
           case "WS_CONNECTED":
             return;
 
+          case "CHAT_MESSAGE":
+            addMessage(eventData);
+            return;
+
           case "INVALID_OR_EXPIRED_SESSION":
             shouldReconnect.current = false;
             logout();
@@ -79,6 +108,12 @@ const LobbyPage: React.FC = () => {
           case "USER_NOT_IN_GAME":
             shouldReconnect.current = false;
             toast.error(t("errors.USER_NOT_IN_GAME"));
+            navigate("/welcome");
+            return;
+
+          case "JOIN_FAILED":
+            shouldReconnect.current = false;
+            toast.error(eventData.reason || t("lobby.errors.join_failed"));
             navigate("/welcome");
             return;
 
@@ -222,15 +257,6 @@ const LobbyPage: React.FC = () => {
 
     connect();
 
-    // beforeunload handler to leave game when closing/refreshing page
-    const handleBeforeUnload = () => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ event: 'LEAVE_GAME' }));
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
       shouldReconnect.current = false;
       
@@ -242,9 +268,6 @@ const LobbyPage: React.FC = () => {
         clearTimeout(reconnectTimeout.current);
         reconnectTimeout.current = null;
       }
-
-      // Remove beforeunload listener
-      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [lobbyId, logout, t, navigate, user, ws, setWebSocket]);
 
@@ -265,6 +288,7 @@ const LobbyPage: React.FC = () => {
       availableDecksPage={availableDecksPage}
       availableDecksTotal={availableDecksTotal}
       availableDecksPageSize={availableDecksPageSize}
+      invitationCode={invitationCode}
     />
   );
 };

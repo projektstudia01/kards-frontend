@@ -20,6 +20,7 @@ export interface Player {
   name: string;
   points: number;
   owner: boolean;
+  hasSubmitted?: boolean;
 }
 
 export interface Submission {
@@ -32,6 +33,7 @@ export interface RoundStartedData {
   cards: WhiteCard[];
   cardRef: string; // player-uuid of judge
   blackCard: BlackCard;
+  hasSubmitted?: boolean;
 }
 
 export interface AllCardsSubmittedData {

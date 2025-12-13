@@ -34,7 +34,7 @@ export const login = async (email: string, password: string) => {
     const usernameSet = data.data.data.user.customUsername;
     useAuthStore.getState().setAuthState({
       ...data.data.data.user,
-      needsUsernameSetup: usernameSet,
+      needsUsernameSetup: !usernameSet,
     });
 
     return {
@@ -74,7 +74,7 @@ export const verifyEmail = async (
     useAuthStore.getState().setAuthState({
       email: result.data.user.email,
       name: result.data.user.name,
-      needsUsernameSetup: result.data.user.customUsername,
+      needsUsernameSetup: !result.data.user.customUsername,
       id: result.data.user.id,
     });
     return result.data;
@@ -87,6 +87,23 @@ export const resendVerificationCode = async (email: string) => {
   try {
     const data = await customAxios.post("auth/resend-verification-code", {
       email,
+    });
+    return {
+      isError: false,
+      data: data.data.data,
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
+  }
+};
+
+export const setNickname = async (username: string) => {
+  try {
+    const data = await customAxios.put("/auth/set-nickname", {
+      username,
     });
     return {
       isError: false,
@@ -265,6 +282,21 @@ export const createGame = async (
     };
   } catch (error) {
     return axiosErrorHandler(error);
+  }
+};
+
+export const getGame = async (gameId: string) => {
+  try {
+    const response = await customAxios.get(`/game/${gameId}`);
+    return {
+      isError: false,
+      data: response.data.data.game,
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      error: axiosErrorHandler(error),
+    };
   }
 };
 

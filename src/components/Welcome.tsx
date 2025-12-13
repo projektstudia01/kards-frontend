@@ -25,14 +25,14 @@ const Welcome: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12 space-y-4">
-          <h1 
+          <h1
             className="text-7xl font-extrabold text-primary mb-6 cursor-pointer inline-flex items-baseline overflow-visible leading-normal pb-4"
             onMouseEnter={() => setIsTitleHovered(true)}
             onMouseLeave={() => setIsTitleHovered(false)}
           >
             <span className="inline-block align-baseline">Card</span>
             <span className="inline-block align-baseline">O</span>
-            <span 
+            <span
               className={`inline-block align-baseline transition-all duration-700 ease-in-out overflow-visible ${
                 isTitleHovered 
                   ? 'max-w-[200px] opacity-100' 
@@ -43,7 +43,7 @@ const Welcome: React.FC = () => {
               ni
             </span>
             <span className="inline-block align-baseline">S</span>
-            <span 
+            <span
               className={`inline-block align-baseline transition-all duration-700 ease-in-out overflow-visible ${
                 isTitleHovered 
                   ? 'max-w-[300px] opacity-100' 
@@ -54,7 +54,7 @@ const Welcome: React.FC = () => {
               nejka
             </span>
             <span className="inline-block align-baseline">R</span>
-            <span 
+            <span
               className={`inline-block align-baseline transition-all duration-700 ease-in-out overflow-visible ${
                 isTitleHovered 
                   ? 'max-w-[300px] opacity-100' 

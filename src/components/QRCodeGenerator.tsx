@@ -37,7 +37,6 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
       } catch (err) {
         console.error("QR Code generation error:", err);
 
-        //TODO: Dorobić klucz
         toast.error("qr_code.generation_failed");
       } finally {
         setIsLoading(false);
