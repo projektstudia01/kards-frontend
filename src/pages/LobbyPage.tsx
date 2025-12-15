@@ -124,11 +124,9 @@ const LobbyPage: React.FC = () => {
             return;
 
           case "NEW_PLAYER_JOINED":
-            if (eventData && eventData.id && eventData.name) {
-              toast.info(t("lobby.player_joined", { name: eventData.name }));
-              // Don't manually add player - wait for PLAYERS_IN_GAME event
-              // which contains correct owner status
-            }
+            // toast.info(t("lobby.player_joined", { name: eventData.name }));
+            // Don't manually add player - wait for PLAYERS_IN_GAME event
+            // which contains correct owner status
             return;
 
           case "PLAYER_LEFT":

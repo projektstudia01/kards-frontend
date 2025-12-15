@@ -37,6 +37,12 @@ const GamePage: React.FC = () => {
     gamePhase: 'waiting',
   });
 
+  // Ref to access current players in WebSocket callbacks without triggering re-connects
+  const playersRef = useRef(gameState.players);
+  useEffect(() => {
+    playersRef.current = gameState.players;
+  }, [gameState.players]);
+
   // Initialize game state from navigation state if available
   useEffect(() => {
     const navState = location.state as { roundData?: RoundStartedData };
@@ -152,7 +158,7 @@ const GamePage: React.FC = () => {
 
         case "PLAYER_LEFT":
           if (eventData && eventData.id) {
-            const leavingPlayer = gameState.players.find(p => p.id === eventData.id);
+            const leavingPlayer = playersRef.current.find(p => p.id === eventData.id);
             if (leavingPlayer) {
               toast.info(t("lobby.player_left", { name: leavingPlayer.name }));
             }
@@ -279,7 +285,7 @@ const GamePage: React.FC = () => {
         ws.close(1000, "Component unmounting");
       }
     };
-  }, [gameId, user, logout, navigate, t, gameState.players]); // Removed ws dependency to avoid loop, handled internally
+  }, [gameId, user, logout, navigate, t]); // Removed gameState.players to prevent reconnect loop
 
   const handleSubmitCards = (cardIds: string[]) => {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
