@@ -192,7 +192,7 @@ const LobbyPage: React.FC = () => {
             // Navigate with round data - WebSocket stays open
             navigate(`/game/${lobbyId}`, { 
               state: { 
-                roundData: eventData 
+                roundData: eventData
               } 
             });
             return;

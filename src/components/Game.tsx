@@ -34,9 +34,9 @@ const Game: React.FC<GameProps> = ({
 
   const handleCardSelect = (cardId: string) => {
     if (!gameState.blackCard) return;
-    
+
     const requiredCards = gameState.blackCard.blankSpaceAmount;
-    
+
     if (selectedCardIds.includes(cardId)) {
       setSelectedCardIds(selectedCardIds.filter(id => id !== cardId));
     } else {
@@ -48,9 +48,9 @@ const Game: React.FC<GameProps> = ({
 
   const handleSubmit = () => {
     if (!gameState.blackCard) return;
-    
+
     const requiredCards = gameState.blackCard.blankSpaceAmount;
-    
+
     if (selectedCardIds.length === requiredCards) {
       onSubmitCards(selectedCardIds);
       setSelectedCardIds([]);
@@ -98,7 +98,7 @@ const Game: React.FC<GameProps> = ({
               <div className="flex justify-center">
                 <BlackCardDisplay card={gameState.blackCard} />
               </div>
-              
+
               <div className="text-center py-8">
                 <p className="text-lg text-green-600 dark:text-green-400 font-semibold mb-2">
                   ✓ {t("game.cards_submitted")}
@@ -140,7 +140,7 @@ const Game: React.FC<GameProps> = ({
                     onCardSelect={handleCardSelect}
                     disabled={false}
                   />
-                  
+
                   {gameState.blackCard && (
                     <div className="flex justify-center">
                       <button
