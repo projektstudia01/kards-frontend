@@ -37,15 +37,17 @@ const Game: React.FC<GameProps> = ({
 
     const requiredCards = gameState.blackCard.blankSpaceAmount;
 
-    if (selectedCardIds.includes(cardId)) {
-      setSelectedCardIds(selectedCardIds.filter((id) => id !== cardId));
-      return;
-    }
-    if (selectedCardIds.length < requiredCards) {
-      setSelectedCardIds([...selectedCardIds, cardId]);
-    } else {
-      setSelectedCardIds([...selectedCardIds.slice(0, -1), cardId]);
-    }
+    setSelectedCardIds((prev) => {
+      if (prev.includes(cardId)) {
+        return prev.filter((id) => id !== cardId);
+      }
+
+      if (prev.length >= requiredCards) {
+        return prev;
+      }
+
+      return [...prev, cardId];
+    });
   };
 
   const handleSubmit = () => {
