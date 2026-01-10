@@ -27,7 +27,7 @@ const Game: React.FC<GameProps> = ({
 
   // Clear selected cards when new round starts (gamePhase changes to 'selecting')
   useEffect(() => {
-    if (gameState.gamePhase === 'selecting') {
+    if (gameState.gamePhase === "selecting") {
       setSelectedCardIds([]);
     }
   }, [gameState.gamePhase]);
@@ -38,7 +38,7 @@ const Game: React.FC<GameProps> = ({
     const requiredCards = gameState.blackCard.blankSpaceAmount;
 
     if (selectedCardIds.includes(cardId)) {
-      setSelectedCardIds(selectedCardIds.filter(id => id !== cardId));
+      setSelectedCardIds(selectedCardIds.filter((id) => id !== cardId));
     } else {
       if (selectedCardIds.length < requiredCards) {
         setSelectedCardIds([...selectedCardIds, cardId]);
@@ -67,7 +67,7 @@ const Game: React.FC<GameProps> = ({
           </h1>
           <button
             onClick={onLeaveGame}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+            className="cursor-pointer px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
           >
             {t("lobby.leave")}
           </button>
@@ -84,7 +84,7 @@ const Game: React.FC<GameProps> = ({
 
         {/* Main game area */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          {gameState.gamePhase === 'waiting' && !gameState.blackCard && (
+          {gameState.gamePhase === "waiting" && !gameState.blackCard && (
             <div className="text-center py-12">
               <p className="text-xl text-gray-600 dark:text-gray-300">
                 {t("game.waiting_for_round")}
@@ -92,7 +92,7 @@ const Game: React.FC<GameProps> = ({
             </div>
           )}
 
-          {gameState.gamePhase === 'waiting' && gameState.blackCard && (
+          {gameState.gamePhase === "waiting" && gameState.blackCard && (
             <div className="space-y-6">
               {/* Show black card */}
               <div className="flex justify-center">
@@ -110,7 +110,8 @@ const Game: React.FC<GameProps> = ({
             </div>
           )}
 
-          {(gameState.gamePhase === 'selecting' || gameState.gamePhase === 'judging') && (
+          {(gameState.gamePhase === "selecting" ||
+            gameState.gamePhase === "judging") && (
             <div className="space-y-6">
               {/* Black card */}
               {gameState.blackCard && (
@@ -120,7 +121,7 @@ const Game: React.FC<GameProps> = ({
               )}
 
               {/* Judge waiting view */}
-              {gameState.isJudge && gameState.gamePhase === 'selecting' && (
+              {gameState.isJudge && gameState.gamePhase === "selecting" && (
                 <div className="text-center py-8">
                   <p className="text-lg text-gray-600 dark:text-gray-300">
                     {t("game.judge_waiting")}
@@ -132,7 +133,7 @@ const Game: React.FC<GameProps> = ({
               )}
 
               {/* Player card selection */}
-              {!gameState.isJudge && gameState.gamePhase === 'selecting' && (
+              {!gameState.isJudge && gameState.gamePhase === "selecting" && (
                 <div className="space-y-4">
                   <WhiteCardsHand
                     cards={gameState.myCards}
@@ -145,10 +146,14 @@ const Game: React.FC<GameProps> = ({
                     <div className="flex justify-center">
                       <button
                         onClick={handleSubmit}
-                        disabled={selectedCardIds.length !== gameState.blackCard.blankSpaceAmount}
+                        disabled={
+                          selectedCardIds.length !==
+                          gameState.blackCard.blankSpaceAmount
+                        }
                         className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
                       >
-                        {t("game.submit_cards")} ({selectedCardIds.length}/{gameState.blackCard.blankSpaceAmount})
+                        {t("game.submit_cards")} ({selectedCardIds.length}/
+                        {gameState.blackCard.blankSpaceAmount})
                       </button>
                     </div>
                   )}
@@ -156,38 +161,39 @@ const Game: React.FC<GameProps> = ({
               )}
 
               {/* Judging phase - show submissions */}
-              {gameState.gamePhase === 'judging' && gameState.submissions.length > 0 && (
-                <div className="space-y-4">
-                  {gameState.isJudge ? (
-                    <>
-                      <h2 className="text-xl font-semibold text-center text-gray-900 dark:text-white">
-                        {t("game.select_winner")}
-                      </h2>
-                      <SubmissionsDisplay
-                        submissions={gameState.submissions}
-                        onSelectWinner={onSelectWinner}
-                        isJudge={true}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-xl font-semibold text-center text-gray-900 dark:text-white">
-                        {t("game.judge_selecting")}
-                      </h2>
-                      <SubmissionsDisplay
-                        submissions={gameState.submissions}
-                        onSelectWinner={onSelectWinner}
-                        isJudge={false}
-                      />
-                    </>
-                  )}
-                </div>
-              )}
+              {gameState.gamePhase === "judging" &&
+                gameState.submissions.length > 0 && (
+                  <div className="space-y-4">
+                    {gameState.isJudge ? (
+                      <>
+                        <h2 className="text-xl font-semibold text-center text-gray-900 dark:text-white">
+                          {t("game.select_winner")}
+                        </h2>
+                        <SubmissionsDisplay
+                          submissions={gameState.submissions}
+                          onSelectWinner={onSelectWinner}
+                          isJudge={true}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <h2 className="text-xl font-semibold text-center text-gray-900 dark:text-white">
+                          {t("game.judge_selecting")}
+                        </h2>
+                        <SubmissionsDisplay
+                          submissions={gameState.submissions}
+                          onSelectWinner={onSelectWinner}
+                          isJudge={false}
+                        />
+                      </>
+                    )}
+                  </div>
+                )}
             </div>
           )}
 
           {/* Results phase */}
-          {gameState.gamePhase === 'results' && (
+          {gameState.gamePhase === "results" && (
             <RoundResults players={gameState.players} />
           )}
         </div>
