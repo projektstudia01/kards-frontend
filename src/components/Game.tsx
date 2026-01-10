@@ -41,7 +41,7 @@ const Game: React.FC<GameProps> = ({
       if (prev.includes(cardId)) {
         return prev.filter((id) => id !== cardId);
       }
-      console.log(prev, requiredCards);
+
       if (prev.length < requiredCards) {
         return [...prev, cardId];
       }
