@@ -314,6 +314,7 @@ const GamePage: React.FC = () => {
           const finishedData = eventData as RoundFinishedData;
           setGameState((prev) => ({
             ...prev,
+            players: finishedData.players,
             gamePhase: "results",
           }));
           toast.success(
