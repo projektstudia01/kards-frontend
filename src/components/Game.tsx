@@ -39,10 +39,12 @@ const Game: React.FC<GameProps> = ({
 
     if (selectedCardIds.includes(cardId)) {
       setSelectedCardIds(selectedCardIds.filter((id) => id !== cardId));
+      return;
+    }
+    if (selectedCardIds.length < requiredCards) {
+      setSelectedCardIds([...selectedCardIds, cardId]);
     } else {
-      if (selectedCardIds.length < requiredCards) {
-        setSelectedCardIds([...selectedCardIds, cardId]);
-      }
+      setSelectedCardIds([...selectedCardIds.slice(0, -1), cardId]);
     }
   };
 
