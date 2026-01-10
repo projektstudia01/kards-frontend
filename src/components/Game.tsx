@@ -152,7 +152,7 @@ const Game: React.FC<GameProps> = ({
                           selectedCardIds.length !==
                           gameState.blackCard.blankSpaceAmount
                         }
-                        className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                        className="cursor-pointer px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
                       >
                         {t("game.submit_cards")} ({selectedCardIds.length}/
                         {gameState.blackCard.blankSpaceAmount})
