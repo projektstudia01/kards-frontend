@@ -42,11 +42,11 @@ const Game: React.FC<GameProps> = ({
         return prev.filter((id) => id !== cardId);
       }
 
-      if (prev.length >= requiredCards) {
-        return prev;
+      if (prev.length < requiredCards) {
+        return [...prev, cardId];
       }
 
-      return [...prev, cardId];
+      return [...prev.slice(1), cardId];
     });
   };
 
