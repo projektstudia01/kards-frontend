@@ -52,10 +52,10 @@ const LobbyPage: React.FC = () => {
       import.meta.env.MODE === "development"
         ? import.meta.env.VITE_API_WS_GATEWAY_DEV
         : import.meta.env.VITE_API_WS_GATEWAY;
-    
+
     // Get sessionToken from cookies
     const sessionToken = getCookie('sessionToken');
-    
+
     // Get code from URL query params
     const queryParams = new URLSearchParams(window.location.search);
     const codeParam = queryParams.get('code');
@@ -73,15 +73,18 @@ const LobbyPage: React.FC = () => {
       }
 
       toast.info(t("reconnecting"));
-      
+
+      let wasOpened = false;
+
       const newWs = new WebSocket(endpoint);
       setWebSocket(newWs);
-      
+
       newWs.addEventListener("error", () => {
         toast.error(t("errors.UNKNOWN_ERROR"));
       });
 
       newWs.addEventListener("open", () => {
+        wasOpened = true;
         toast.success(t("connected"));
         // Backend sends initial data automatically via sendInitialData
       });
@@ -151,7 +154,7 @@ const LobbyPage: React.FC = () => {
             // 1. {event, data: [...], total, page} - from initial data
             // 2. {event, data: {data: [...], total, page}} - from GET_DECKS_PAGINATED
             let decksData, total, page;
-            
+
             if (Array.isArray(eventData)) {
               // Structure 1: data is directly an array
               decksData = eventData;
@@ -165,7 +168,7 @@ const LobbyPage: React.FC = () => {
             } else {
               return;
             }
-            
+
             setAvailableDecks(decksData);
             setAvailableDecksTotal(total);
             setAvailableDecksPage(page);
@@ -188,12 +191,12 @@ const LobbyPage: React.FC = () => {
           case "ROUND_STARTED":
             // Don't close WebSocket - GamePage will reuse the same connection
             shouldReconnect.current = false;
-            
+
             // Navigate with round data - WebSocket stays open
-            navigate(`/game/${lobbyId}`, { 
-              state: { 
+            navigate(`/game/${lobbyId}`, {
+              state: {
                 roundData: eventData
-              } 
+              }
             });
             return;
 
@@ -238,7 +241,26 @@ const LobbyPage: React.FC = () => {
         }
       });
 
-      newWs.addEventListener("close", () => {
+      newWs.addEventListener("close", (event) => {
+        // If connection was never opened and closed abnormally
+        if (!wasOpened && event.code === 1006) {
+          shouldReconnect.current = false;
+          setWebSocket(null);
+          toast.error(t("errors.INVALID_OR_EXPIRED_SESSION"));
+          logout();
+          navigate("/login");
+          return;
+        }
+
+        // Check for authentication/authorization failure close codes
+        if (event.code === 1008 || event.code === 4001 || event.code === 4003) {
+          shouldReconnect.current = false;
+          setWebSocket(null);
+          logout();
+          navigate("/login");
+          return;
+        }
+
         toast.error(t("errors.WEBSOCKET_DISCONNECT"));
 
         if (shouldReconnect.current) {
@@ -257,7 +279,7 @@ const LobbyPage: React.FC = () => {
 
     return () => {
       shouldReconnect.current = false;
-      
+
       // DON'T close WebSocket here - GamePage will reuse it
       // Only close on actual page leave (beforeunload handles that)
 
@@ -277,8 +299,8 @@ const LobbyPage: React.FC = () => {
   wsRef.current = ws;
 
   return (
-    <Lobby 
-      wsRef={wsRef} 
+    <Lobby
+      wsRef={wsRef}
       gameId={lobbyId}
       players={players}
       decksInGame={decksInGame}
