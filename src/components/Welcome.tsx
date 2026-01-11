@@ -66,7 +66,7 @@ const Welcome: React.FC = () => {
             </span>
           </h1>
           <p className="text-2xl text-card-foreground font-semibold mb-4">
-            Wieloosobowa Gra Karciana Online
+            Wieloosobowa gra karciana online
           </p>
           <p className="text-lg text-muted-foreground flex items-center justify-center gap-2">
             <span className="text-2xl">⚡</span>

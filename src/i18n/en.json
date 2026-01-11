@@ -102,7 +102,7 @@
     "qr_code.generation_failed": "QR Code generation failed."
   },
   "game": {
-    "title": "Cards Against Humanity",
+    "title": "CardOSR",
     "waiting_for_round": "Waiting for next round to start...",
     "judge": "Judge",
     "judge_waiting": "You are the Card Czar this round!",

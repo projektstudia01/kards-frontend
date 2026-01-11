@@ -102,7 +102,7 @@
     "qr_code.generation_failed": "Generowanie kodu QR nie powiodło się."
   },
   "game": {
-    "title": "Cards Against Humanity",
+    "title": "CardOSR",
     "waiting_for_round": "Oczekiwanie na rozpoczęcie kolejnej rundy...",
     "judge": "Sędzia",
     "judge_waiting": "Jesteś Carem Kart w tej rundzie!",
