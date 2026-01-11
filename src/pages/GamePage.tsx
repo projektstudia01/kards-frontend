@@ -73,8 +73,8 @@ const GamePage: React.FC = () => {
 
       const uniqueCards = roundData.cards
         ? Array.from(
-            new Map(roundData.cards.map((card) => [card.id, card])).values()
-          )
+          new Map(roundData.cards.map((card) => [card.id, card])).values()
+        )
         : [];
 
       setGameState((prev) => ({
@@ -145,9 +145,8 @@ const GamePage: React.FC = () => {
 
       // Get sessionToken from cookies
       const sessionToken = getCookie("sessionToken");
-      const endpoint = `${BASE_WS_URL}/game/connect?${
-        sessionToken ? `sessionToken=${sessionToken}&` : ""
-      }game=${gameId}`;
+      const endpoint = `${BASE_WS_URL}/game/connect?${sessionToken ? `sessionToken=${sessionToken}&` : ""
+        }game=${gameId}`;
 
       toast.info(t("reconnecting"));
       const newWs = new WebSocket(endpoint);
@@ -202,6 +201,16 @@ const GamePage: React.FC = () => {
           navigate("/login");
           return;
 
+        case "JOIN_FAILED":
+          shouldReconnect.current = false;
+          if (ws) {
+            ws.close();
+            setWebSocket(null);
+          }
+          toast.error(eventData.reason || t("lobby.errors.join_failed"));
+          navigate("/welcome");
+          return;
+
         case "PLAYERS_IN_GAME":
           if (Array.isArray(eventData)) {
             setGameState((prev) => ({
@@ -247,8 +256,8 @@ const GamePage: React.FC = () => {
 
           const uniqueCards = roundData.cards
             ? Array.from(
-                new Map(roundData.cards.map((card) => [card.id, card])).values()
-              )
+              new Map(roundData.cards.map((card) => [card.id, card])).values()
+            )
             : [];
 
           console.log("Unique Cards Processed:", uniqueCards.length);
