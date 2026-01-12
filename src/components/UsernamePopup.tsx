@@ -11,14 +11,29 @@ const UsernamePopup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const userName = username.trim();
-    if (!userName) return;
+    
+    // Client-side validation
+    if (userName.length < 3) {
+      toast.error("Nazwa musi mieć co najmniej 3 znaki");
+      return;
+    }
+    
+    if (userName.length > 20) {
+      toast.error("Nazwa może mieć maksymalnie 20 znaków");
+      return;
+    }
+    
+    if (!/^[a-zA-Z0-9_]+$/.test(userName)) {
+      toast.error("Nazwa może zawierać tylko litery, cyfry i podkreślenia");
+      return;
+    }
 
     setIsSubmitting(true);
 
     const response = await setNickname(userName);
 
     if (response.isError) {
-      toast.error("Failed to set nickname"); // You might want to translate this
+      toast.error("Nie udało się ustawić nazwy użytkownika");
       setIsSubmitting(false);
       return;
     }
@@ -27,20 +42,22 @@ const UsernamePopup: React.FC = () => {
     setIsSubmitting(false);
   };
 
+  const handleClose = () => {
+    const randomSuffix = Math.random().toString(36).substring(2, 7);
+    setUsername(`Guest${randomSuffix}`);
+  };
+
   const isUsernameValid = username.trim().length >= 3;
 
   if (!showUsernamePopup) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-lg p-8 max-w-md w-full border border-border shadow-xl relative hover:scale-[1.02] transition-all duration-300">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-lg p-8 max-w-md w-full border border-border shadow-xl relative">
         <button
           aria-label="Zamknij"
-          onClick={() => {
-            const randomSuffix = Math.random().toString(36).substring(2, 7);
-            setUsername(`Guest${randomSuffix}`);
-          }}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-card-foreground hover:scale-110 cursor-pointer transition-all duration-200"
+          onClick={handleClose}
+          className="absolute top-4 right-4 text-muted-foreground hover:text-card-foreground text-2xl leading-none"
         >
           ×
         </button>
@@ -63,11 +80,11 @@ const UsernamePopup: React.FC = () => {
               value={username}
               onChange={(e) => setUsernameInput(e.target.value)}
               placeholder="MojaUnikalnaNazwa"
-              required
               minLength={3}
               maxLength={20}
-              pattern="^[a-zA-Z0-9_]+$"
-              className="bg-input border border-border text-card-foreground sm:text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 ring-ring"
+              autoComplete="off"
+              autoFocus
+              className="bg-input border border-border text-card-foreground text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5"
             />
             <p className="text-xs text-muted-foreground mt-1">
               3-20 znaków, tylko litery, cyfry i podkreślenia
@@ -77,7 +94,7 @@ const UsernamePopup: React.FC = () => {
           <button
             type="submit"
             disabled={!isUsernameValid || isSubmitting}
-            className="w-full text-primary-foreground bg-primary hover:bg-primary/80 hover:scale-[1.02] focus:ring-4 focus:outline-none focus:ring-ring font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
+            className="w-full text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-primary/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isSubmitting ? "Zapisuję..." : "Potwierdź nazwę"}
           </button>
