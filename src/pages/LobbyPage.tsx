@@ -12,7 +12,10 @@ import { getGame } from "../api";
 const LobbyPage: React.FC = () => {
   const { lobbyId } = useParams<{ lobbyId: string }>();
   const { user, logout } = useAuthStore();
-  const { ws, setWebSocket, addMessage, clearMessages } = useGameWebSocketStore();
+  const ws = useGameWebSocketStore((state) => state.ws);
+  const setWebSocket = useGameWebSocketStore((state) => state.setWebSocket);
+  const addMessage = useGameWebSocketStore((state) => state.addMessage);
+  const clearMessages = useGameWebSocketStore((state) => state.clearMessages);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const reconnectTimeout = useRef<any>(null);
@@ -30,7 +33,8 @@ const LobbyPage: React.FC = () => {
   // Clear messages on lobby change
   useEffect(() => {
     clearMessages();
-  }, [lobbyId, clearMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lobbyId]);
 
   // Fetch game details (for invitation code)
   useEffect(() => {
@@ -257,14 +261,18 @@ const LobbyPage: React.FC = () => {
 
     return () => {
       shouldReconnect.current = false;
-      
-      // DON'T close WebSocket here - GamePage will reuse it
-      // Only close on actual page leave (beforeunload handles that)
 
       // Clear reconnect timeout
       if (reconnectTimeout.current) {
         clearTimeout(reconnectTimeout.current);
         reconnectTimeout.current = null;
+      }
+      
+      // Close WebSocket when leaving lobby page
+      // (unless navigating to game page - that's handled by ROUND_STARTED event)
+      if (ws && ws.readyState !== WebSocket.CLOSED) {
+        ws.close(1000, "Leaving lobby");
+        setWebSocket(null);
       }
     };
   }, [lobbyId, logout, t, navigate, user, ws, setWebSocket]);
