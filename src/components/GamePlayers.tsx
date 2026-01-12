@@ -17,11 +17,11 @@ const GamePlayers: React.FC<GamePlayersProps> = ({
 
   if (players.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+      <div className="bg-card rounded-lg shadow p-4 border border-border">
+        <h3 className="text-lg font-semibold mb-3 text-card-foreground">
           {t("lobby.players")}
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           {t("lobby.no_players")}
         </p>
       </div>
@@ -29,38 +29,38 @@ const GamePlayers: React.FC<GamePlayersProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+    <div className="bg-card rounded-lg shadow p-4 border border-border">
+      <h3 className="text-lg font-semibold mb-3 text-card-foreground">
         {t("lobby.players")}
       </h3>
-      
+
       <div className="flex flex-wrap gap-3">
         {players.map((player) => {
           const isJudge = player.id === currentJudgeId;
           const isCurrentUser = player.id === currentUserId;
-          
+
           return (
             <div
               key={player.id}
               className={`
                 px-4 py-2 rounded-lg flex items-center gap-2
-                ${isJudge ? 'bg-purple-100 dark:bg-purple-900 ring-2 ring-purple-500' : 'bg-gray-100 dark:bg-gray-700'}
+                ${isJudge ? 'bg-purple-500/20 ring-2 ring-purple-500' : 'bg-accent'}
                 ${isCurrentUser ? 'font-bold' : ''}
               `}
             >
-              <span className="text-sm text-gray-900 dark:text-white flex items-center gap-1">
+              <span className={`text-sm flex items-center gap-1 ${isJudge ? 'text-purple-500' : 'text-card-foreground'}`}>
                 {player.name}
                 {isCurrentUser && ' (You)'}
-                {player.hasSubmitted && <span className="text-green-500 font-bold ml-1">✓</span>}
+                {player.hasSubmitted && <span className="text-success font-bold ml-1">✓</span>}
               </span>
-              
+
               {isJudge && (
-                <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded">
+                <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded font-medium">
                   {t("game.judge")}
                 </span>
               )}
-              
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+
+              <span className="text-xs font-semibold text-muted-foreground">
                 {player.points} pts
               </span>
             </div>
