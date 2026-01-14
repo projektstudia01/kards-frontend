@@ -41,7 +41,7 @@ const SubmissionsDisplay: React.FC<SubmissionsDisplayProps> = ({
                   e.stopPropagation();
                   onSelectWinner(submission.playerId);
                 }}
-                className="mt-4 w-full px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/80 transition"
+                className="mt-4 w-full px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/80 transition cursor-pointer"
               >
                 Select This
               </button>

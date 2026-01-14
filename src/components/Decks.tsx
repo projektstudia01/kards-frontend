@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { getDecks, createDeck, deleteDeck, type Deck } from '../api';
+import { useTranslation } from 'react-i18next';
 
 interface CreateDeckModalProps {
   isOpen: boolean;
@@ -84,6 +85,7 @@ const CreateDeckModal: React.FC<CreateDeckModalProps> = ({ isOpen, onClose, onSu
 };
 
 const Decks: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userDecks, setUserDecks] = useState<Deck[]>([]);
@@ -122,7 +124,7 @@ const Decks: React.FC = () => {
     if (userDecks.length < MAX_DECKS) {
       setIsModalOpen(true);
     } else {
-      toast.error('Maksymalna liczba talii to 3');
+      toast.error(t('decks.errors.max_decks'));
     }
   };
 
@@ -141,7 +143,7 @@ const Decks: React.FC = () => {
     
     if (!response.isError) {
       setUserDecks(userDecks.filter(d => d.id !== deckId));
-      toast.success('Talia została usunięta');
+      toast.success(t('decks.success.deleted'));
     }
   };
 

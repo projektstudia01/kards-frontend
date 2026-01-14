@@ -13,6 +13,7 @@
     "validation_error": "Błąd walidacji.",
     "auth_fail": "Uwierzytelnianie nie powiodło się.",
     "user_already_in_game": "Użytkownik już jest w grze.",
+    "user_already_in_game_with_hint": "Użytkownik już jest w grze. - Musisz najpierw opuścić poprzednią grę.",
     "deck_amount_exceeded": "Przekroczono maksymalną liczbę talii.",
     "deck_not_found": "Nie znaleziono talii.",
     "wrong_credentials": "Nieprawidłowe dane logowania.",
@@ -86,11 +87,34 @@
       "code_resent": "Kod weryfikacyjny został wysłany ponownie."
     },
     "lobby": {
-      "invite_copied": "Link z zaproszeniem skopiowany do schowka!"
+      "invite_copied": "Link z zaproszeniem skopiowany do schowka!",
+      "link_copied": "Link do lobby skopiowany!"
     }
   },
   "reconnecting": "Ponowne łączenie z serwerem...",
   "connected": "Połączono z serwerem",
+  "username": {
+    "errors": {
+      "min_length": "Nazwa musi mieć co najmniej 3 znaki",
+      "max_length": "Nazwa może mieć maksymalnie 20 znaków",
+      "invalid_chars": "Nazwa może zawierać tylko litery, cyfry i podkreślenia",
+      "set_failed": "Nie udało się ustawić nazwy użytkownika"
+    }
+  },
+  "decks": {
+    "errors": {
+      "max_decks": "Maksymalna liczba talii to 3",
+      "load_failed": "Nie udało się załadować talii",
+      "delete_cards_failed": "Nie udało się usunąć kart",
+      "save_cards_failed": "Nie udało się zapisać kart",
+      "max_blanks": "Maksymalnie 3 puste miejsca na kartę (___)",
+      "min_blanks": "Czarna karta musi mieć co najmniej jedno puste miejsce (___)"
+    },
+    "success": {
+      "deleted": "Talia została usunięta",
+      "saved": "Talia zapisana pomyślnie"
+    }
+  },
   "errors": {
     "UNKNOWN_ERROR": "Wystąpił nieznany błąd",
     "WEBSOCKET_DISCONNECT": "Utracono połączenie z serwerem",
@@ -99,7 +123,8 @@
     "USER_NOT_IN_GAME": "Użytkownik nie jest w grze",
     "KICKED_FROM_GAME": "Zostałeś wyrzucony z gry",
     "websocket_not_connected": "Brak połączenia z serwerem",
-    "qr_code.generation_failed": "Generowanie kodu QR nie powiodło się."
+    "qr_code.generation_failed": "Generowanie kodu QR nie powiodło się.",
+    "read_game_id_failed": "Błąd: nie można odczytać ID gry z odpowiedzi backendu"
   },
   "game": {
     "title": "CardOSR",

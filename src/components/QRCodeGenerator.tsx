@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { toast } from "sonner";
+import { useTranslation } from 'react-i18next';
 
 interface QRCodeGeneratorProps {
   text: string;
@@ -15,6 +16,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   className = "",
   alt = "QR Code",
 }) => {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -37,7 +39,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
       } catch (err) {
         console.error("QR Code generation error:", err);
 
-        toast.error("qr_code.generation_failed");
+        toast.error(t("errors.qr_code.generation_failed"));
       } finally {
         setIsLoading(false);
       }

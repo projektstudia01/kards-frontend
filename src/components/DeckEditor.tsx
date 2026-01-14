@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { getDeck, getCards, addCards, deleteCards, type Card } from '../api';
+import { useTranslation } from 'react-i18next';
 
 const DeckEditor: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { deckId } = useParams<{ deckId: string }>();
   
@@ -49,7 +51,7 @@ const DeckEditor: React.FC = () => {
       if (isCancelled) return;
       
       if (deckResponse.isError) {
-        toast.error('Nie udało się załadować talii');
+        toast.error(t('decks.errors.load_failed'));
         navigate('/deck');
         return;
       }
@@ -191,11 +193,11 @@ const DeckEditor: React.FC = () => {
     if (selectedType === 'black') {
       const blanks = (cardText.match(/___/g) || []).length;
       if (blanks > 3) {
-        toast.error('Maksymalnie 3 puste miejsca na kartę (___) ');
+        toast.error(t('decks.errors.max_blanks'));
         return;
       }
       if (blanks === 0) {
-        toast.error('Czarna karta musi mieć co najmniej jedno puste miejsce (___)');
+        toast.error(t('decks.errors.min_blanks'));
         return;
       }
       blankSpaceAmount = blanks;
@@ -252,7 +254,7 @@ const DeckEditor: React.FC = () => {
       const deleteResponse = await deleteCards(deckId, deletedCardIds);
       
       if (deleteResponse.isError) {
-        toast.error('Nie udało się usunąć kart');
+        toast.error(t('decks.errors.delete_cards_failed'));
         setIsSaving(false);
         return;
       }
@@ -268,7 +270,7 @@ const DeckEditor: React.FC = () => {
       const response = await addCards(deckId, newCards);
       
       if (response.isError) {
-        toast.error('Nie udało się zapisać kart');
+        toast.error(t('decks.errors.save_cards_failed'));
         setIsSaving(false);
         return;
       }
@@ -279,7 +281,7 @@ const DeckEditor: React.FC = () => {
     localStorage.removeItem(storageKey);
     setHasUnsavedChanges(false);
     
-    toast.success('Talia zapisana pomyślnie');
+    toast.success(t('decks.success.saved'));
     setIsSaving(false);
     navigate('/decks');
   };
@@ -381,7 +383,7 @@ const DeckEditor: React.FC = () => {
                     selectedType === 'black'
                       ? 'bg-gray-900 text-white shadow-lg'
                       : 'bg-gray-300 dark:bg-muted text-gray-700 dark:text-muted-foreground hover:bg-gray-400 dark:hover:bg-muted/80'
-                  } cursor-pointer`}
+                  }`}
                 >
                   Czarna Karta
                 </button>
@@ -391,7 +393,7 @@ const DeckEditor: React.FC = () => {
                     selectedType === 'white'
                       ? 'bg-gray-900 text-white shadow-lg'
                       : 'bg-gray-300 dark:bg-muted text-gray-700 dark:text-muted-foreground hover:bg-gray-400 dark:hover:bg-muted/80'
-                  } cursor-pointer`}
+                  }`}
                 >
                   Biała Karta
                 </button>

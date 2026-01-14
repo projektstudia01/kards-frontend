@@ -62,7 +62,7 @@ const QRCodeDemo: React.FC = () => {
           <div className="text-center">
             <button
               onClick={handleGenerateQR}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors mb-4"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors mb-4 cursor-pointer"
             >
               Generate Custom QR
             </button>
@@ -70,7 +70,7 @@ const QRCodeDemo: React.FC = () => {
           <div className="text-center">
             <button
               onClick={handleGenerateInviteQR}
-              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors mb-4"
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors mb-4 cursor-pointer"
             >
               Generate Invite QR
             </button>

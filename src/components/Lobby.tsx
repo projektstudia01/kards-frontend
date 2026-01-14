@@ -185,7 +185,7 @@ const Lobby: React.FC<LobbyProps> = ({
               onClick={() => {
                 const url = `${window.location.origin}/lobby/${gameId}${invitationCode ? `?code=${invitationCode}` : ''}`;
                 navigator.clipboard.writeText(url);
-                toast.success('Link do lobby skopiowany!');
+                toast.success(t('success.lobby.link_copied'));
               }}
               className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 hover:scale-105 transition-all duration-200 cursor-pointer"
             >

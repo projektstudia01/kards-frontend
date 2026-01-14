@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useAuthStore } from "../store/authStore";
 import { setNickname } from "../api";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const UsernamePopup: React.FC = () => {
+  const { t } = useTranslation();
   const { setUsername, showUsernamePopup } = useAuthStore();
   const [username, setUsernameInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -14,17 +16,17 @@ const UsernamePopup: React.FC = () => {
     
     // Client-side validation
     if (userName.length < 3) {
-      toast.error("Nazwa musi mieć co najmniej 3 znaki");
+      toast.error(t('username.errors.min_length'));
       return;
     }
     
     if (userName.length > 20) {
-      toast.error("Nazwa może mieć maksymalnie 20 znaków");
+      toast.error(t('username.errors.max_length'));
       return;
     }
     
     if (!/^[a-zA-Z0-9_]+$/.test(userName)) {
-      toast.error("Nazwa może zawierać tylko litery, cyfry i podkreślenia");
+      toast.error(t('username.errors.invalid_chars'));
       return;
     }
 
@@ -33,7 +35,7 @@ const UsernamePopup: React.FC = () => {
     const response = await setNickname(userName);
 
     if (response.isError) {
-      toast.error("Nie udało się ustawić nazwy użytkownika");
+      toast.error(t('username.errors.set_failed'));
       setIsSubmitting(false);
       return;
     }
@@ -57,7 +59,7 @@ const UsernamePopup: React.FC = () => {
         <button
           aria-label="Zamknij"
           onClick={handleClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-card-foreground text-2xl leading-none"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-card-foreground text-2xl leading-none cursor-pointer"
         >
           ×
         </button>
@@ -94,7 +96,7 @@ const UsernamePopup: React.FC = () => {
           <button
             type="submit"
             disabled={!isUsernameValid || isSubmitting}
-            className="w-full text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-primary/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full text-primary-foreground bg-primary hover:bg-primary/90 focus:ring-4 focus:outline-none focus:ring-primary/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
           >
             {isSubmitting ? "Zapisuję..." : "Potwierdź nazwę"}
           </button>

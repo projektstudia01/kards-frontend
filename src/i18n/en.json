@@ -13,6 +13,7 @@
     "validation_error": "Validation error.",
     "auth_fail": "Authentication failed.",
     "user_already_in_game": "User is already in a game.",
+    "user_already_in_game_with_hint": "User is already in a game. - You must leave the previous game first.",
     "deck_amount_exceeded": "Maximum number of decks exceeded.",
     "deck_not_found": "Deck not found.",
     "wrong_credentials": "Wrong credentials.",
@@ -86,11 +87,34 @@
       "code_resent": "Verification code has been resent."
     },
     "lobby": {
-      "invite_copied": "Invitation link copied to clipboard!"
+      "invite_copied": "Invitation link copied to clipboard!",
+      "link_copied": "Lobby link copied!"
     }
   },
   "reconnecting": "Reconnecting to server...",
   "connected": "Connected to server",
+  "username": {
+    "errors": {
+      "min_length": "Username must be at least 3 characters",
+      "max_length": "Username can be at most 20 characters",
+      "invalid_chars": "Username can only contain letters, numbers and underscores",
+      "set_failed": "Failed to set username"
+    }
+  },
+  "decks": {
+    "errors": {
+      "max_decks": "Maximum number of decks is 3",
+      "load_failed": "Failed to load deck",
+      "delete_cards_failed": "Failed to delete cards",
+      "save_cards_failed": "Failed to save cards",
+      "max_blanks": "Maximum 3 blank spaces per card (___)",
+      "min_blanks": "Black card must have at least one blank space (___)"
+    },
+    "success": {
+      "deleted": "Deck has been deleted",
+      "saved": "Deck saved successfully"
+    }
+  },
   "errors": {
     "UNKNOWN_ERROR": "An unknown error occurred",
     "WEBSOCKET_DISCONNECT": "Lost connection to server",
@@ -99,7 +123,8 @@
     "USER_NOT_IN_GAME": "User is not in game",
     "KICKED_FROM_GAME": "You have been kicked from the game",
     "websocket_not_connected": "Not connected to server",
-    "qr_code.generation_failed": "QR Code generation failed."
+    "qr_code.generation_failed": "QR code generation failed.",
+    "read_game_id_failed": "Error: cannot read game ID from backend response"
   },
   "game": {
     "title": "CardOSR",

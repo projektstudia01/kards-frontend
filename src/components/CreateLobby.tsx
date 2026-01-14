@@ -41,7 +41,7 @@ const CreateLobby: React.FC = () => {
         
         if (!gameId || typeof gameId !== 'string') {
           console.error('Invalid gameId from backend:', gameData);
-          toast.error('Błąd: nie można odczytać ID gry z odpowiedzi backendu');
+          toast.error(t('errors.read_game_id_failed'));
           return;
         }
         
@@ -51,7 +51,7 @@ const CreateLobby: React.FC = () => {
         
         // Handle specific error - user already in game
         if (errorResponse.key === 'backendErrors.user_already_in_game') {
-          toast.error(t('backendErrors.user_already_in_game') + ' - Musisz najpierw opuścić poprzednią grę.');
+          toast.error(t('backendErrors.user_already_in_game_with_hint'));
         } else if (errorResponse.key) {
           toast.error(t(errorResponse.key));
         } else {
