@@ -74,7 +74,6 @@ const LobbyPage: React.FC = () => {
 
       toast.info(t("reconnecting"));
 
-      let wasOpened = false;
 
       const newWs = new WebSocket(endpoint);
       setWebSocket(newWs);
@@ -84,7 +83,6 @@ const LobbyPage: React.FC = () => {
       });
 
       newWs.addEventListener("open", () => {
-        wasOpened = true;
         toast.success(t("connected"));
         // Backend sends initial data automatically via sendInitialData
       });
@@ -243,7 +241,7 @@ const LobbyPage: React.FC = () => {
 
       newWs.addEventListener("close", (event) => {
         // If connection was never opened and closed abnormally
-        if (!wasOpened && event.code === 1006) {
+        if (!ws?.OPEN && event.code === 1006) {
           shouldReconnect.current = false;
           setWebSocket(null);
           toast.error(t("errors.INVALID_OR_EXPIRED_SESSION"));
@@ -253,7 +251,7 @@ const LobbyPage: React.FC = () => {
         }
 
         // Check for authentication/authorization failure close codes
-        if (event.code === 1008 || event.code === 4001 || event.code === 4003) {
+        if ([1008,4001,4003].includes(event.code)) {
           shouldReconnect.current = false;
           setWebSocket(null);
           logout();
