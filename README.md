@@ -1,0 +1,721 @@
+# WS - flow rund
+
+1. połączenie z ws
+
+`wss://main-server-dev.1050100.xyz/game/connect?sessionToken=TOKEN_SESJI&game=UUID_GRY`
+
+2. Wysłanie eventu WS - dodanie decku do gry, deck musi być publiczny lub należeć do twojego konta
+
+```json
+{
+  "event": "ADD_DECKS_TO_GAME",
+  "data": {
+    "decks": [
+      "deck-uuid-1",
+      "deck-uuid-2"
+    ]
+  }
+}
+```
+
+3. Wysłanie eventu WS - rozpoczęcie gry
+
+`{"event": "START_GAME"}`
+
+Potrzebne są 2 osoby, więc albo multikonto, albo edycja bazy (game -> Cuurrent players = 2)
+
+w decku odpowiednia liczba kart białych i czarnych
+
+4. odebrane zostaną eventy GAME_STARTED z ID gry oraz ROUND_STARTED
+
+```
+schema +- na oko:
+ROUND_STARTED:
+    data:
+        []cards:
+            id: uuid
+            text: tekst karty
+            type: white
+            blankSpaceAmount: liczba pustych miejsc
+        cardRef: uuuid gracza - sędzia rundy
+        blackCard:
+            id: uuid
+            text: tekst karty
+            type: black
+            blankSpaceAmount: liczba pustych miejsc
+```
+
+```json
+{
+  "event": "ROUND_STARTED",
+  "data": {
+    "cards": [
+      {
+        "id": "card-uuid",
+        "text": "Card text",
+        "type": "white",
+        "blankSpaceAmount": 0
+      }
+    ],
+    "cardRef": "player-uuid-of-judge",
+    "blackCard": {
+      "id": "card-uuid",
+      "text": "Black card text with ___ blank spaces",
+      "type": "black",
+      "blankSpaceAmount": 1
+    }
+  }
+}
+```
+
+5. wybór kart przez graczy, tyle ile wybosi blankSpaceAmount, czyli wysłać
+
+```json
+{
+  "event": "SUBMIT_CARDS",
+  "data": {
+    "cardIds": [
+      "white-card-uuid-1",
+      "white-card-uuid-2"
+    ]
+  }
+}
+```
+
+6. gdy już wszyscy się ogarną, dostaje się eevent ALL_CARDS_SUUBMITTED
+
+```json
+{
+  "event": "ALL_CARDS_SUBMITTED",
+  "code": 200,
+  "data": {
+    "submissions": [
+      {
+        "playerId": "player-uuid-1",
+        "playerName": "Player Name",
+        "cards": [
+          {
+            "id": "card-uuid",
+            "text": "Card text",
+            "type": "white",
+            "blankSpaceAmount": 0
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+7. sędzia musi wysłać SELECT_ROUND_WINNER:
+
+```json
+{
+  "event": "SELECT_ROUND_WINNER",
+  "data": {
+    "playerId": "winner-player-uuid"
+  }
+}
+```
+
+8. w tym momeencie runda powinna się skończyć, punkty przyznać, wszyscy otrzymać event jak niżej
+
+```json
+{
+  "event": "ROUND_FINISHED",
+  "code": 200,
+  "data": {
+    "winner": {
+      "id": "winner-player-uuid",
+      "name": "Winner Name",
+      "points": 5
+    },
+    "players": [
+      {
+        "id": "player-uuid-1",
+        "name": "Player 1",
+        "points": 5
+      },
+      {
+        "id": "player-uuid-2",
+        "name": "Player 2",
+        "points": 3
+      }
+    ]
+  }
+}
+```
+
+---
+
+# API gry/lobby
+
+Base URL: `https://main-server-dev.1050100.xyz/game`
+
+## POST `/game/create`
+
+Tworzy nową grę.
+
+**Req:**
+
+```json
+{
+  "name": "Nazwa gry",
+  "maxPlayers": 8,
+  "lobbyType": "public",
+  "invitationCode": "kod123"
+}
+```
+
+**Pola:**
+
+- `name` (string, wymagane) - nazwa gry
+- `maxPlayers` (number, wymagane) - max graczy (np. 8)
+- `lobbyType` (string, wymagane) - `"public"` lub `"private"`
+- `invitationCode` (string, opcjonalne) - kod do prywatnej gry
+
+**Res:**
+
+```json
+{
+  "data": {
+    "message": "Game created successfully",
+    "game": {
+      "id": "uuid-gry",
+      "name": "Nazwa gry",
+      "ownerId": "twoje-id",
+      "maxPlayers": 8,
+      "currentPlayers": 1,
+      "status": "waiting",
+      "lobbyType": "public",
+      "invitationCode": "kod123",
+      "createdAt": "2025-01-07T12:00:00.000Z",
+      "updatedAt": "2025-01-07T12:00:00.000Z"
+    }
+  }
+}
+```
+
+Automatycznie dołącza Cię do gry jako owner, zwiększa currentPlayers o 1
+
+---
+
+### GET `/game/list`
+
+Pobiera listę wszystkich gier.
+
+**Res:**
+
+```json
+{
+  "data": {
+    "games": [
+      {
+        "id": "uuid-gry",
+        "name": "Nazwa gry",
+        "ownerId": "owner-id",
+        "maxPlayers": 8,
+        "currentPlayers": 3,
+        "status": "waiting",
+        "lobbyType": "public",
+        "createdAt": "2025-01-07T12:00:00.000Z",
+        "players": [
+          {
+            "id": "player-id",
+            "points": 0,
+            "joinedAt": "2025-01-07T12:00:00.000Z"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+Opuszczanie lobby róbcie eventem Websocketowym LEAVE_GAME, nie endpointem HTTP, bo to deweloperskie coś jest.
+
+---
+
+# API Auth - endpointy
+
+## POST: auth/register
+
+### body:
+
+```
+{
+    "email": "ddddd@g.pl",
+    "password": "12345678"
+}
+```
+
+password - Minimum 8 znaków
+email - valid email
+
+### res 200:
+
+code dostajemy roboczo, potem będzie na maila
+
+```
+{
+    "data": {
+        "message": "Registration successful",
+        "userId": "ca9d194ae9eea0e3764474c29f31b0e4871422f252953e23899b9327f73ecb50",
+        "sessionId": "ca9d194ae9eea0e3764474c29f31b0e4871422f252953e23899b9327f73ecb50",
+        "code": "84720254"
+    }
+}
+```
+
+Wazne sessionId + code są ważne max 10 minut, można to info gdzieś wrzucić.
+
+### res 400:
+
+```
+{
+    "message": "Name is required",
+    "key": "validation_error"
+}
+```
+
+### res 409:
+
+```
+{
+    "message": "Account already exists in the database",
+    "key": "RECORD_ALREADY_EXISTS"
+}
+```
+
+### res: 500:
+
+```
+{
+    "message": "Internal server error",
+    "key": "internal_server_error"
+}
+```
+
+## POST: auth/verify-email
+
+### body:
+
+```
+{
+    "email": "a@g.pl",
+        "sessionId": "ca9d194ae9eea0e3764474c29f31b0e4871422f252953e23899b9327f73ecb50",
+        "code": "84720254"
+}
+```
+
+### res 200:
+
+Dostajemy tutaj cookiesa z sesją dodatkowo
+
+```
+{
+    "data": {
+        "message": "Code verified successfully",
+        "userId": "ee1623be-cad7-4372-a4eb-eeedbb7823ef"
+        "user": {
+            "name": string
+            "customUsername": boolean
+            "email": string
+        }
+    }
+}
+```
+
+### res 401:
+
+```
+{
+    "message": "Invalid verification code or session",
+    "key": "invalid_verification_code"
+}
+```
+
+### res: 500:
+
+```
+{
+    "message": "Internal server error",
+    "key": "internal_server_error"
+}
+```
+
+## POST: auth/resend-verification-code
+
+### body
+
+```
+{
+    "email": "aa@g.pl"
+}
+```
+
+### res 200:
+
+Tak samo, na razie code roboczo tutaj.
+
+```
+{
+    "data": {
+        "message": "Verification code resent successfully",
+        "code": "xXId0LRS",
+        "sessionId": "6c4dda373efe61f3012ae643a95c8fd09f0a068fe358e3cd6fc62e81f0c13091"
+    }
+}
+```
+
+### res 404:
+
+```
+{
+    "message": "User not found",
+    "key": "user_not_found"
+}
+```
+
+### res 400:
+
+```
+{
+    "message": "Name is required",
+    "key": "validation_error"
+}
+```
+
+### res 400:
+
+```
+{
+    "message": "User already verified",
+    "key": "user_already_verified"
+}
+```
+
+## auth/login
+
+### body:
+
+```
+{
+    "email": "ddd@g.pl",
+    "password": "12345678"
+}
+```
+
+## res 200:
+
+Dodatkowo dostajemy cookiesa
+
+```
+{
+    "data": {
+        "message": "Login successful",
+        "userId": "c1e04fe0-a8c8-4c1b-a705-6bb73a08271f",
+        "user": {
+            "name": string
+            "customUsername": boolean
+            "email": string
+        }
+    }
+}
+```
+
+## res 401:
+
+```
+{
+    "message": "Provided credentials are invalid",
+    "key": "WRONG_CREDENTIALS"
+}
+```
+
+## res 401:
+
+```
+{
+    "message": "Email not verified",
+    "key": "email_not_verified"
+}
+```
+
+## POST auth/logout
+
+Usuwa cookiesa i czyści sesje, trzeba być zalogowanym
+
+## PUT auth/set-nickname
+
+### body:
+
+`
+{
+    username: min(3) max(15) alfanumeryczne i podłogi
+}
+`
+
+### res 200
+
+`
+{
+    "user": {
+    "name": string
+    "customUsername": boolean
+    "email": string
+    }
+}
+`
+
+### Błędy standardowe jak wszędzie
+
+## robocz auth/test-auth
+
+### body: Nieistotne
+
+### res 200: Jeżeli mamy cookiesa poprawnego
+
+### res 401: Jeżeli nie
+
+# deck endpointy
+
+## POST deck/create
+
+### body:
+
+```
+{
+    "title":"edisted",
+    "description": "test"
+}
+```
+
+## res 200:
+
+```
+data: {
+    "title": "edisted",
+    "description": "test",
+    "owner": {
+        "id": "c1e04fe0-a8c8-4c1b-a705-6bb73a08271f"
+    },
+    "id": "b42396a9-92fd-4358-9075-8e2e11b7192e",
+    "createdAt": "2025-11-04T15:30:37.732Z",
+    "updatedAt": "2025-11-04T15:30:37.732Z"
+}
+```
+
+## PUT deck/:id
+
+### body - Takie samo jak create ale pola opcjonalne.
+
+## res 200:
+
+```
+data: {
+    "id": "b42396a9-92fd-4358-9075-8e2e11b7192e",
+    "title": "edisted",
+    "description": "test",
+    "createdAt": "2025-11-04T15:30:37.732Z",
+    "updatedAt": "2025-11-04T15:30:37.732Z"
+}
+```
+
+## DELETE deck/:id
+
+### body: brak
+
+### res 200 body: brak
+
+## GET /deck
+
+### res 200:
+
+```
+data: [
+    {
+        "id": "e02cbb76-581d-4a09-8566-f47b142edcad",
+        "title": "edisted",
+        "description": "test12321",
+        "createdAt": "2025-11-04T15:02:40.124Z",
+        "updatedAt": "2025-11-04T15:02:40.124Z"
+    }
+]
+```
+
+## GET deck/:id
+
+### res 200:
+
+```
+data: {
+    "id": "e02cbb76-581d-4a09-8566-f47b142edcad",
+    "title": "edisted",
+    "description": "test12321",
+    "createdAt": "2025-11-04T15:02:40.124Z",
+    "updatedAt": "2025-11-04T15:02:40.124Z"
+}
+```
+
+## POST /deck/:id/cards
+
+### body
+
+```
+{
+  "cards": [
+    {
+      "text": "What is the capital of France?",
+      "type": "white"
+    },
+    {
+      "text": "Fill in the blank: The Eiffel Tower is in _____",
+      "type": "black",
+      "blankSpaceAmount": 1
+    },
+    {
+      "text": "Another blank question: _____ and _____",
+      "type": "black",
+      "blankSpaceAmount": 2
+    }
+  ]
+}
+```
+
+### res 200:
+
+```
+data: [
+    {
+        "text": "What is the capital of France?",
+        "type": "white",
+        "deck": {
+            "id": "e02cbb76-581d-4a09-8566-f47b142edcad"
+        },
+        "blankSpaceAmount": null,
+        "id": "6ee5b44d-462e-41ab-bcbf-0c645696f98e",
+        "createdAt": "2025-11-04T22:17:26.346Z",
+        "updatedAt": "2025-11-04T22:17:26.346Z"
+    },
+    {
+        "text": "Fill in the blank: The Eiffel Tower is in _____",
+        "blankSpaceAmount": 1,
+        "type": "black",
+        "deck": {
+            "id": "e02cbb76-581d-4a09-8566-f47b142edcad"
+        },
+        "id": "4fe19ca5-4c41-4dfa-920f-d3f55b9c34f1",
+        "createdAt": "2025-11-04T22:17:26.346Z",
+        "updatedAt": "2025-11-04T22:17:26.346Z"
+    },
+    {
+        "text": "Another blank question: _____ and _____",
+        "blankSpaceAmount": 2,
+        "type": "black",
+        "deck": {
+            "id": "e02cbb76-581d-4a09-8566-f47b142edcad"
+        },
+        "id": "a1e45737-5076-4588-a865-ff6d8317f303",
+        "createdAt": "2025-11-04T22:17:26.346Z",
+        "updatedAt": "2025-11-04T22:17:26.346Z"
+    }
+]
+```
+
+## DELETE /deck/:id/cards
+
+### body
+
+```
+{
+  "cardIds": ["17d38989-494a-4910-bae2-0fd76d8dbec5"]
+}
+```
+
+### res 200 body - brak
+
+## GET /deck/:id/cards
+
+### query params:
+
+- page
+- pageSize
+- cardType -> white/black
+
+### res 200
+
+```
+{
+    "data": [
+        {
+            "id": "6ee5b44d-462e-41ab-bcbf-0c645696f98e",
+            "text": "What is the capital of France?",
+            "blankSpaceAmount": null,
+            "type": "white",
+            "createdAt": "2025-11-04T22:17:26.346Z",
+            "updatedAt": "2025-11-04T22:17:26.346Z"
+        },
+        {
+            "id": "ff1b9d20-e64f-4f97-9891-2faceb3d4fee",
+            "text": "What is the capital of France?",
+            "blankSpaceAmount": 1,
+            "type": "white",
+            "createdAt": "2025-11-04T21:38:33.521Z",
+            "updatedAt": "2025-11-04T21:38:33.521Z"
+        }
+    ],
+    "total": 2,
+    "page": 0,
+    "pageSize": 10
+}
+```
+
+# WebSockets - Po lobby
+
+## Received events:
+
+- WS-CONNECTED: code: 200
+- INVALID_OR_EXPIRED_SESSION: code: 401
+- USER_NOT_IN_GAME: code: 403
+- KICKED_FROM_GAME: code: 403
+- NEW_PLAYER_JOINED: data: { id, name }, code: 200
+<!-- - PLAYER_LEFT: data: {id} code: 200 -->
+- DECKS_IN_GAME: data: [{
+  "id": "eeee39e3-5c2a-4817-9798-cec5aca306c5",
+  "title": "Test",
+  "description": "test",
+  "createdAt": "2025-11-29T15:17:49.172Z",
+  "isPublic": false,
+  "updatedAt": "2025-11-29T15:17:49.172Z",
+  "blackCardsCount": 20,
+  "whiteCardsCount": 26
+  }]
+- PLAYERS_IN_GAME: data: [{name, id, points, owner}]
+- AVAILABLE_DECKS: {data: [ {
+  "id": "eeee39e3-5c2a-4817-9798-cec5aca306c5",
+  "title": "Test",
+  "description": "test",
+  "createdAt": "2025-11-29T15:17:49.172Z",
+  "isPublic": false,
+  "updatedAt": "2025-11-29T15:17:49.172Z",
+  "blackCardsCount": 20,
+  "whiteCardsCount": 26
+  }], total, page, pageSize}
+
+## Send events:
+
+- LEAVE_GAME
+- START_GAME
+  Możliwe błędy
+  - code 400, event: not_enough_players musi byc minimum 2
+  - code 400, event: not_enough_cards_in_decks aktualnie na kazdego gracza jest minimum 1 czarna i 10 białych
+- ADD_DECKS_TO_GAME: data {"decks": ["eeee39e3-5c2a-4817-9798-cec5aca306c5"]}
+  Możliwe błędy
+  - code 404, event: game_not_found
+  - code 400, event: game_already_started
+  - code 403, event: user_it_not_game_owner
+  - code 404, event: deck_not_found
+- REMOVE_DECKS_FROM_GAME: data {"decks": ["eeee39e3-5c2a-4817-9798-cec5aca306c5"]}
+- GET_DECKS_PAGINATED
